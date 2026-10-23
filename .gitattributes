@@ -1,6 +1,4 @@
-# 文本文件统一使用 LF，避免 Windows 上换行被改写
-* text=auto eol=lf
-*.lua text eol=lf
-*.ps1 text eol=crlf
-*.md text eol=lf
-*.json text eol=lf
+# 这个仓库保存的是《饥荒联机版》模组的真实文件，要求“从仓库还原后与游戏内文件字节一致”，
+# 因此全局关闭换行与编码转换，所有文件按原样存储。
+# 二进制资源（.tex / .zip / .fsb / .fev）本来就不会被当作文本处理。
+* -text

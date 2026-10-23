@@ -13,3 +13,7 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# 模组同步/还原产生的备份目录与日志
+mod-backup-*/
+*.log
