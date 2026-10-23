@@ -25,7 +25,7 @@ _plan.json           各分片对应的源文件行区间与起始键名
 1. 先干跑一次（不写入游戏目录，只在系统临时目录生成预览）：
 
 ```powershell
-pwsh -File parts\build.ps1 -ModDir "D:\Game\Steam\steamapps\common\Don't Starve Together\mods\[DST]Magic Cat" -DryRun
+pwsh -File parts\build.ps1 -ModDir "X:\SteamLibrary\steamapps\common\Don't Starve Together\mods\你的模组" -DryRun
 ```
 
 2. 确认输出没问题后，去掉 `-DryRun` 正式拼装（原文件会先备份为 `.bak`，再写入 `scripts\speech_madeleine.lua`）：

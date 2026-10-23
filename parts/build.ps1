@@ -7,10 +7,10 @@
     - 需要指定模组目录（-ModDir），也可用 -Source/-Doc1/-OutFile 逐个覆盖。
 
 .EXAMPLE
-    pwsh -File parts\build.ps1 -ModDir "D:\Game\Steam\steamapps\common\Don't Starve Together\mods\[DST]Magic Cat" -DryRun
+    pwsh -File parts\build.ps1 -ModDir "X:\SteamLibrary\steamapps\common\Don't Starve Together\mods\你的模组" -DryRun
 
 .EXAMPLE
-    pwsh -File parts\build.ps1 -ModDir "D:\Game\...\mods\你的模组"
+    pwsh -File parts\build.ps1 -ModDir "X:\SteamLibrary\steamapps\common\Don't Starve Together\mods\你的模组"
 #>
 param(
     # 分片所在目录，默认就是本脚本所在目录

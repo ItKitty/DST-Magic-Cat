@@ -3,7 +3,7 @@
     校验拼装结果：引号配对、占位符数量、括号深度、行数。
 
 .EXAMPLE
-    pwsh -File parts\check.ps1 -ModDir "D:\Game\Steam\steamapps\common\Don't Starve Together\mods\[DST]Magic Cat"
+    pwsh -File parts\check.ps1 -ModDir "X:\SteamLibrary\steamapps\common\Don't Starve Together\mods\你的模组"
 #>
 param(
     # 模组根目录（其下应有 scripts\）
