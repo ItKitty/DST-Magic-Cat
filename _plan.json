@@ -1,0 +1,68 @@
+﻿[
+    {
+        "part":  1,
+        "start":  1243,
+        "end":  1711,
+        "key":  "MULTIPLAYER_PORTAL = \"这在科学上说不通。\",\t\t--物品名：绚丽之门"
+    },
+    {
+        "part":  2,
+        "start":  1713,
+        "end":  2181,
+        "key":  "MUSHROOM_LIGHT ="
+    },
+    {
+        "part":  3,
+        "start":  2183,
+        "end":  2651,
+        "key":  "COOKPOT ="
+    },
+    {
+        "part":  4,
+        "start":  2653,
+        "end":  3122,
+        "key":  "MOOSE_NESTING_GROUND = \"它把它的婴儿放在那里。\",\t\t--物品名：麋鹿鹅巢址"
+    },
+    {
+        "part":  5,
+        "start":  3124,
+        "end":  3593,
+        "key":  "HALLOWEEN_ORNAMENT_1 = \"一个可以挂在树上的装饰物。\",\t\t--物品名：幽灵装饰"
+    },
+    {
+        "part":  6,
+        "start":  3595,
+        "end":  4063,
+        "key":  "QUAGMIRE_TOMATO = \"红色的，满满都是科学。\",\t\t--物品名：番茄"
+    },
+    {
+        "part":  7,
+        "start":  4065,
+        "end":  4533,
+        "key":  "OCEANFISHINGBOBBER_ROBIN_WINTER = \"雪鸟的羽毛十分高冷。\",\t\t--物品名：蔚蓝羽浮漂"
+    },
+    {
+        "part":  8,
+        "start":  4535,
+        "end":  5004,
+        "key":  "MOON_ALTAR_LINK = \"似乎在酝酿什么。\",\t\t--物品名：神秘能量"
+    },
+    {
+        "part":  9,
+        "start":  5006,
+        "end":  5474,
+        "key":  "EYEMASKHAT = \"不得不说，我独具慧眼。\",\t\t--物品名：眼面具"
+    },
+    {
+        "part":  10,
+        "start":  5476,
+        "end":  5944,
+        "key":  "YOTD_DRAGONSHRINE ="
+    },
+    {
+        "part":  11,
+        "start":  5946,
+        "end":  6282,
+        "key":  "MOON_TREE_BLOSSOM_DRIED = \"干得漂亮。\",\t\t--物品名：干月树花"
+    }
+]
