@@ -1,0 +1,354 @@
+-- mechanics.lua - 游戏机制修改
+env._G = GLOBAL
+
+---stafflight
+AddPrefabPostInit("stafflight", function(inst)
+	if not TheWorld.ismastersim then
+		return
+	end
+	inst:AddTag("fire")
+end)
+---staffcoldlight
+AddPrefabPostInit("staffcoldlight", function(inst)
+	if not TheWorld.ismastersim then
+		return
+	end
+	inst:AddTag("fire")
+end)
+---deer_ice_charge
+AddPrefabPostInit("deer_ice_charge", function(inst)
+	if not TheWorld.ismastersim then
+		return
+	end
+	inst:AddComponent("heater")
+	inst.components.heater.heat = -100
+	inst.components.heater:SetThermics(false, true)
+	inst:AddTag("fire")
+end)
+
+---deer_fire_charge
+AddPrefabPostInit("deer_fire_charge", function(inst)
+	if not TheWorld.ismastersim then
+		return
+	end
+	inst:AddComponent("heater")
+	inst.components.heater.heat = 100
+	inst:AddTag("fire")
+end)
+
+-------------- 可恶的科雷把龙蝇皮改成不能交易了-----------------------
+local AddTradadle = {
+	"dragon_scales", -- 龙蝇皮
+	"nightmarefuel", -- 噩梦燃料
+	"pocketwatch_parts", -- 时间碎片
+}
+for _, v in ipairs(AddTradadle) do
+	AddPrefabPostInit(v, function(inst)
+		if not TheWorld.ismastersim then
+			return
+		end
+		-- 确保有tradable组件
+		if not inst.components.tradable then
+			inst:AddComponent("tradable")
+		end
+	end)
+end
+-------------- 可恶的科雷把龙蝇皮改成不能交易了-----------------------
+------------------修改玩家体温调整函数---------------------------------
+AddComponentPostInit("temperature", function(self)
+	local oldSetTemperature = self.SetTemperature
+
+	self.SetTemperature = function(self, value, ...)
+		local inventory = self.inst.components.inventory
+
+		-- 装备防过热物品 眼球
+		if inventory and inventory:EquipHasTag("m_nooverheat") then
+			value = math.min(value, 64)
+		end
+
+		-- 装备防冻物品 龙鳞
+		if inventory and inventory:EquipHasTag("m_nofreezing") then
+			value = math.max(value, 6)
+		end
+
+		oldSetTemperature(self, value, ...)
+	end
+end)
+------------------修改玩家体温调整函数---------------------------------
+
+-------------------------采集系统修改------------------------------
+AddComponentPostInit("pickable", function(self)
+	local oldPick = self.Pick
+	local oldFertilize = self.Fertilize
+
+	-- 重写采集方法
+	function self:Pick(picker)
+		if picker and picker:HasTag("m_greenfinger") then
+			local originalNum = self.numtoharvest or 1
+			self.numtoharvest = originalNum * 5
+			local success, loot = oldPick(self, picker)
+			self.numtoharvest = originalNum
+
+			-- 只有绿手指采集时才设置巨大作物重量
+			if success and loot then
+				self.inst:DoTaskInTime(0.05, function()
+					local loots = EntityScript.is_instance(loot) and { loot } or loot
+					for _, item in ipairs(loots) do
+						if item ~= nil and item:IsValid() and item:HasTag("oversized_veggie") then
+							item.components.weighable:SetWeight(999.99)
+						end
+					end
+				end)
+			end
+
+			return success, loot
+		else
+			return oldPick(self, picker)
+		end
+	end
+
+	-- 重写施肥方法
+	function self:Fertilize(fertilizer, doer)
+		local success = oldFertilize(self, fertilizer, doer)
+
+		if success and doer and doer:HasTag("m_greenfinger") then
+			self.transplanted = false
+		end
+
+		return success
+	end
+end)
+-------------------------采集系统修改------------------------------
+
+---------------------- 去除防尘黑框 ----------------------------
+AddClassPostConstruct("widgets/gogglesover", function(self)
+	local old_ToggleGoggles = self.ToggleGoggles
+	function self:ToggleGoggles(show, ...)
+		if self.owner and self.owner.replica.inventory then
+			show = false
+		end
+		return old_ToggleGoggles(self, show, ...)
+	end
+end)
+---------------------- 去除防尘黑框 ----------------------------
+
+---------------------------- 修改暮光之噬攻击动作 ----------------------------
+AddComponentPostInit("combat", function(self, inst)
+	---must be a non-nil entity!!!
+	function self:P_AOECheck(target)
+		if not (target.entity:IsValid() and target.entity:IsVisible()) then
+			return false
+		end
+
+		if
+			target.replica.combat == nil
+			or IsEntityDead(target, true)
+			or target:HasTag("noplayertarget")
+			or self:IsAlly(target)
+		then
+			return false
+		end
+
+		--TODO  PVP???
+		local sanity = self.inst.replica.sanity
+
+		if sanity ~= nil and sanity:IsCrazy() or self.inst:HasTag("crazy") then
+			--Insane attacker can pretty much attack anything
+			return true
+		end
+
+		if target:HasAnyTag("shadowcreature", "nightmarecreature") and target:HasTag("locomotor") then
+			local victim = target.replica.combat:GetTarget()
+
+			if
+				victim == nil
+				or (
+					victim ~= self.inst
+					and target.HostileToPlayerTest ~= nil
+					and not target:HostileToPlayerTest(victim)
+				)
+			then
+				return false
+			end
+		end
+
+		return true
+	end
+end)
+
+---------------------------- 修改攻击动作 ----------------------------
+
+------------------------- 修改武器名字颜色 -----------------------------
+-- local EMPTY_FUNC = function() end
+-- AddClassPostConstruct("widgets/itemtile", function(self, invitem)
+-- 	if invitem.itemtile_colour then
+-- 		self.tooltipcolour = invitem.itemtile_colour
+-- 		self.SetTooltipColour = EMPTY_FUNC
+-- 	end
+-- end)
+------------------------- 修改武器名字颜色 -----------------------------
+
+--hook移速组件,山力叶酱搬重物不掉速
+AddComponentPostInit("locomotor", function(self)
+	local oldGetSpeedMultiplier = self.GetSpeedMultiplier
+	if TheWorld.ismastersim then
+		self.GetSpeedMultiplier = function(self, ...)
+			if
+				self.inst:HasTag("m_strong")
+				and not (self.inst.components.rider ~= nil and self.inst.components.rider:IsRiding())
+			then
+				local mult = self:ExternalSpeedMultiplier()
+				if self.inst.components.inventory ~= nil then
+					for k, v in pairs(self.inst.components.inventory.equipslots) do
+						if v.components.equippable ~= nil then
+							local item_speed_mult = v.components.equippable:GetWalkSpeedMult()
+							mult = mult * math.max(item_speed_mult, 1)
+						end
+					end
+				end
+				return mult * (self:TempGroundSpeedMultiplier() or self.groundspeedmultiplier) * self.throttle
+			elseif oldGetSpeedMultiplier then
+				return oldGetSpeedMultiplier(self, ...)
+			end
+		end
+	else
+		self.GetSpeedMultiplier = function(self, ...)
+			if
+				self.inst:HasTag("m_strong")
+				and not (self.inst.replica.rider and self.inst.replica.rider:IsRiding())
+			then
+				local mult = self:ExternalSpeedMultiplier()
+				local inventory = self.inst.replica.inventory
+				if inventory ~= nil then
+					for k, v in pairs(inventory:GetEquips()) do
+						local inventoryitem = v.replica.inventoryitem
+						if inventoryitem ~= nil then
+							local item_speed_mult = inventoryitem:GetWalkSpeedMult()
+							mult = mult * math.max(item_speed_mult, 1)
+						end
+					end
+				end
+				return mult * (self:TempGroundSpeedMultiplier() or self.groundspeedmultiplier) * self.throttle
+			elseif oldGetSpeedMultiplier then
+				return oldGetSpeedMultiplier(self, ...)
+			end
+		end
+	end
+end)
+
+-----------------------------  修改护符hover名字   ----------------------------------------
+-- m_amulet_hoverer.lua
+-- 添加到你的 modmain.lua 中
+
+local materials = {
+	-- 宝石类
+	redgem = "回血功能",
+	bluegem = "水上行走",
+	purplegem = "理智光环",
+	orangegem = "辅助功能",
+	yellowgem = "光照能力",
+	greengem = "建筑减耗",
+	opalpreciousgem = "位面机制",
+
+	-- 特殊材料
+	dragon_scales = "不会过冷",
+	deerclops_eyeball = "不会过热",
+	alterguardianhatshard = "空间穿梭",
+
+	-- 可以继续添加更多材料
+	-- thulecite = "铥矿",
+	-- nightmarefuel = "梦魇燃料",
+}
+
+for k, v in pairs(materials) do
+	AddPrefabPostInit(k, function(inst)
+		inst:AddTag("m_amulet_upgradable")
+
+		if not TheWorld.ismastersim then
+			return inst
+		end
+	end)
+end
+
+AddClassPostConstruct("widgets/hoverer", function(self)
+	-- 保存原始的 SetString 方法
+	local old_SetString = self.text.SetString
+
+	self.text.SetString = function(text, str)
+		local target = TheInput:GetHUDEntityUnderMouse()
+		target = (target and target.widget and target.widget.parent ~= nil and target.widget.parent.item)
+			or TheInput:GetWorldEntityUnderMouse()
+			or nil
+		-- 检查目标是否是 m_amulet
+		if target and target.entity ~= nil then
+			if target.prefab ~= nil then
+				if target.prefab == "m_amulet" and target.replica.amulettraits then
+					-- 获取 amulettraits 组件
+					local amulettraits = target.replica.amulettraits
+					if amulettraits then
+						-- 从 amulettraits 获取技能数据
+						local skills = amulettraits:GetData() or {}
+
+						-- 遍历所有可能的技能
+						-- for gem, name in pairs(materials) do
+						-- 	if skills[gem] then
+						-- 		str = str .. string.format("\n%s：已解锁", name)
+						-- 	else
+						-- 		str = str .. string.format("\n%s：未解锁", name)
+						-- 	end
+						-- end
+
+						-- 收集未解锁技能
+						local locked_skills = {}
+						for gem, name in pairs(materials) do
+							if not skills[gem] then
+								table.insert(locked_skills, name)
+							end
+						end
+
+						-- 每4个换行显示
+						if #locked_skills > 0 then
+							str = str .. "\n未解锁："
+							for i, skill_name in ipairs(locked_skills) do
+								if i > 1 then
+									if (i - 1) % 4 == 0 then -- 每4个换行
+										str = str .. "\n        " -- 对齐
+									else
+										str = str .. "、"
+									end
+								end
+								str = str .. skill_name
+							end
+						else
+							str = str .. "\n十全十美！"
+						end
+					end
+				end
+			end
+		end
+
+		return old_SetString(text, str)
+	end
+end)
+
+-----------------------------  修改护符hover名字   ----------------------------------------
+
+-- -- 为有耐久度的物品添加可融合组件
+-- ----------------------------------------------------------------------------
+-- AddComponentPostInit("fueled", function(self)
+-- 	if self.inst and GLOBAL.TheWorld.ismastersim then
+-- 		self.inst:AddComponent("m_infinity_charge")
+-- 	end
+-- end)
+
+-- AddComponentPostInit("finiteuses", function(self)
+-- 	if self.inst and GLOBAL.TheWorld.ismastersim then
+-- 		self.inst:AddComponent("m_infinity_charge")
+-- 	end
+-- end)
+
+-- AddComponentPostInit("armor", function(self)
+-- 	if self.inst and GLOBAL.TheWorld.ismastersim then
+-- 		self.inst:AddComponent("m_infinity_charge")
+-- 	end
+-- end)

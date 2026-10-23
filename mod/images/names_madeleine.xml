@@ -1,0 +1,6 @@
+<Atlas>
+  <Texture filename="names_madeleine.tex" />
+  <Elements>
+    <Element name="madeleine.tex" u1="0.000244140625" u2="0.651123046875" v1="0.82275390625" v2="0.99951171875" />
+  </Elements>
+</Atlas>
