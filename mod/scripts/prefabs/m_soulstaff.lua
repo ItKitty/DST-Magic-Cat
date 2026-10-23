@@ -112,11 +112,6 @@ local function staff_do_trail(inst)
 end
 
 -- 对话管理
-local function GetRandomTalk(talk_type)
-	local talk_list = STRINGS.M_SOULSTAFF[talk_type] or {}
-	return #talk_list > 0 and talk_list[math.random(#talk_list)] or ""
-end
-
 local function StaffTalk(inst, talk_type)
 	local talk_list = STRINGS.M_SOULSTAFF[talk_type]
 	if not talk_list or #talk_list == 0 then

@@ -2,24 +2,35 @@ local assets = {
     Asset("ANIM", "anim/lifeplant_fx.zip")
 }
 
--- sparkle 吸血闪光
+-- sparkle 吸血闪光：飞向带 "sparkle" 标签的目标，命中后自毁
 local function onspawnsparkle(inst)
-    local x, y, z = inst.Transform:GetWorldPosition()
-    local ent = TheSim:FindFirstEntityWithTag("sparkle")
+	local target = TheSim:FindFirstEntityWithTag("sparkle")
+	if target == nil then
+		inst:Remove()
+		return
+	end
 
-    if ent then
-        inst:DoPeriodicTask(0, function()
-            local x2, y2, z2 = ent.Transform:GetWorldPosition()
-            local angle = inst:GetAngleToPoint(x2, y2, z2)
-            inst.Transform:SetRotation(angle)
-            inst.components.locomotor:WalkForward()
-            if ent and ent:GetDistanceSqToInst(inst) < 1 then
-                inst:Remove()
-            end
-        end)
-    else
-        inst:Remove()
-    end
+	-- 原来用 0 秒周期（每帧）；特效几帧内就结束，0.05 秒足够且开销小一个数量级
+	local task
+	task = inst:DoPeriodicTask(0.05, function()
+		if not inst:IsValid() then
+			return
+		end
+		-- 目标可能中途被移除，必须每次检查，否则会一直报错刷屏
+		if not target:IsValid() then
+			task:Cancel()
+			inst:Remove()
+			return
+		end
+
+		local x, y, z = target.Transform:GetWorldPosition()
+		inst.Transform:SetRotation(inst:GetAngleToPoint(x, y, z))
+		inst.components.locomotor:WalkForward()
+		if target:GetDistanceSqToInst(inst) < 1 then
+			task:Cancel()
+			inst:Remove()
+		end
+	end)
 end
 
 local function sparklefn(Sim)

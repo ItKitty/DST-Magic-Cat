@@ -1,9 +1,6 @@
 local assets = {
 	Asset("ANIM", "anim/haste_fx.zip"),
 }
-local function onsave()
-	inst:Remove()
-end
 
 local function fn()
 	local inst = CreateEntity()

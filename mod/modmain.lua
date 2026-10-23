@@ -14,31 +14,30 @@ TUNING.ToggleLight = GetModConfigData("ToggleLight")
 AddReplicableComponent("amulettraits")
 AddReplicableComponent("chiropteran")
 
--- 导入模块
-modimport("scripts/madeleine_util/assets.lua") -- 资源声明
-modimport("scripts/madeleine_util/character.lua") -- 角色配置
-modimport("scripts/madeleine_util/recipes.lua") -- 配方系统
-modimport("scripts/madeleine_util/recipes2.lua") -- 魔法书配方系统
-modimport("scripts/madeleine_util/recipes3.lua") -- 兼容别的模组配方系统
+-- 配置：资源声明、角色属性、配方
+modimport("scripts/config/assets.lua") -- 资源与 PrefabFiles 声明
+modimport("scripts/config/character.lua") -- 角色配置
+modimport("scripts/config/recipes.lua") -- 配方系统
+modimport("scripts/config/recipes2.lua") -- 魔法书配方系统
+modimport("scripts/config/recipes3.lua") -- 兼容别的模组配方系统
 
-modimport("scripts/strings_madeleine.lua") -- 文本声明
-modimport("scripts/madeleine_util/pet_events.lua") -- 宠物事件
-modimport("scripts/madeleine_util/shadowtool_states.lua") -- 暗影工具状态管理系统
-modimport("scripts/madeleine_util/shadowfx_utils.lua") -- 粒子效果和工具函数
-modimport("scripts/madeleine_util/madeleine_util.lua") -- 技能管理
-modimport("scripts/madeleine_util/spatialjump_action.lua") -- 空间跳跃动作管理
-modimport("scripts/madeleine_util/amulet_action.lua") -- 护符升级管理
-modimport("scripts/madeleine_util/player_sg.lua") -- 动作管理
-modimport("scripts/madeleine_util/m_inspirationbadge.lua") -- 激励勋章管理
-modimport("scripts/madeleine_util/chiropteran.lua") -- 变身管理
-modimport("scripts/madeleine_util/critter_perishable.lua") -- 宠物饥饿和礼物管理
-modimport("scripts/madeleine_util/extinguish_action.lua") -- 熄灭动作管理
--- modimport("scripts/madeleine_util/m_toggle_soulstaff.lua") -- 灵魂杖管理
-modimport("scripts/madeleine_util/m_skill_winona.lua") -- 获取winona技能树管理
--- modimport("scripts/madeleine_util/m_infinity_action.lua") -- 无限充电管理
-modimport("scripts/madeleine_util/maogugu_text_trail_fx.lua") -- 文本轨迹特效管理
+-- 文本声明
+modimport("scripts/strings_madeleine.lua")
 
-modimport("scripts/madeleine_util/mechanics.lua") -- 游戏机制HOOK修改
-----------------------------------------------------------
+-- 系统：玩法逻辑、动作与 hook（加载顺序不要随意调整，后面的会覆盖前面的行为）
+modimport("scripts/systems/pet_events.lua") -- 宠物事件
+modimport("scripts/systems/shadowtool_states.lua") -- 暗影工具状态管理
+modimport("scripts/systems/shadowfx.lua") -- 暗影粒子效果与工具函数
+modimport("scripts/systems/hotkeys.lua") -- 技能快捷键与 RPC
+modimport("scripts/systems/spatialjump_action.lua") -- 空间跳跃动作
+modimport("scripts/systems/amulet_action.lua") -- 护符升级动作
+modimport("scripts/systems/player_sg.lua") -- 玩家状态机动作
+modimport("scripts/systems/m_inspirationbadge.lua") -- 激励勋章
+modimport("scripts/systems/chiropteran.lua") -- 变身管理
+modimport("scripts/systems/critter_perishable.lua") -- 宠物饥饿与礼物
+modimport("scripts/systems/extinguish_action.lua") -- 熄灭动作
+modimport("scripts/systems/m_skill_winona.lua") -- 薇诺娜技能树兼容
+modimport("scripts/systems/maogugu_text_trail_fx.lua") -- 文本轨迹特效
 
-----------------------------------------------------------
+-- 放在最后：对原版机制的 hook
+modimport("scripts/systems/mechanics.lua") -- 游戏机制 HOOK 修改

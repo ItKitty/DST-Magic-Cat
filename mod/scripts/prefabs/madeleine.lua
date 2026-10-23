@@ -14,28 +14,6 @@ for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
 end
 local prefabs = FlattenTree(start_inv, true)
 
---[[----------------------------
-    Chiropteran Forming
-----------------------------]]
---
-local function OnDark(inst)
-	inst.components.chiropteran:ForceForm(inst, "dark")
-end
-
-local function OnLight(inst)
-	inst.components.chiropteran:UnforceForm(inst, "dark")
-end
-
-local function OnStarving(inst)
-	inst.components.chiropteran:ForceForm(inst, "bloodcrazed")
-end
-
-local function OnStopStarving(inst)
-	inst.components.chiropteran:UnforceForm(inst, "bloodcrazed")
-end
-
-------------------------------------------------------------------------
-
 -- 【贪婪】能力配置
 local GREED_CONFIG = {
 	NORMAL_CHANCE = 0.3, -- 普通生物30%触发几率
@@ -348,22 +326,21 @@ local master_postinit = function(inst)
 	-- inst.components.luckuser:SetLuckSource(3, "madeleine_fortune")
 
 	-- 变身
+	inst:AddComponent("chiropteran")
+
 	inst:DoPeriodicTask(1, function()
 		if inst.components.chiropteran.transformed then
 			inst.components.sanity:DoDelta(-1, true)
 		end
 	end)
+	-- 理智归零时自动解除变身（注意是组件值，不是 replica）
 	inst:DoPeriodicTask(0.5, function()
-		if
-			inst.components.chiropteran.transformed
-			and not inst.components.chiropteran.forceformed
-			and inst.replica.sanity == 0
-		then
-			inst.components.chiropteran:ChiropteraStop(inst)
+		local chiropteran = inst.components.chiropteran
+		if chiropteran.transformed and not chiropteran.forceformed and inst.components.sanity.current <= 0 then
+			chiropteran:ChiropteraStop(inst)
 		end
 	end)
 
-	inst:AddComponent("chiropteran")
 	inst:ListenForEvent("death", function()
 		inst.components.chiropteran:ChiropteraStop(inst)
 	end)

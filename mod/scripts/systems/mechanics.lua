@@ -1,5 +1,4 @@
 -- mechanics.lua - 游戏机制修改
-env._G = GLOBAL
 
 ---stafflight
 AddPrefabPostInit("stafflight", function(inst)
@@ -86,8 +85,12 @@ AddComponentPostInit("pickable", function(self)
 		if picker and picker:HasTag("m_greenfinger") then
 			local originalNum = self.numtoharvest or 1
 			self.numtoharvest = originalNum * 5
-			local success, loot = oldPick(self, picker)
+			-- 用 pcall 保护：原版 Pick 一旦抛错，不恢复的话这份作物的产量会永久停在 5 倍
+			local ok, success, loot = pcall(oldPick, self, picker)
 			self.numtoharvest = originalNum
+			if not ok then
+				error(success)
+			end
 
 			-- 只有绿手指采集时才设置巨大作物重量
 			if success and loot then
@@ -178,16 +181,6 @@ end)
 
 ---------------------------- 修改攻击动作 ----------------------------
 
-------------------------- 修改武器名字颜色 -----------------------------
--- local EMPTY_FUNC = function() end
--- AddClassPostConstruct("widgets/itemtile", function(self, invitem)
--- 	if invitem.itemtile_colour then
--- 		self.tooltipcolour = invitem.itemtile_colour
--- 		self.SetTooltipColour = EMPTY_FUNC
--- 	end
--- end)
-------------------------- 修改武器名字颜色 -----------------------------
-
 --hook移速组件,山力叶酱搬重物不掉速
 AddComponentPostInit("locomotor", function(self)
 	local oldGetSpeedMultiplier = self.GetSpeedMultiplier
@@ -237,8 +230,6 @@ AddComponentPostInit("locomotor", function(self)
 end)
 
 -----------------------------  修改护符hover名字   ----------------------------------------
--- m_amulet_hoverer.lua
--- 添加到你的 modmain.lua 中
 
 local materials = {
 	-- 宝石类
@@ -333,22 +324,3 @@ end)
 
 -----------------------------  修改护符hover名字   ----------------------------------------
 
--- -- 为有耐久度的物品添加可融合组件
--- ----------------------------------------------------------------------------
--- AddComponentPostInit("fueled", function(self)
--- 	if self.inst and GLOBAL.TheWorld.ismastersim then
--- 		self.inst:AddComponent("m_infinity_charge")
--- 	end
--- end)
-
--- AddComponentPostInit("finiteuses", function(self)
--- 	if self.inst and GLOBAL.TheWorld.ismastersim then
--- 		self.inst:AddComponent("m_infinity_charge")
--- 	end
--- end)
-
--- AddComponentPostInit("armor", function(self)
--- 	if self.inst and GLOBAL.TheWorld.ismastersim then
--- 		self.inst:AddComponent("m_infinity_charge")
--- 	end
--- end)

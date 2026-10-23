@@ -101,19 +101,25 @@ end
 -- PURPLE 功能
 ----------------------------------------------------------
 function Amulettraits:SetSanityAura(owner, enable)
+	if owner == nil then
+		return
+	end
 	-- 理智光环
-	if owner and owner.components.sanity then
+	if owner.components.sanity ~= nil then
 		owner.components.sanity.neg_aura_absorb = enable and TUNING.ARMOR_HIVEHAT_SANITY_ABSORPTION or 0
 	end
-	-- 困倦抗性
-	if enable then
-		if owner.components.grogginess then
-			owner.components.grogginess:AddResistanceSource("nogrogginess", 9999)
-			owner.components.grogginess:ResetGrogginess()
+	-- 困倦抗性：开启时加、关闭时必须移除，否则玩家会永久免疫困倦
+	local grogginess = owner.components.grogginess
+	if grogginess ~= nil then
+		if enable then
+			grogginess:AddResistanceSource("nogrogginess", 9999)
+			grogginess:ResetGrogginess()
 		else
-			owner.components.grogginess:RemoveResistanceSource("nogrogginess")
+			grogginess:RemoveResistanceSource("nogrogginess")
 		end
-		-- 梦魇形态
+	end
+	-- 梦魇形态
+	if enable then
 		self.inst:AddTag("m_nightmareform")
 	else
 		self.inst:RemoveTag("m_nightmareform")
@@ -310,14 +316,6 @@ local function ruinshat_unproc(inst, owner)
 			inst._fx:kill_fx()
 			inst._fx = nil
 		end
-		-- local defense_level = 0
-		-- for _ in pairs(inst.skills) do
-		-- 	defense_level = defense_level + 1
-		-- end
-		-- 基础防御0%，每增加一个能力增加10%防御
-		-- local new_absorption = math.min(0.95, defense_level * 0.1) -- 最大95%防御
-		-- inst.components.armor:SetAbsorption(new_absorption)
-		-- inst.components.armor.ontakedamage = nil
 
 		local health = owner.components.health
 		if health ~= nil then
@@ -359,12 +357,6 @@ local function ruinshat_proc(inst, owner)
 	inst._fx.entity:SetParent(owner.entity)
 	inst._fx.Transform:SetPosition(0, 0.2, 0)
 
-	-- inst.components.armor:SetAbsorption(1)
-	-- inst.components.armor.ontakedamage = function(inst, damage_amount)
-	-- 	if owner ~= nil and owner.components.sanity ~= nil then
-	-- 		owner.components.sanity:DoDelta(-damage_amount * TUNING.ARMOR_RUINSHAT_DMG_AS_SANITY, false)
-	-- 	end
-	-- end
 	-- 应用无敌状态
 	owner:AddTag("m_not_rigidity")
 	inst._prgm_prev_absorb = health.absorb or 0

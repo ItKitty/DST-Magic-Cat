@@ -131,16 +131,6 @@ local function Lightning_HasElectric(inst, target)
 	return inst._electric_lunge_task ~= nil or (target ~= nil and target:IsValid() and target:GetWetMultiplier() > 0)
 end
 
-local function Lightning_OverrideStimuliFn(inst, attacker, target)
-	return inst:CanElectrocuteTarget(target) and "electric" or nil
-end
-
-local function Lightning_OnAttack(inst, attacker, target)
-	if inst:CanElectrocuteTarget(target) then
-		SpawnElectricHitSparks(attacker, target, true)
-	end
-end
-
 local function Lightning_SpellFn(inst, doer, pos)
 	doer:PushEvent("combat_lunge", { targetpos = pos, weapon = inst })
 end

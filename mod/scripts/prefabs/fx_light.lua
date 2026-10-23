@@ -135,24 +135,6 @@ local REGISTERED_AOE_TAGS
 local BEAM_RADIUS = 3
 local BEAM_RANGE_PADDING = 3
 
-local function TossLaunch(inst, launcher, basespeed, startheight)
-	local x0, y0, z0 = launcher.Transform:GetWorldPosition()
-	local x1, y1, z1 = inst.Transform:GetWorldPosition()
-	local dx, dz = x1 - x0, z1 - z0
-	local dsq = dx * dx + dz * dz
-	local angle
-	if dsq > 0 then
-		local dist = math.sqrt(dsq)
-		angle = math.atan2(dz / dist, dx / dist) + (math.random() * 20 - 10) * DEGREES
-	else
-		angle = TWOPI * math.random()
-	end
-	local sina, cosa = math.sin(angle), math.cos(angle)
-	local speed = basespeed + math.random()
-	inst.Physics:Teleport(x1, startheight, z1)
-	inst.Physics:SetVel(cosa * speed, speed * 5 + math.random() * 2, sina * speed)
-end
-
 local function UpdateBeamAOE(inst, dt)
 	local BEAM_IGNORE_TAGS = {
 		"INLIMBO",
