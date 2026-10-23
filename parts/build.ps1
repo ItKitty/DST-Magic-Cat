@@ -1,12 +1,50 @@
+﻿<#
+.SYNOPSIS
+    把 parts/ 下的台词分片按顺序拼装成 speech_madeleine.lua。
+
+.DESCRIPTION
+    - 只读分片、源台词文件，输出一个 UTF-8 无 BOM、LF 换行的 Lua 文件。
+    - 需要指定模组目录（-ModDir），也可用 -Source/-Doc1/-OutFile 逐个覆盖。
+
+.EXAMPLE
+    pwsh -File parts\build.ps1 -ModDir "D:\Game\Steam\steamapps\common\Don't Starve Together\mods\[DST]Magic Cat" -DryRun
+
+.EXAMPLE
+    pwsh -File parts\build.ps1 -ModDir "D:\Game\...\mods\你的模组"
+#>
 param(
-    [string]$PartsDir = "D:\Documents\Admin\Documents\deepseek-harness\default-workspace\parts",
-    [string]$Source  = "D:\Game\Steam\steamapps\common\Don't Starve Together\mods\[DST]Magic Cat\scripts\speech_wilson.lua",
-    [string]$Doc1    = "D:\Game\Steam\steamapps\common\Don't Starve Together\mods\[DST]Magic Cat\scripts\speech_madeleine.lua",
-    [string]$OutFile = "D:\Game\Steam\steamapps\common\Don't Starve Together\mods\[DST]Magic Cat\scripts\speech_madeleine.lua",
+    # 分片所在目录，默认就是本脚本所在目录
+    [string]$PartsDir = $PSScriptRoot,
+    # 模组根目录（其下应有 scripts\）；给了它就不必再写下面三个路径
+    [string]$ModDir = "",
+    # 源台词文件（对照用，通常是 speech_wilson.lua）
+    [string]$Source = "",
+    # 现有的 speech_madeleine.lua（用于检查是否丢键）
+    [string]$Doc1 = "",
+    # 输出文件；默认写到 <ModDir>\scripts\speech_madeleine.lua
+    [string]$OutFile = "",
+    # 只分析不写入游戏目录，预览文件写到系统临时目录
     [switch]$DryRun
 )
 
 $ErrorActionPreference = 'Stop'
+
+# ---------- 0. 解析路径 ----------
+$scriptsDir = if ($ModDir) { Join-Path $ModDir 'scripts' } else { '' }
+
+if (-not $Source) {
+    if ($ModDir) { $Source = Join-Path $scriptsDir 'speech_wilson.lua' }
+    else { throw '请指定 -ModDir（模组根目录）或 -Source（源台词文件路径）。' }
+}
+if (-not $Doc1 -and $ModDir) { $Doc1 = Join-Path $scriptsDir 'speech_madeleine.lua' }
+if (-not $OutFile) {
+    if ($DryRun) { $OutFile = $Doc1 }
+    elseif ($ModDir) { $OutFile = Join-Path $scriptsDir 'speech_madeleine.lua' }
+    else { throw '请指定 -ModDir（模组根目录）或 -OutFile（输出文件路径）。' }
+}
+
+if (-not (Test-Path -LiteralPath $PartsDir)) { throw "分片目录不存在: $PartsDir" }
+if (-not (Test-Path -LiteralPath $Source)) { throw "源台词文件不存在: $Source（用 -ModDir 或 -Source 指定）" }
 
 $order = @('_HEAD.lua','H1.lua','H2.lua','H3.lua','__DESCRIBE__','D1.lua','D2.lua','D3.lua','D4.lua','D5.lua','D6.lua','D7.lua','D8.lua','D9.lua','D10.lua','D11.lua','_TAIL.lua')
 
@@ -23,7 +61,7 @@ $expectedFirst = @{
     'D7.lua'  = 'OCEANFISHINGBOBBER_ROBIN_WINTER'
     'D8.lua'  = 'MOON_ALTAR_LINK'
     'D9.lua'  = 'EYEMASKHAT'
-    'D10.lua' = 'YOTD_DRAGONSHINE'
+    'D10.lua' = 'YOTD_DRAGONSHRINE'
     'D11.lua' = 'MOON_TREE_BLOSSOM_DRIED'
 }
 
@@ -130,12 +168,18 @@ Write-Output ("MISSING_KEYS={0} :: {1}" -f $missing.Count, (($missing | Select-O
 Write-Output ("EXTRA_KEYS={0} :: {1}" -f $extra.Count, (($extra | Select-Object -First 40) -join ', '))
 
 # 原 speech_madeleine.lua 里已有、但新文件丢失的键（补全不应丢功能）
-$doc1Seq = Get-KeySeq ((([System.IO.File]::ReadAllText($Doc1, [System.Text.Encoding]::UTF8)) -replace "`r`n", "`n"))
-$lost = @()
-foreach ($k in ($doc1Seq | Sort-Object -Unique)) {
-    if (-not $outCount.ContainsKey($k)) { $lost += $k }
+if ($Doc1 -and (Test-Path -LiteralPath $Doc1)) {
+    $doc1Text = ([System.IO.File]::ReadAllText($Doc1, [System.Text.Encoding]::UTF8)) -replace "`r`n", "`n"
+    $doc1Seq = Get-KeySeq $doc1Text
+    $lost = @()
+    foreach ($k in ($doc1Seq | Sort-Object -Unique)) {
+        if (-not $outCount.ContainsKey($k)) { $lost += $k }
+    }
+    Write-Output ("LOST_FROM_DOC1={0} :: {1}" -f $lost.Count, ($lost -join ', '))
 }
-Write-Output ("LOST_FROM_DOC1={0} :: {1}" -f $lost.Count, ($lost -join ', '))
+else {
+    Write-Output "LOST_FROM_DOC1=skipped（未提供 -Doc1，或文件不存在）"
+}
 
 # 备注数量
 $srcComments = ([regex]::Matches($srcText, '--\S')).Count
@@ -161,9 +205,9 @@ $eng | Select-Object -First 20 | ForEach-Object { Write-Output ("  " + $_) }
 
 # ---------- 4. 写入 ----------
 if ($DryRun) {
-    Write-Output "DRYRUN: 未写入文件"
-    [System.IO.File]::WriteAllText((Join-Path $PartsDir "_preview.lua"), $full, (New-Object System.Text.UTF8Encoding($false)))
-    Write-Output ("PREVIEW_WRITTEN lines={0}" -f (($full -split "`n").Count))
+    $preview = Join-Path ([System.IO.Path]::GetTempPath()) 'speech_madeleine.preview.lua'
+    [System.IO.File]::WriteAllText($preview, $full, (New-Object System.Text.UTF8Encoding($false)))
+    Write-Output ("DRYRUN: 未写入游戏目录；预览已写入 {0}（lines={1}）" -f $preview, (($full -split "`n").Count))
 } else {
     $enc = New-Object System.Text.UTF8Encoding($false)
     if (Test-Path -LiteralPath $OutFile) {

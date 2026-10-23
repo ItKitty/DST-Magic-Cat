@@ -20,20 +20,38 @@ _plan.json           各分片对应的源文件行区间与起始键名
 
 ## 使用方式
 
-1. 确认 `parts/build.ps1` 顶部的路径指向你自己的游戏目录与模组目录。
-2. 拼装台词文件：
+所有路径都由参数给出，脚本里没有写死的本机目录。
+
+1. 先干跑一次（不写入游戏目录，只在系统临时目录生成预览）：
 
 ```powershell
-pwsh -File parts\build.ps1
+pwsh -File parts\build.ps1 -ModDir "D:\Game\Steam\steamapps\common\Don't Starve Together\mods\[DST]Magic Cat" -DryRun
+```
+
+2. 确认输出没问题后，去掉 `-DryRun` 正式拼装（原文件会先备份为 `.bak`，再写入 `scripts\speech_madeleine.lua`）：
+
+```powershell
+pwsh -File parts\build.ps1 -ModDir "同上"
 ```
 
 3. 校验结果：
 
 ```powershell
-pwsh -File parts\check.ps1
+pwsh -File parts\check.ps1 -ModDir "同上"
 ```
 
-脚本默认输出到模组的 `speech_madeleine.lua`，可用 `-OutFile` 指定其他位置；`-DryRun` 只检查不写入。
+参数说明：
+
+| 参数 | 默认值 | 说明 |
+|---|---|---|
+| `-ModDir` | 无（必填，或改用下面三个路径） | 模组根目录，其下应有 `scripts\` |
+| `-Source` | `<ModDir>\scripts\speech_wilson.lua` | 对照用的源台词文件 |
+| `-Doc1` | `<ModDir>\scripts\speech_madeleine.lua` | 现有台词文件，用于检查是否丢键 |
+| `-OutFile` | `<ModDir>\scripts\speech_madeleine.lua` | 输出位置 |
+| `-PartsDir` | 脚本自身所在目录 | 分片目录 |
+| `-DryRun` | 关 | 只分析，不写入游戏目录 |
+
+> 脚本以 UTF-8 带 BOM 保存，Windows PowerShell 5.1 与 PowerShell 7 都能正确解析中文。用编辑器另存时不要去掉 BOM，否则 5.1 会把中文读成乱码并报语法错误。
 
 ## 硬性规则（摘要）
 

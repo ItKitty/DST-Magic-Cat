@@ -1,8 +1,32 @@
+﻿<#
+.SYNOPSIS
+    校验拼装结果：引号配对、占位符数量、括号深度、行数。
+
+.EXAMPLE
+    pwsh -File parts\check.ps1 -ModDir "D:\Game\Steam\steamapps\common\Don't Starve Together\mods\[DST]Magic Cat"
+#>
 param(
-    [string]$OutFile = "D:\Game\Steam\steamapps\common\Don't Starve Together\mods\[DST]Magic Cat\scripts\speech_madeleine.lua",
-    [string]$Source  = "D:\Game\Steam\steamapps\common\Don't Starve Together\mods\[DST]Magic Cat\scripts\speech_wilson.lua"
+    # 模组根目录（其下应有 scripts\）
+    [string]$ModDir = "",
+    # 待校验的台词文件；默认 <ModDir>\scripts\speech_madeleine.lua
+    [string]$OutFile = "",
+    # 源台词文件；默认 <ModDir>\scripts\speech_wilson.lua
+    [string]$Source = ""
 )
 $ErrorActionPreference = 'Stop'
+
+$scriptsDir = if ($ModDir) { Join-Path $ModDir 'scripts' } else { '' }
+if (-not $OutFile) {
+    if ($ModDir) { $OutFile = Join-Path $scriptsDir 'speech_madeleine.lua' }
+    else { throw '请指定 -ModDir（模组根目录）或 -OutFile（台词文件路径）。' }
+}
+if (-not $Source) {
+    if ($ModDir) { $Source = Join-Path $scriptsDir 'speech_wilson.lua' }
+    else { throw '请指定 -ModDir（模组根目录）或 -Source（源台词文件路径）。' }
+}
+foreach ($f in @($OutFile, $Source)) {
+    if (-not (Test-Path -LiteralPath $f)) { throw "文件不存在: $f" }
+}
 
 function Get-Lines([string]$path) {
     $t = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
