@@ -22,6 +22,21 @@ _plan.json            各分片对应的源文件行区间与起始键名
 sync-mod.ps1          游戏目录 <-> mod/ 双向同步，可顺手提交
 ```
 
+### mod/scripts 结构
+
+```
+scripts/
+  config/     资源声明、角色属性、配方（recipes / recipes2 / recipes3）
+  systems/    玩法逻辑：宠物、变身、快捷键、动作、暗影特效、原版机制 hook
+  prefabs/    实体与物品：m_amulet 护符、m_soulstaff 法杖、m_catpaw 猫爪、特效与召唤物
+  components/ 组件：amulettraits 护符、stafftraits 法杖、madeleinetraits 角色技能、chiropteran 变身……
+  stategraphs/ brains/ widgets/   状态机、AI、UI
+```
+
+> **物品、组件、prefab 的名称一律不动**（`madeleine`、`m_amulet`、`m_soulstaff`、`m_catpaw`……）：
+> 这些名字写进了存档、配方和别的模组的兼容代码里，改名等于让老存档失效。只有目录名和纯工具脚本会重命名。
+
+
 ## 日常：改完代码怎么记录
 
 在仓库根目录：
