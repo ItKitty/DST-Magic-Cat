@@ -341,39 +341,3 @@ AddPrefabPostInit("alterguardianhat_projectile", function(inst)
 		end
 	end)
 end)
-
-
-------------------------- 玛德琳用旺达的传送门（但不开怀表武器） -----------------------------
--- 原版施放怀表要求 pocketwatchcaster 标签，玛德琳没有；这里只放行「传送门怀表」，
--- 让她能自己开门，而第二次机会、怀表武器等都保持锁定（武器是 equippable.restrictedtag）。
-AddComponentAction("USEITEM", "pocketwatch", function(inst, doer, target, actions, right)
-	if doer == nil or doer.prefab ~= "madeleine" or inst.prefab ~= "pocketwatch_portal" then
-		return
-	end
-	if not inst:HasTag("pocketwatch_inactive") or inst.pocketwatch_CanTarget == nil then
-		return
-	end
-	if doer.replica.rider ~= nil and doer.replica.rider:IsRiding() and not inst:HasTag("pocketwatch_mountedcast") then
-		return
-	end
-	if inst:pocketwatch_CanTarget(doer, target) then
-		table.insert(actions, ACTIONS.CAST_POCKETWATCH)
-	end
-end)
-
-local CastPocketwatch_Old = ACTIONS.CAST_POCKETWATCH.fn
-ACTIONS.CAST_POCKETWATCH.fn = function(act)
-	local invobject = act.invobject
-	if
-		invobject ~= nil
-		and invobject.prefab == "pocketwatch_portal"
-		and act.doer ~= nil
-		and act.doer.prefab == "madeleine"
-	then
-		local pocketwatch = invobject.components.pocketwatch
-		if pocketwatch ~= nil then
-			return pocketwatch:CastSpell(act.doer, act.target, act:GetActionPoint())
-		end
-	end
-	return CastPocketwatch_Old(act)
-end
