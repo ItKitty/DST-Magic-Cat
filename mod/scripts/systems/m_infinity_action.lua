@@ -5,7 +5,11 @@
 --   · 工具/武器  finiteuses  不再消耗
 --   · 火堆/燃料  fueled      不再减少（火堆会一直点着）
 -- 动作显示名：无限充能
--- 只认「碎片」这一个道具，且目标必须真的带耐久，所以不会和其它动作抢
+--
+-- 两条注册路径，覆盖两种操作习惯：
+--   1) SCENE  : 碎片放在背包里，直接右键目标 → 自动从背包找碎片
+--   2) USEITEM: 把碎片拿在鼠标上再点目标（原版“使用道具”的方式）
+-- 只有目标真的带耐久、且没充过，才会出现这个动作，不会和其它动作抢
 -- ============================================================================
 
 local SHARD_PREFAB = "alterguardianhatshard"
@@ -34,19 +38,62 @@ local function HasDurability(target)
 	return replica ~= nil and (replica.armor ~= nil or replica.finiteuses ~= nil or replica.fueled ~= nil)
 end
 
+-- 玩家背包里有没有碎片（客户端用 replica，服务端用 components）
+local function DoerHasShard(doer)
+	local replica_inv = doer.replica ~= nil and doer.replica.inventory or nil
+	if replica_inv ~= nil and replica_inv:Has(SHARD_PREFAB, 1) then
+		return true
+	end
+
+	local inv = doer.components ~= nil and doer.components.inventory or nil
+	return inv ~= nil and inv:Has(SHARD_PREFAB, 1) or false
+end
+
+-- 服务端执行时真正取出一个碎片
+local function FindShardItem(doer)
+	local inv = doer.components ~= nil and doer.components.inventory or nil
+	if inv == nil then
+		return nil
+	end
+
+	return inv:FindItem(function(item)
+		return item.prefab == SHARD_PREFAB
+	end)
+end
+
+local function CanOfferCharge(target, doer)
+	if doer == nil or doer.prefab ~= "madeleine" then
+		return false
+	end
+	if not HasDurability(target) then
+		return false
+	end
+
+	for _, tag in ipairs(DONE_TAGS) do
+		if target:HasTag(tag) then
+			return false
+		end
+	end
+
+	return DoerHasShard(doer)
+end
+
 -- ---------------------------------------------------------------------------
 -- 动作本体
 -- ---------------------------------------------------------------------------
 local ACTION = AddAction("M_INFINITY_CHARGE", "无限充能", function(act)
-	if
-		act == nil
-		or act.doer == nil
-		or act.target == nil
-		or not act.target:IsValid()
-		or act.invobject == nil
-		or act.invobject.prefab ~= SHARD_PREFAB
-		or act.doer.prefab ~= "madeleine"
-	then
+	if act == nil or act.doer == nil or act.target == nil or not act.target:IsValid() then
+		return false
+	end
+	if act.doer.prefab ~= "madeleine" then
+		return false
+	end
+
+	local shard = act.invobject
+	if shard == nil or shard.prefab ~= SHARD_PREFAB then
+		shard = FindShardItem(act.doer)
+	end
+	if shard == nil or shard.prefab ~= SHARD_PREFAB then
 		return false
 	end
 
@@ -64,7 +111,7 @@ local ACTION = AddAction("M_INFINITY_CHARGE", "无限充能", function(act)
 		return false
 	end
 
-	return comp:Charge(act.doer, act.invobject)
+	return comp:Charge(act.doer, shard)
 end)
 
 ACTION.distance = 3
@@ -77,7 +124,20 @@ AddStategraphActionHandler("wilson", ActionHandler(ACTION, "doshortaction"))
 AddStategraphActionHandler("wilson_client", ActionHandler(ACTION, "doshortaction"))
 
 -- ---------------------------------------------------------------------------
--- 给启迪碎片挂标记组件，再用 USEITEM 注册「拿碎片点目标」的动作
+-- 路径一：右键世界里的目标（碎片放在背包里就行）
+-- ---------------------------------------------------------------------------
+local function OnSceneCollect(inst, doer, actions, right)
+	if CanOfferCharge(inst, doer) then
+		table.insert(actions, ACTIONS.M_INFINITY_CHARGE)
+	end
+end
+
+AddComponentAction("SCENE", "fueled", OnSceneCollect)
+AddComponentAction("SCENE", "armor", OnSceneCollect)
+AddComponentAction("SCENE", "finiteuses", OnSceneCollect)
+
+-- ---------------------------------------------------------------------------
+-- 路径二：把碎片拿在鼠标上再点目标（原版 USEITEM 流程）
 -- ---------------------------------------------------------------------------
 AddPrefabPostInit(SHARD_PREFAB, function(inst)
 	if inst.components.m_infinity_shard == nil then
