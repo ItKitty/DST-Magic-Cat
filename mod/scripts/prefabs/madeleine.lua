@@ -31,6 +31,9 @@ local SPECIAL_LOOT = {
 	killerbee = "honey", -- 固定掉蜂蜜
 }
 
+-- TODO 调试用计数器
+local greed_debug_count = 0
+
 -- 【新增】击杀后100%添加标签的生物列表（不受概率和饥饿影响）
 local TAG_ON_KILL = {
 	warg = { tag = "madeleine_warg", msg = "我解锁了狼王哨子图纸！" },
@@ -79,9 +82,12 @@ local function onkilled(inst, data)
 	local trigger_chance = is_special and GREED_CONFIG.SPECIAL_CHANCE or GREED_CONFIG.NORMAL_CHANCE
 
 	-- TODO 调试用：所有被击杀的生物都报一下，看清到底死了哪些
+	-- 带自增编号，防止多条相同文案被 Announce 去重
+	greed_debug_count = greed_debug_count + 1
 	TheNet:Announce(
 		string.format(
-			"[greed] victim=%s special=%s attacker=%s",
+			"[greed] #%d victim=%s special=%s attacker=%s",
+			greed_debug_count,
 			tostring(victim_prefab),
 			tostring(is_special),
 			tostring(data.attacker ~= nil and data.attacker.prefab or "nil")
