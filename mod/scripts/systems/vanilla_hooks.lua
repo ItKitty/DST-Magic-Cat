@@ -346,10 +346,12 @@ end)
 -- 轮盘是 widgets/wheel.lua 用 ImageButton 画的，每个图标只有一张图，没有边框层。
 -- 工坊 m_shadow_tool 的「黑框」其实是画在 medal_shadow_tool_icons 贴图里的，
 -- 不能直接套到别的图标上。
--- 这里给 m_soulstaff 的轮盘图标垫一个黑色圆底（vanilla 的 button_icons/circle.tex），
--- 视觉上就是图标外圈发黑。两个常量可以按喜好微调。
-local SOULSTAFF_ICON_BG_SCALE = 1.2
-local SOULSTAFF_ICON_BG_ALPHA = 0.85
+-- 这里给 m_soulstaff 的轮盘图标垫一个浅灰圆底（vanilla 的 button_icons/circle.tex），
+-- 视觉上就是图标外圈有一层灰框。几个常量可以按喜好微调。
+--   SCALE  : 圆框相对图标最长边的倍数（越大越粗，能盖住整个武器图）
+--   COLOUR : 圆框颜色，现在是浅灰
+local SOULSTAFF_ICON_BG_SCALE = 1.5
+local SOULSTAFF_ICON_BG_COLOUR = { 0.62, 0.62, 0.62, 0.85 }
 
 AddClassPostConstruct("screens/playerhud", function(self)
 	local old_OpenSpellWheel = self.OpenSpellWheel
@@ -364,10 +366,17 @@ AddClassPostConstruct("screens/playerhud", function(self)
 				local icon = v.widget ~= nil and v.widget.image or nil
 				if icon ~= nil then
 					local bg = GLOBAL.Image("images/button_icons.xml", "circle.tex")
-					bg:SetTint(0, 0, 0, SOULSTAFF_ICON_BG_ALPHA)
+					bg:SetTint(
+						SOULSTAFF_ICON_BG_COLOUR[1],
+						SOULSTAFF_ICON_BG_COLOUR[2],
+						SOULSTAFF_ICON_BG_COLOUR[3],
+						SOULSTAFF_ICON_BG_COLOUR[4]
+					)
 					v.widget:AddChild(bg)
+					-- 用最长边做直径，保证竖长的武器图也能被整个圆框盖住
 					local w, h = icon:GetSize()
-					bg:ScaleToSize(w * SOULSTAFF_ICON_BG_SCALE, h * SOULSTAFF_ICON_BG_SCALE)
+					local diameter = math.max(w, h) * SOULSTAFF_ICON_BG_SCALE
+					bg:ScaleToSize(diameter, diameter)
 					bg:MoveToBack()
 				end
 			end
