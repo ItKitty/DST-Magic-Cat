@@ -342,16 +342,60 @@ AddPrefabPostInit("alterguardianhat_projectile", function(inst)
 	end)
 end)
 
-------------------------- 灵魂法杖轮盘图标黑底 -----------------------------
+------------------------- 灵魂法杖轮盘图标边框 -----------------------------
 -- 轮盘是 widgets/wheel.lua 用 ImageButton 画的，每个图标只有一张图，没有边框层。
 -- 工坊 m_shadow_tool 的「黑框」其实是画在 medal_shadow_tool_icons 贴图里的，
--- 不能直接套到别的图标上。
--- 这里给 m_soulstaff 的轮盘图标垫一个浅灰圆底（vanilla 的 button_icons/circle.tex），
--- 视觉上就是图标外圈有一层灰框。几个常量可以按喜好微调。
---   SCALE  : 圆框相对图标最长边的倍数（越大越粗，能盖住整个武器图）
---   COLOUR : 圆框颜色，现在是浅灰
-local SOULSTAFF_ICON_BG_SCALE = 1.5
-local SOULSTAFF_ICON_BG_COLOUR = { 0.62, 0.62, 0.62, 0.85 }
+-- 不能直接套到别的图标上，所以这里在控件层自己加一层。
+--
+-- 两种模式，改 MODE 就行：
+--   "circle"  圆底：用 vanilla 的 button_icons/circle.tex 垫一个灰圆
+--   "outline" 描边：把图标自己复制一圈、涂黑淡化，形成贴合武器形状的边
+-- 追求「边缘绝对均匀」用 outline；想要圆形底座用 circle。
+local SOULSTAFF_ICON_FRAME_MODE = "circle"
+
+-- circle 模式参数
+local SOULSTAFF_ICON_BG_SCALE = 2 -- 圆框相对图标最长边的倍数
+local SOULSTAFF_ICON_BG_COLOUR = { 0.78, 0.78, 0.78, 0.7 } -- 浅灰
+local SOULSTAFF_ICON_BG_OFFSET = { 0, -6 } -- 圆框微调偏移（贴图里的圆心不一定是正中）
+
+-- outline 模式参数
+local SOULSTAFF_ICON_OUTLINE_ALPHA = 0.5 -- 描边深浅（黑色渐变到灰）
+local SOULSTAFF_ICON_OUTLINE_RATIO = 0.06 -- 描边外扩比例（相对图标最长边）
+local SOULSTAFF_ICON_OUTLINE_DIRS = 12 -- 采样方向数，越多越圆滑
+
+local function AddCircleFrame(v, icon)
+	local bg = GLOBAL.Image("images/button_icons.xml", "circle.tex")
+	bg:SetTint(
+		SOULSTAFF_ICON_BG_COLOUR[1],
+		SOULSTAFF_ICON_BG_COLOUR[2],
+		SOULSTAFF_ICON_BG_COLOUR[3],
+		SOULSTAFF_ICON_BG_COLOUR[4]
+	)
+	v.widget:AddChild(bg)
+
+	-- 用最长边做直径，保证竖长的武器图也能被整个圆框盖住
+	local w, h = icon:GetSize()
+	local diameter = math.max(w, h) * SOULSTAFF_ICON_BG_SCALE
+	bg:ScaleToSize(diameter, diameter)
+	bg:SetPosition(SOULSTAFF_ICON_BG_OFFSET[1], SOULSTAFF_ICON_BG_OFFSET[2])
+	bg:MoveToBack()
+end
+
+local function AddOutlineFrame(v, icon)
+	local w, h = icon:GetSize()
+	local radius = math.max(w, h) * SOULSTAFF_ICON_OUTLINE_RATIO
+
+	for i = 1, SOULSTAFF_ICON_OUTLINE_DIRS do
+		local angle = (i - 1) / SOULSTAFF_ICON_OUTLINE_DIRS * 2 * math.pi
+		local ghost = GLOBAL.Image(v.atlas, v.normal)
+		ghost:SetTint(0, 0, 0, 1) -- 乘黑：不管武器原色是什么，边缘都是纯黑
+		ghost:SetAlpha(SOULSTAFF_ICON_OUTLINE_ALPHA) -- 再整体淡化 -> 灰边
+		v.widget:AddChild(ghost)
+		ghost:ScaleToSize(w, h)
+		ghost:SetPosition(math.cos(angle) * radius, math.sin(angle) * radius)
+		ghost:MoveToBack()
+	end
+end
 
 AddClassPostConstruct("screens/playerhud", function(self)
 	local old_OpenSpellWheel = self.OpenSpellWheel
@@ -364,20 +408,12 @@ AddClassPostConstruct("screens/playerhud", function(self)
 
 			for _, v in ipairs(dataset or {}) do
 				local icon = v.widget ~= nil and v.widget.image or nil
-				if icon ~= nil then
-					local bg = GLOBAL.Image("images/button_icons.xml", "circle.tex")
-					bg:SetTint(
-						SOULSTAFF_ICON_BG_COLOUR[1],
-						SOULSTAFF_ICON_BG_COLOUR[2],
-						SOULSTAFF_ICON_BG_COLOUR[3],
-						SOULSTAFF_ICON_BG_COLOUR[4]
-					)
-					v.widget:AddChild(bg)
-					-- 用最长边做直径，保证竖长的武器图也能被整个圆框盖住
-					local w, h = icon:GetSize()
-					local diameter = math.max(w, h) * SOULSTAFF_ICON_BG_SCALE
-					bg:ScaleToSize(diameter, diameter)
-					bg:MoveToBack()
+				if icon ~= nil and v.atlas ~= nil and v.normal ~= nil then
+					if SOULSTAFF_ICON_FRAME_MODE == "outline" then
+						AddOutlineFrame(v, icon)
+					else
+						AddCircleFrame(v, icon)
+					end
 				end
 			end
 		end
