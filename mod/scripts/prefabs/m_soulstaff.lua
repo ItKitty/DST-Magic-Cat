@@ -7,6 +7,7 @@ local assets = {
 
 local prefabs = {
 	"fx_soulstaff_corrupt", -- 腐化光效
+	"queen_torchlight", -- 形态关闭时的照明
 }
 
 -- 轮盘的半径/图标；具体条目（以及发 RPC 的闭包）放在 systems/soulstaff_toggle.lua，
@@ -147,6 +148,32 @@ local function StopEffects(inst)
 	inst:RemoveTag("m_soulstaff_active")
 end
 
+-- 形态关闭时的照明：借用原版 queen_torch 的那盏灯
+local function RemoveTorchLight(inst)
+	if inst._torchlight ~= nil then
+		if inst._torchlight:IsValid() then
+			inst._torchlight:Remove()
+		end
+		inst._torchlight = nil
+	end
+end
+
+-- 只有「手持 + 吸血形态关闭」时才点灯
+local function UpdateTorchLight(inst)
+	local owner = inst.components.inventoryitem and inst.components.inventoryitem:GetGrandOwner()
+	if owner == nil or not IsHeld(inst) or inst.soulstaff_on then
+		RemoveTorchLight(inst)
+		return
+	end
+	if inst._torchlight == nil then
+		local light = SpawnPrefab("queen_torchlight")
+		if light ~= nil then
+			light.entity:SetParent(owner.entity)
+			inst._torchlight = light
+		end
+	end
+end
+
 -- 兜底：0.5 秒查一次，防止「丢地上 / 被强制脱手」时拖影和光效残留
 local function StartEquipWatch(inst)
 	if inst._equipwatch ~= nil then
@@ -158,6 +185,7 @@ local function StartEquipWatch(inst)
 		end
 		StopTrail(inst)
 		StopEffects(inst)
+		RemoveTorchLight(inst)
 		if inst._equipwatch ~= nil then
 			inst._equipwatch:Cancel()
 			inst._equipwatch = nil
@@ -177,6 +205,8 @@ local function SetActive(inst, on)
 	else
 		StopEffects(inst)
 	end
+	-- 形态关闭时点灯，开启时收掉
+	UpdateTorchLight(inst)
 	return true
 end
 
@@ -287,6 +317,9 @@ local function onequip(inst, owner)
 		StartEffects(inst)
 	end
 
+	-- 形态关闭时给照明（queen_torch 的灯）
+	UpdateTorchLight(inst)
+
 	-- 装备时随机对话
 	if inst.talkCooldown.equip then
 		StaffTalk(inst, "EQUIP_TALK")
@@ -303,6 +336,9 @@ local function onunequip(inst, owner)
 
 	-- 停掉常驻拖影
 	StopTrail(inst)
+
+	-- 收掉照明
+	RemoveTorchLight(inst)
 
 	-- 只停特效，开关状态保留；下次手持会接着开（StopEffects 里也会收掉腐化光效）
 	StopEffects(inst)
@@ -480,4 +516,4 @@ local function fn()
 	return inst
 end
 
-return Prefab("m_soulstaff", fn, assets)
+return Prefab("m_soulstaff", fn, assets, prefabs)
