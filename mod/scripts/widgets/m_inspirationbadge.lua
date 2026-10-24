@@ -99,10 +99,7 @@ function InspirationBadge:OnControl(control, down)
 			else
 				if self.down then
 					self.down = false
-					-- 刚拖动过就不算点击，避免拖完顺手把音乐开关了
-					if self._last_drag_time ~= nil and GetTime() - self._last_drag_time < 0.3 then
-						self._last_drag_time = nil
-					elseif self.onclick then
+					if self.onclick then
 						self.onclick()
 					end
 				end
@@ -115,9 +112,10 @@ function InspirationBadge:OnControl(control, down)
 end
 
 -------------------------------------------------------------------------------------------------------
--- 拖拽：按住左键可以把图标拖到任意位置，位置会存到本地文件，下次进来还原
+-- 拖拽：按住【右键】可以把图标拖到任意位置，位置会存到本地文件，下次进来还原
+-- 左键保留给原版功能（点击开关音乐），所以拖拽必须用右键
 -------------------------------------------------------------------------------------------------------
-local DRAG_THRESHOLD = 4 -- 超过这个位移才算「拖动」，否则仍视为点击
+local DRAG_THRESHOLD = 4 -- 超过这个位移才算「拖动」
 local SAVE_FILE = "m_inspirationbadge_pos"
 
 function InspirationBadge:SavePosition()
@@ -147,15 +145,14 @@ function InspirationBadge:StopDrag()
 		self._dragtask:Cancel()
 		self._dragtask = nil
 	end
-	-- 只有真的拖动过才保存，单纯点击不动
+	-- 只有真的拖动过才保存
 	if self._drag_moved then
-		self._last_drag_time = GetTime()
 		self:SavePosition()
 	end
 end
 
 function InspirationBadge:OnMouseButton(button, down, x, y)
-	if button ~= 0 then
+	if button ~= MOUSEBUTTON_RIGHT then
 		return false
 	end
 
