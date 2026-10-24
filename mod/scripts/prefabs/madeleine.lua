@@ -78,6 +78,16 @@ local function onkilled(inst, data)
 	local is_special = SPECIAL_LOOT[victim_prefab] ~= nil
 	local trigger_chance = is_special and GREED_CONFIG.SPECIAL_CHANCE or GREED_CONFIG.NORMAL_CHANCE
 
+	-- TODO 调试用：所有被击杀的生物都报一下，看清到底死了哪些
+	TheNet:Announce(
+		string.format(
+			"[greed] victim=%s special=%s attacker=%s",
+			tostring(victim_prefab),
+			tostring(is_special),
+			tostring(data.attacker ~= nil and data.attacker.prefab or "nil")
+		)
+	)
+
 	-- 检查触发几率
 	if math.random() <= trigger_chance then
 		-- 检查饥饿值是否足够支付代价
@@ -89,12 +99,6 @@ local function onkilled(inst, data)
 		if is_special then
 			-- 特殊生物：100%掉落指定物品
 			victim.components.lootdropper:SpawnLootPrefab(SPECIAL_LOOT[victim_prefab])
-			-- TODO 调试用
-			if victim_prefab == "killerbee" then
-				TheNet:Announce(
-					string.format("[greed] killerbee attacker=%s", tostring(data.attacker ~= nil and data.attacker.prefab or "nil"))
-				)
-			end
 
 			-- 视觉反馈
 			if inst.components.talker then
