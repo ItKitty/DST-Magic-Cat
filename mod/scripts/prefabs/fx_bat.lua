@@ -6,9 +6,14 @@ local assets_bats = {
 -- 食人花（lureplant）、食人花眼球这类不动的目标没有 locomotor，会被漏掉；
 -- 下面减速那段本来就有 if v.components.locomotor 判空。
 local TARGET_TAGS = { "_combat", "_health" }
+-- wall 和 structure 是两套不同的标签，不能互相替代：
+--   墙体（walls.lua）挂的是 "wall"（外加 noauradamage / electricdamageimmune）
+--   建筑（pighouse、offering_pot 之类）挂的是 "structure"
+-- 两个都排除，蝙蝠才既不打墙也不打建筑。
 local TARGET_NOT_TAGS = {
 	"INLIMBO",
 	"wall",
+	"structure",
 	"notarget",
 	"player",
 	"companion",
