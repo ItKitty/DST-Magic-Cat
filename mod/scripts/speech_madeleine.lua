@@ -1,6306 +1,6471 @@
---[[
-	玛德琳（Madeleine）的台词表 · 简体中文
-	——《饥荒：联机版》[DST]Magic Cat 模组
+-- speech_madeleine.lua - 玛德琳的台词表（简体中文）
+-- 本文件由 tools/build_madeleine_speech.py 生成：
+--   · 键表结构、条目顺序与原版 speech_wickerbottom.lua 一致
+--   · 台词取自游戏内 chinese_s.po 的 STRINGS.CHARACTERS.WICKERBOTTOM.* 翻译
+--   · 约每 3 条句子在句尾标点前加一个「喵」
+--   · 顶部 SPECIAL 里的台词会覆盖下方同名条目，改词只改 SPECIAL 最方便
+-- 想调整「喵」的比例或重新生成：改脚本里的 MEOW_RATIO 后重跑。
 
-	角色：女性猫娘，知性、优雅、强大。
-	笔法：句子短，语气从容；先观察、再判断、最后下结论。
-	      面对怪物与灾变，她是评估者与裁决者，不是受害者。
-	      偶尔以"喵"收句，但克制——约十几条才见一次。
+-- ===== 特殊台词：写在最前面，方便单独调整；会覆盖下面的同名条目 =====
+local SPECIAL =
+{
+	-- 缺失台词补充
+	ANNOUNCE_CHARLIE_MISSED = "喵喵喵？事不过三，敢亮血条吗，查理？！",
+	ANNOUNCE_HUNGRY = "饿了喵~",
+	DESCRIBE =
+	{
+		HOTSPRING =
+		{
+			GENERIC = "好想进去泡一泡啊~",
+		},
+	},
 
-	约定：
-	· 每条台词后的 -- 备注 说明触发场合（物品名 / 检查状态 / 事件说明），改词时请一并核对。
-	· 需要在台词里用引号时，写成 \" ，例如 "他说：\"请让一让。\""
-	· 含 %s / %d / {weight} / {name} 的台词会在运行时填入信息，请保留占位符。
-	· 表结构与原版 data\scripts\speech_wilson.lua 一致；缺失的键会回落到默认台词。
+	-- 旺达怀表
+	ANNOUNCE_POCKETWATCH_MARK = "这里当锚点很不错喵。",
+	ANNOUNCE_POCKETWATCH_OPEN_PORTAL = "好了，大家动作快点喵！",
+	ANNOUNCE_POCKETWATCH_OPEN_PORTAL_DIFFERENTSHARD = "当心了，这一跳非同小可！",
+	ANNOUNCE_POCKETWATCH_RECALL = "没有什么能比时空旅行更让喵兴奋了！",
+	ANNOUNCE_POCKETWATCH_PORTAL = "天空一阵巨响，本可闪亮登场！",
 
-	本文件由 speech_wilson.lua 的完整键表补全，逐条改写为玛德琳的口吻。
-]]
-return {
+	-- 老麦（暗影魔法）
+	ACTIONFAIL =
+	{
+		CASTAOE =
+		{
+			NO_MAX_SANITY = "恐怕我的意志受不了那种重压……",
+		},
+		-- 宠物：已经召唤过伙伴
+		BUILD =
+		{
+			HASPET = "已经有足够多的伙伴了。",
+		},
+	},
 
+	-- 游泳
+	ANNOUNCE_FLOAT_SWIM_TIRED = "猫累了喵~",
+
+	-- 庇护
+	ANNOUNCE_SHELTER = "大树底下好乘凉喵~",
+
+	-- 潮湿（暂时关闭，需要时把下面的 -- 去掉即可）
+	-- ANNOUNCE_DAMP = "完了完了，毛要湿了！",
+	-- ANNOUNCE_WET = "完了完了，绒毛要湿了！！",
+	-- ANNOUNCE_WETTER = "完了完了，皮要湿了！！！",
+	-- ANNOUNCE_SOAKED = "唉，湿透了，就这样吧。",
+
+	-- 战斗喊话
+	BATTLECRY =
+	{
+		SPIDER_WARRIOR = "找死吗？！",
+	},
+}
+
+local SPEECH =
+{
 	ACTIONFAIL =
 	{
         GENERIC =
         {
-            ITEMMIMIC = "这层皮，骗不过我。",		--动作说明：通用动作失败（目标是伪装的物品拟态怪）
+            ITEMMIMIC = "我就知道喵。",
         },
 
 		ACTIVATE =
 		{
-			LOCKED_GATE = "门锁着。钥匙在别处。",		--远古钥匙
-            HOSTBUSY = "它正忙。我不打扰。",		--鸦年华 良羽鸦在忙
-            CARNIVAL_HOST_HERE = "它就在附近。不必找了。",		--良羽鸦的 取消了 不会被调用
-            NOCARNIVAL = "鸟都散了。时机不对。",		--激活良羽鸦树苗 但是没找到良羽鸦
-			EMPTY_CATCOONDEN = "空的。连一根毛都没留下。",		--洗劫空心树桩 但是没有藏品了
-			KITCOON_HIDEANDSEEK_NOT_ENOUGH_HIDERS = "小家伙不够。捉迷藏总得有人躲，喵。",		--浣猫年 和猫玩耍 猫不够
-			KITCOON_HIDEANDSEEK_NOT_ENOUGH_HIDING_SPOTS = "能藏的地方太少。它们无处可去，喵。",		--浣猫年 和猫玩耍 没有足够位置捉迷藏
-			KITCOON_HIDEANDSEEK_ONE_GAME_PER_DAY = "今天到此为止，喵。规矩就是规矩。",		--浣猫年 和猫玩耍 一天只能玩一次
-            MANNEQUIN_EQUIPSWAPFAILED = "尺寸不合。它穿不上。",		--假人不能装备这个装备
-            PILLOWFIGHT_NO_HANDPILLOW = "枕头大战，手上总得有只枕头，喵。",		--枕头大战 没有枕头
-            NOTMYBERNIE = "这只熊不认我。",		--博尼小熊  不能被不是威洛的人激活
-            NOTMERM = "只有鱼人能唤醒鱼人。",		--动作说明：激活失败，当前角色不是鱼人
-            NOKELP = "锅里还差些材料。",		--空锅不能烹饪
-            HASMERMLEADER = "格勒格，稍等片刻。有人正用着。",		--动作说明：激活失败（世界中已经存在鱼人之王）
-            NOTAROBOT = "我不是机器。这不合我的手。",		--动作说明：激活失败（仅机器人角色可使用）
-            NOTMYBACKUP = "拒绝访问。你不是我。",		--动作说明：激活失败（不是当前机器人的备用躯体）
-            TOOMANYBACKUPBODIES = "拒绝访问。备份已满。",		--动作说明：激活失败（备用躯体数量已经达到上限）
+			LOCKED_GATE = "我似乎被锁起来了。",
+            HOSTBUSY = "他此刻似乎在处理其他事务。",
+            CARNIVAL_HOST_HERE = "我很确定在这个方向上看到了主持人。",
+            NOCARNIVAL = "多么令人失望啊，这些鸟类似乎已经迁移到其他地方了。",
+			EMPTY_CATCOONDEN = "不幸的是，小猫似乎并不在现场。",
+			KITCOON_HIDEANDSEEK_NOT_ENOUGH_HIDERS = "找人的玩家超过了小猫的数量。",
+			KITCOON_HIDEANDSEEK_NOT_ENOUGH_HIDING_SPOTS = "我测算过，没有足够的位置让小猫藏身。",
+			KITCOON_HIDEANDSEEK_ONE_GAME_PER_DAY = "我应该花些时间来休息了喵。",
+            MANNEQUIN_EQUIPSWAPFAILED = "那个不适合放在假人上喵。",
+            PILLOWFIGHT_NO_HANDPILLOW = "我需要有个枕头才能参加。",
+            NOTMYBERNIE = "这头可怕的活泰迪熊只忠于我们亲爱的薇洛。",
+            NOTMERM = "看来那些双足动物只听令于他们的族人喵。",
+            NOKELP = "only_used_by_wurt",
+--fallback to speech_wilson.lua             HASMERMLEADER = "only_used_by_wurt",
+            NOTAROBOT = "它是机器人的财产喵。",
+--fallback to speech_wilson.lua             NOTMYBACKUP = "only_used_by_wx78",
+--fallback to speech_wilson.lua             TOOMANYBACKUPBODIES = "only_used_by_wx78",
 		},
         APPLYELIXIR =
         {
-            TOO_SUPER = "气味过头了。已经到极限。",		--动作说明：使用药剂失败（目标已经处于最高强化状态）
-            NO_ELIXIRABLE = "缺一朵阿比盖尔之花。",		--动作说明：使用药剂失败（附近没有可使用药剂强化的目标）
+            TOO_SUPER = "那个过于烈性喵。",
+            NO_ELIXIRABLE = "only_used_by_wendy",
         },
         APPLYMODULE =
         {
-            COOLDOWN = "系统校准中。请稍候。",		--动作说明：WX-78安装电路失败，电路操作仍在冷却
-            NOTENOUGHSLOTS = "槽位不足。",		--动作说明：WX-78安装电路失败，剩余电路槽位不足
+            COOLDOWN = "only_used_by_wx78",
+            NOTENOUGHSLOTS = "only_used_by_wx78喵",
         },
         APPRAISE =
         {
-            NOTNOW = "它正忙。别去搅扰。",		--给牛评价 时间不对
+            NOTNOW = "耐心是一种美德。",
         },
         ATTUNE =
         {
-            NOHEALTH = "我的状态还不够。",		--制造肉雕像血量不足
+            NOHEALTH = "对于那个，我感觉很不妙。",
         },
         BATHBOMB =
         {
-            GLASSED = "不行。水面已经玻璃化了。",		--月岛池子 里面已经有玻璃了
-            ALREADY_BOMBED = "别浪费。已经放过了。",		--月岛池子 已经有人放进去沐浴球了
+            GLASSED = "很不幸，泉水表面结晶了喵。",
+            ALREADY_BOMBED = "没必要太过喵。",
         },
         BEDAZZLE =
         {
-            BURNING = "在烧。装饰无从谈起。",		--动作说明：装饰失败（正在燃烧）
-            BURNT = "烧尽了。没什么可装点的。",		--动作说明：装饰失败（已经烧毁）
-            FROZEN = "冰上粘不住东西。",		--动作说明：装饰失败（已经冻结）
-            ALREADY_BEDAZZLED = "已经够好看了。不必再添，喵。",		--动作说明：装饰失败（已经装饰过）
+--fallback to speech_wilson.lua             BURNING = "only_used_by_webber",
+--fallback to speech_wilson.lua             BURNT = "only_used_by_webber",
+--fallback to speech_wilson.lua             FROZEN = "only_used_by_webber",
+--fallback to speech_wilson.lua             ALREADY_BEDAZZLED = "only_used_by_webber",
         },
         BEGIN_QUEST =
         {
-            ONEGHOST = "一次只能渡一个。请排队。",		--度化灵魂 温蒂
+            ONEGHOST = "only_used_by_wendy",
         },
         BUILD =
         {
-            MOUNTED = "骑在牛背上，腾不出手。",		--建造失败（骑乘状态）
-            HASPET = "我已经有一只了。够了。",		--建造失败（已经有一个宠物了）
-			TICOON = "我有大虎就够了，别的不看，喵。",		--制作浣猫年 大虎失败
-            BUSY_STATION = "制作台有人。我等。",		--动作说明：建造失败（建造站正在被占用）
-            TOOMANYBACKUPBODIES = "拒绝访问。备份已满。",		--动作说明：建造失败（备用躯体数量已经达到上限）
-            TOOMANYSHADOWDRONE_HARVESTER = "拒绝访问。采集机已满额。",		--动作说明：建造失败（暗影采集无人机数量已达上限）
-            TOOMANYSHADOWDRONE_DEBUFFER = "拒绝访问。削弱机已满额。",		--动作说明：建造失败（暗影削弱无人机数量已达上限）
+            MOUNTED = "我无法在上升位置碰到地面。",
+            HASPET = "对我来说，一只家养动物就够了。",
+			TICOON = "同时拥有两个追踪者可能会使它们感到困惑。",
+            BUSY_STATION = "哦，麻烦。",
+--fallback to speech_wilson.lua             TOOMANYBACKUPBODIES = "only_used_by_wx78",
+--fallback to speech_wilson.lua             TOOMANYSHADOWDRONE_HARVESTER = "only_used_by_wx78",
+--fallback to speech_wilson.lua             TOOMANYSHADOWDRONE_DEBUFFER = "only_used_by_wx78",
         },
         CARNIVALGAME_FEED =
         {
-            TOO_LATE = "慢了半拍。",		--鸦年华活动 喂食太慢
+            TOO_LATE = "哦，亲爱的，我还不够快。",
         },
 		CAST_POCKETWATCH =
 		{
-			GENERIC = "风险太大。不做。",		--动作说明：使用钟表能力失败（普通状态）
-			REVIVE_FAILED = "迟了一步。……可惜。",		--动作说明：使用钟表能力失败（复活目标失败）
-			WARP_NO_POINTS_LEFT = "锚点用尽了。回头路没了。",		--动作说明：使用钟表能力失败（传送锚点次数已经耗尽）
-			SHARD_UNAVAILABLE = "这条时间流不稳。",		--动作说明：使用钟表能力失败（目标世界分片当前不可用）
-			NO_TELEPORT_ZONE = "此处时间流极不稳定。我不冒险。",		--动作说明：使用钟表能力失败（当前位置禁止传送）
+--fallback to speech_wilson.lua 			GENERIC = "only_used_by_wanda",
+--fallback to speech_wilson.lua 			REVIVE_FAILED = "only_used_by_wanda",
+--fallback to speech_wilson.lua 			WARP_NO_POINTS_LEFT = "only_used_by_wanda",
+--fallback to speech_wilson.lua 			SHARD_UNAVAILABLE = "only_used_by_wanda",
+--fallback to speech_wilson.lua 			NO_TELEPORT_ZONE = "only_used_by_wanda",
 		},
 		CAST_SPELLBOOK =
 		{
-			NO_TOPHAT = "缺一顶礼帽。魔术不成立。",		--动作说明：施放魔法书失败（没有装备魔术礼帽）
+--fallback to speech_wilson.lua 			NO_TOPHAT = "only_used_by_waxwell",
 		},
 		CASTAOE =
 		{
-			NO_MAX_SANITY = "我的意志撑不住。恕不施为。",		--动作说明：施放范围能力失败（理智值上限不足，不能施放该能力）
-            NOT_ENOUGH_EMBERS = "余烬不够。回去再烧。",		--施放范围技能失败：余烬不足
-            NO_TARGETS = "附近没有值得烧的东西。",		--施放范围技能失败：范围内没有有效目标
-            CANT_SPELL_MOUNTED = "它太易燃。骑乘时不宜施法。",		--施放范围技能失败：骑乘时不能施法
-            SPELL_ON_COOLDOWN = "再等等。它还没缓过来。",		--施放范围技能失败：技能仍在冷却
-			NO_BATTERY = "遥控器没电了。真扫兴。",		--施放范围技能失败：缺少可用电池
-			NO_CATAPULTS = "射程之外。投石机够不着。",		--施放范围技能失败：附近没有可用投石机
+--fallback to speech_wilson.lua 			NO_MAX_SANITY = "only_used_by_waxwell",
+            NOT_ENOUGH_EMBERS = "only_used_by_willow喵",
+            NO_TARGETS = "only_used_by_willow",
+            CANT_SPELL_MOUNTED = "only_used_by_willow",
+            SPELL_ON_COOLDOWN = "only_used_by_willow喵",
+			NO_BATTERY = "only_used_by_winona",
+			NO_CATAPULTS = "only_used_by_winona",
 		},
         CASTSPELL =
         {
-            TERRAFORM_TOO_SOON = "浮浪特，别催。魔法需要时间。",		--地形改造施法失败：再次使用得太快
+            TERRAFORM_TOO_SOON = "only_used_by_wurt",
         },
         CHANGEIN =
         {
-            GENERIC = "现在不换。",		--换装失败 
-            BURNING = "在烧。换个时候。",		--换装失败-着火了
-            INUSE = "衣橱一次只容一位。",		--衣橱有人占用
-            NOTENOUGHHAIR = "毛不够。装饰无从下手。",		--给牛换装 牛毛被刮光了
-            NOOCCUPANT = "得先拴点什么上去。",		--给牛换装 没牛？
+            GENERIC = "我觉得我看上去已经够聪明了喵。",
+            BURNING = "再没办法换衣服了。它已经着火了。",
+            INUSE = "但愿我可以在你之后使用那个，亲爱的喵。",
+            NOTENOUGHHAIR = "也许要等毛发重新长回来喵。",
+            NOOCCUPANT = "在我进行别的操作之前，这个美妆台需要牢牢的栓上一头皮弗娄牛喵。",
         },
         CHARGE_FROM =
         {
-            NOT_ENOUGH_CHARGE = "发电机空了。难怪没反应。",		--动作说明：WX-78从发电机充电失败，发电机没有可用电力
-            CHARGE_FULL = "电已满。无需再充。",		--动作说明：WX-78从发电机充电失败，当前电量已经充满
+            NOT_ENOUGH_CHARGE = "电荷数不足。",
+            CHARGE_FULL = "电量已满。",
         },
 		COMPARE_WEIGHABLE =
 		{
-            FISH_TOO_SMALL = "这条太小。不值一称。",		--鱼秤 手上的没鱼缸里的大
-            OVERSIZEDVEGGIES_TOO_SMALL = "份量还差些。",		--蔬菜秤 手上的没秤上的大
+            FISH_TOO_SMALL = "这个标本远远达不到要求。",
+            OVERSIZEDVEGGIES_TOO_SMALL = "我担心这个标本根本没有足够的质量来竞争喵。",
 		},
         CONSTRUCT =
         {
-            INUSE = "有人先占了。",		--建筑正在使用
-            NOTALLOWED = "规格不合。",		--建筑不允许使用
-            EMPTY = "缺材料。",		--建筑空了
-            MISMATCH = "图纸有误。",		--升级套件错误（目前用不到）
-            NOTREADY = "时机未到。等一等。",		--建造建筑-没有准备好
+            INUSE = "有人已经在用它了。",
+            NOTALLOWED = "那是错误的。",
+            EMPTY = "首先我需要一些建造材料。",
+            MISMATCH = "这些计划是错误的。",
+            NOTREADY = "也许当地面更稳定时再说......",
         },
         COOK =
         {
-            GENERIC = "现在做不了菜。",		--做饭失败
-            INUSE = "锅有人用了。",		--做饭失败-别人在用锅
-            TOOFAR = "太远。够不着。",		--做饭失败-太远
+            GENERIC = "恐怕得过会儿。要知道，不是所有老太太都喜欢烹饪的喵。",
+            INUSE = "嗯，闻起来不错，亲爱的。",
+            TOOFAR = "离我太远了。",
         },
         DEPLOY = {
-            HERMITCRAB_RELOCATE = "空的。稍后再试。",		--动作说明：放置失败（放置位置需要靠近寄居蟹隐士区域）
+            HERMITCRAB_RELOCATE = "寄居蟹迁移居所的方法不可谓不便捷。",
         },
         DIRECTCOURIER_MAP =
         {
-            NOTARGET = "沃比，换个地点。",		--动作说明：在地图上指定快递目标失败（没有选定有效目标）
+--fallback to speech_wilson.lua             NOTARGET = "only_used_by_walter",
         },
 		DISMANTLE =
 		{
-			COOKING = "锅里还煮着东西。不行。",		--拆便携的物品-正在做饭
-			INUSE = "有人在用。我等。",		--拆便携的物品-正在使用
-			NOTEMPTY = "得先把里面的东西取出来。",		--拆便携的物品-里面有物品
+			COOKING = "恐怕要等它煮好了才行。",
+			INUSE = "已经在用了。",
+			NOTEMPTY = "我得先把里面的东西去掉。",
         },
         DISMANTLE_POCKETWATCH =
         {
-            ONCOOLDOWN = "发条未松。再等片刻。",		--动作说明：拆开失败（能力仍在冷却）
+--fallback to speech_wilson.lua             ONCOOLDOWN = "only_used_by_wanda",
         },
         DRAW =
         {
-            NOIMAGE = "眼前没有实物，画不出来。",		--画图缺乏图像
+            NOIMAGE = "一个教我如何用图表示的例子会很有用。",
         },
         ENTER_GYM =
         {
-            NOWEIGHT = "没有重物，谈不上训练。",		--动作说明：进入失败（没有携带可用于训练的重物）
-            UNBALANCED = "重量不均。这样练是歪的。",		--动作说明：进入失败（训练器重量不平衡）
-            ONFIRE = "温热尚可。这样已经过头。",		--动作说明：进入失败（目标正在燃烧）
-            SMOULDER = "先把余火踩灭。",		--动作说明：进入失败（目标正在阴燃）
-            HUNGRY = "空腹举不起东西。",		--动作说明：进入失败（处于饥饿状态）
-            FULL = "满了。装不下了。",		--动作说明：进入失败（内容已满）
+--fallback to speech_wilson.lua             NOWEIGHT = "only_used_by_wolfang",
+--fallback to speech_wilson.lua             UNBALANCED = "only_used_by_wolfang",
+--fallback to speech_wilson.lua             ONFIRE = "only_used_by_wolfang",
+--fallback to speech_wilson.lua             SMOULDER = "only_used_by_wolfang",
+--fallback to speech_wilson.lua             HUNGRY = "only_used_by_wolfang",
+--fallback to speech_wilson.lua             FULL = "only_used_by_wolfang",
         },
         FILL_OCEAN =
         {
-            UNSUITABLE_FOR_PLANTS = "植物不喝咸水。",		--水壶在海里灌水
+            UNSUITABLE_FOR_PLANTS = "恐怕只有淡水才行。",
         },
         FISH_OCEAN =
 		{
-			TOODEEP = "这不是海竿。深海不适用。",		--拿普通鱼竿去深海钓鱼
+			TOODEEP = "这些鱼太远太深了。",
 		},
         GIVE =
         {
-            GENERIC = "它拒绝了。",		--给予失败
-            DEAD = "或许我该留着。",		--给予 -目标死亡
-            SLEEPING = "它睡着了。叫不醒。",		--给予--目标睡觉
-            BUSY = "稍后我再试。",		--给予--目标正忙
-            ABIGAILHEART = "可以一试。",		--给阿比盖尔 救赎之心
-            GHOSTHEART = "这主意恐怕不妥。",		--给鬼魂 救赎之心
-            NOTGEM = "我不粘这种东西。",		--给的不是宝石
-            WRONGGEM = "这颗宝石不对。",		--给错了宝石
-			NOGENERATORSKILL = "我不粘这种东西。",		--女工 没点技能不能用纯粹辉煌/纯粹恐惧
-            NOTSTAFF = "形状不对。不是它要的。",		--给月石祭坛的物品不是法杖
-            MUSHROOMFARM_NEEDSSHROOM = "蘑菇农场要的是蘑菇。",		--蘑菇农场需要蘑菇
-            MUSHROOMFARM_NEEDSLOG = "这里该放一块活木。",		--蘑菇农场需要活木
-            MUSHROOMFARM_NOMOONALLOWED = "这些蘑菇不肯入土。",		--蘑菇农场里放入月蘑菇
-            SLOTFULL = "槽位已经放满。",		--已经放了材料后，再给雕像桌子再给一个材料
-            FOODFULL = "这里已经有一份了。",		--没调用
-            NOTDISH = "它不会吃那个。",		--没调用
-            DUPLICATE = "这个我已经知道了。",		--给雕像桌子已经学习过的图纸
-            NOTSCULPTABLE = "再精巧的手艺也变不成雕像。",		--给陶艺圆盘的东西不对
-            NOTATRIUMKEY = "形状不对。不是钥匙。",		--中庭钥匙不对
-            CANTSHADOWREVIVE = "它不会醒。门还锁着。",		--动作说明：给予失败，远古大门仍在重置冷却期
-            WRONGSHADOWFORM = "拼错了。",		--没调用
-            NOMOON = "得看见月亮才行。",		--洞穴里建造月石科技
-			PIGKINGGAME_MESSY = "先清理干净。",		--猪王旁边有建筑，不能开始抢元宝
-			PIGKINGGAME_DANGER = "此刻太危险。",		--危险，不能开始抢元宝
-			PIGKINGGAME_TOOLATE = "现在已经太晚。",		--不是白天，不能开始抢元宝
-			CARNIVALGAME_INVALID_ITEM = "得先去换代币。",		--鸦年华活动 给无效的物品
-			CARNIVALGAME_ALREADY_PLAYING = "已经有一场在进行。",		--鸦年华活动 已经开始游戏了
-            SPIDERNOHAT = "少一顶蜘蛛帽。",		--喂食蜘蛛 没带蜘蛛帽
-            TERRARIUM_REFUSE = "换一种燃料，它或许肯接受。",		--盒中泰拉 拒绝这个物品
-            TERRARIUM_COOLDOWN = "树还没长回来。给不了。",		--动作说明：给予失败，盒中泰拉仍在冷却期
-            NOTAMONKEY = "我不会说猴语。",		--不是芜猴 已弃用
-            QUEENBUSY = "她正忙。",		--猴子女王在忙
-            CARNIVALGAME_GOLFGAME_NOTREADY = "球局还没摆好。",		--动作说明：给予失败（迷你高尔夫游戏尚未准备好）
-            KINGSTAFF_COOLDOWN = "卡住了。", 		--动作说明：给予失败（王之手杖尚未恢复，暂时不能放入宝石）
+            GENERIC = "我不这么认为，亲爱的。",
+            DEAD = "这么做是一种浪费喵。",
+            SLEEPING = "它好像睡着了。",
+            BUSY = "等它忙完了，我会再试试的。",
+            ABIGAILHEART = "她的灵魂已经附在世上什么东西上喵。",
+            GHOSTHEART = "我不会干预那件事。",
+            NOTGEM = "不要那么愚蠢，亲爱的。",
+            WRONGGEM = "对于我而言，宝石的属性不对。",
+			NOGENERATORSKILL = "不要那么愚蠢，亲爱的喵。",
+            NOTSTAFF = "这不是我寻找的魔杖喵。",
+            MUSHROOMFARM_NEEDSSHROOM = "天哪，不，它需要一个新鲜的蘑菇。",
+            MUSHROOMFARM_NEEDSLOG = "它需要一个充满魔法属性的木头。",
+            MUSHROOMFARM_NOMOONALLOWED = "这个物种似乎只在野外生长。",
+            SLOTFULL = "让我们先吃掉餐盘上有的东西，好吗？",
+            FOODFULL = "等你准备好了就随时找我吧，亲爱的。",
+            NOTDISH = "那食物根本不适合喵。",
+            DUPLICATE = "我们已经记下了这个配方。",
+            NOTSCULPTABLE = "没有人应该用那东西来雕刻，亲爱的。",
+NOTATRIUMKEY = "It's not quite the right shape.",
+            CANTSHADOWREVIVE = "情况不对。",
+            WRONGSHADOWFORM = "骨架解剖不准确。",
+            NOMOON = "它需要月亮的作用。",
+			PIGKINGGAME_MESSY = "我得先清理一下。",
+			PIGKINGGAME_DANGER = "没时间享乐和游戏了！",
+			PIGKINGGAME_TOOLATE = "现在没时间了。天很快就要黑了。",
+			CARNIVALGAME_INVALID_ITEM = "这似乎不是正确的支付形式喵。",
+			CARNIVALGAME_ALREADY_PLAYING = "恐怕我得等一等了。",
+            SPIDERNOHAT = "根本没有地方装那个。",
+            TERRARIUM_REFUSE = "也许我应该用别的东西再做一次尝试。",
+            TERRARIUM_COOLDOWN = "恐怕不行，预定的树状物接收者似乎不见了喵。",
+            NOTAMONKEY = "我相信他们是在沟通。",
+            QUEENBUSY = "她此刻正忙于其他事务。",
+            CARNIVALGAME_GOLFGAME_NOTREADY = "迷你高尔夫球场至少需要一个旗洞才能游玩喵。",
+            KINGSTAFF_COOLDOWN = "宝石卡得很牢喵。", -- can't give it a new gem because it's on cooldown
         },
         GIVE_TACKLESKETCH =
 		{
-			DUPLICATE = "不对。这张我已经有了。",		--给陶盘已经有的图纸
+			DUPLICATE = "我们已经记下了这个菜谱。",
         },
         GIVETOPLAYER =
         {
-            FULL = "你的口袋装不下了。",		--给玩家一个东西 -但是背包满了
-            DEAD = "或许我该留着。",		--给死亡的玩家一个东西
-            SLEEPING = "睡得太沉。叫不醒。",		--给睡觉的玩家一个东西
-            BUSY = "稍后我再试。",		--给忙碌的玩家一个东西
+            FULL = "它们已经载太多东西了。",
+            DEAD = "这么做是一种浪费。",
+            SLEEPING = "它们进入了快速眼动睡眠。不要打扰它们。",
+            BUSY = "它们有空时我再试试。",
         },
         GIVEALLTOPLAYER =
         {
-            FULL = "你的口袋装不下了。",		--给人一组东西 但是背包满了
-            DEAD = "或许我该留着。",		--给于死去的玩家一组物品
-            SLEEPING = "睡沉了。",		--给于正在睡觉的玩家一组物品
-            BUSY = "稍后我再试。",		--给于正在忙碌的玩家一组物品
+            FULL = "它们已经载太多东西了。",
+            DEAD = "这么做是一种浪费。",
+            SLEEPING = "它们进入了快速眼动睡眠。不要打扰它们。",
+            BUSY = "它们有空时我再试试。",
         },
         HARVEST =
         {
-            DOER_ISNT_MODULE_OWNER = "它对科学讨论没有兴趣。",		--收获失败：角色不是模块所有者
-            DOER_DOESNT_HAVE_SKILL = "无效凭证。",		--动作说明：采收失败（执行角色尚未解锁所需技能）
+            DOER_ISNT_MODULE_OWNER = "如我所想，我无法从中收集到任何信息。",
+--fallback to speech_wilson.lua             DOER_DOESNT_HAVE_SKILL = "only_used_by_wx78",
         },
         HEAL =
         {
-            NOT_MERM = "只对鱼人有效。",		--治疗失败：目标不是鱼人
+            NOT_MERM = "鱼人使用这种混合物进行治疗喵。",
         },
         HERD_FOLLOWERS =
         {
-            WEBBERONLY = "它们不听我的。或许会听韦伯的。",		--不是韦伯，无法召集蜘蛛
+            WEBBERONLY = "恐怕这并非我的专业领域喵。",
         },
         HITCHUP =
         {
-            NEEDBEEF = "得有一只皮弗娄牛。",		--将牛拴起来 没有牛
-            NEEDBEEF_CLOSER = "它离得太远。走近些。",		--将牛拴起来 牛太远
-            BEEF_HITCHED = "它已经拴好了。",		--将牛拴起来 牛已经被拴起来了
-            INMOOD = "它现在心浮气躁。",		--将牛拴起来 牛在发情
+            NEEDBEEF = "我首先需要一头皮弗娄牛。",
+            NEEDBEEF_CLOSER = "我的皮弗娄牛需要离桩子近一点。",
+            BEEF_HITCHED = "已经做过了，亲爱的喵。",
+            INMOOD = "它现在这个状态，什么也干不了。",
         },
-		LOOKAT = 
+		LOOKAT = --fail strings for close inspection
 		{
-			ROSEGLASSES_INVALID = "没有查理的痕迹。",		--动作说明：查看失败（玫瑰色眼镜没有有效观察目标）
-			ROSEGLASSES_COOLDOWN = "再等等。镜片也要歇口气。",		--动作说明：查看失败（玫瑰色眼镜仍在冷却）
-            ROSEGLASSES_DISMISS = "踪迹断了。……可惜。",		--动作说明：查看失败（玫瑰色眼镜目标已被主动忽略）
-            ROSEGLASSES_STUMPED = "看不出她来过的痕迹。",		--动作说明：查看失败（玫瑰色眼镜无法识别该目标）
+			-- Winona specific
+--fallback to speech_wilson.lua 			ROSEGLASSES_INVALID = "only_used_by_winona",
+--fallback to speech_wilson.lua 			ROSEGLASSES_COOLDOWN = "only_used_by_winona",
+--fallback to speech_wilson.lua             ROSEGLASSES_DISMISS = "only_used_by_winona",
+--fallback to speech_wilson.lua             ROSEGLASSES_STUMPED = "only_used_by_winona",
+			--
 		},
         LOWER_SAIL_FAIL =
         {
-            "唔。",		--降帆失败
-            "帆降不下来。",		--降帆失败
-            "再来一次就是。",		--降帆失败
+            "There must be a trick to this.",
+            "Oh, you finicky thing!",
+            "Come along now, no need to be stubborn.",
         },
         MARK =
         {
-            ALREADY_MARKED = "我已经选好了。",		--选择牛 已经选择了
-            NOT_PARTICIPANT = "我没有参赛。",		--选择牛 不是参与者（已经开始了）?
+            ALREADY_MARKED = "我对自己的选择十分自信。",
+            NOT_PARTICIPANT = "我得先观察一下。",
         },
         MOUNT =
         {
-            TARGETINCOMBAT = "它正在气头上。不骑。",		--骑乘，牛正在战斗
-            INUSE = "有人先骑了。",		--骑乘（牛被占据）
-			SLEEPING = "醒一醒。",		--上牛  牛在睡觉
+            TARGETINCOMBAT = "靠近那场混战可不是个好主意喵。",
+            INUSE = "需要耐心。我可以等会儿再骑这头皮弗娄牛喵。",
+			SLEEPING = "现在醒来吧，我需要你的服务。",
         },
         OCEAN_FISHING_POND =
 		{
-			WRONGGEAR = "这根竿不适合池塘。",		--拿深海鱼竿去普通的池子里钓鱼
+			WRONGGEAR = "池塘垂钓这种小事用不着这个喵。",
 		},
 		OPEN_CRAFTING =
 		{
-            PROFESSIONALCHEF = "厨艺还不到火候。",		--别人无法通过 点击便携调料站 点开制作面板
-			SHADOWMAGIC = "那不叫科学。",		--别人无法通过 打开老麦的暗影制作面板
+            PROFESSIONALCHEF = "我不该乱动，太不礼貌。",
+			SHADOWMAGIC = "我不会让那个出现在我的图书馆喵！",
 		},
         PICK =
         {
-            NOTHING_INSIDE = "里面是空的。",		--采集失败：目标内部没有可取物品
-			STUCK = "卡住了。拔不出来。",		--动作说明：采集失败（目标卡住，不能采集）
+            NOTHING_INSIDE = "正如我所猜测的那样，是空的。",
+			STUCK = "它卡住了。",
         },
         PICKUP =
         {
-			RESTRICTION = "手法不够。用不了。",		--熔炉模式下捡起错误的武器
-			INUSE = "有人在用。我等。",		--捡起已经打开的容器
-            NOTMINE_SPIDER = "哦。抱歉，你认错人了。",		--动作说明：拾取失败（不是当前角色招募的蜘蛛）
+			RESTRICTION = "这不是我擅长的领域喵。",
+			INUSE = "已经在用了喵。",
+--fallback to speech_wilson.lua             NOTMINE_SPIDER = "only_used_by_webber",
             NOTMINE_YOTC =
             {
-                "你不是我的胡萝卜鼠，喵。",		--捡起别人的胡萝卜鼠
-                "它咬我。放肆。",		--捡起别人的胡萝卜鼠
+                "Oh my, I seem to have gotten a bit mixed up.",
+                "My glasses need a good cleaning, that's clearly not my Daucus carota rattus!",
             },
-			NO_HEAVY_LIFTING = "再年轻几岁……也许搬得动。",		--动作说明：拾取失败（当前角色不能搬运重物）
-            FULL_OF_CURSES = "我不碰那个。",		--捡起诅咒时 诅咒已满
+--fallback to speech_wilson.lua 			NO_HEAVY_LIFTING = "only_used_by_wanda",
+            FULL_OF_CURSES = "我认为最好不要管它。",
         },
         PLANTREGISTRY_RESEARCH_FAIL =
         {
-            GENERIC = "没有更多可学的了。",		--研究作物失败
-            FERTILIZER = "细节不必深究。",		--研究肥料失败
+            GENERIC = "我对这个特殊的物种已经很了解了。",
+            FERTILIZER = "我已经收集了尽可能多的信息喵。",
         },
         POUR_WATER =
         {
-            OUT_OF_WATER = "壶空了。",		--水壶空了
+            OUT_OF_WATER = "哦，亲爱的，我必须补充我的水供应了。",
         },
         POUR_WATER_GROUNDTILE =
         {
-            OUT_OF_WATER = "壶已经干了。",		--水壶空了
+            OUT_OF_WATER = "我得尽早补充水源喵。",
         },
+        --wickerbottom specific action
         READ =
         {
-            GENERIC = "还有别的事要先处理。",		--动作说明：阅读失败，当前有其他动作需先处理
-            NOBIRDS = "鸟不喜欢这种天气。",		--动作说明：阅读失败，天气或环境不适合鸟类出现
-            NOWATERNEARBY = "鱼只在水边现身。",		--动作说明：阅读失败，附近没有水域，不能召唤鱼
-            TOOMANYBIRDS = "地上的鸟太多。魔法不灵。",		--动作说明：阅读失败，地面鸟类过多
-            WAYTOOMANYBIRDS = "天上已经一只不剩了。",		--动作说明：阅读失败，短时间召鸟过多，天空暂无可召唤鸟
-            BIRDSBLOCKED = "力场挡得住鸟。",		--动作说明：阅读失败，力场阻挡鸟类进入
-            NOFIRES =       "幸好没有明火要扑。",		--动作说明：阅读失败，附近没有需要扑灭的明火
-            NOSILVICULTURE = "附近没有可作文章的树。",		--动作说明：阅读失败，附近没有有效树木
-            NOHORTICULTURE = "没有可以催生的庄稼。",		--动作说明：阅读失败，附近没有可催生作物
-            NOTENTACLEGROUND = "这里的地面生不出触手。",		--动作说明：阅读失败，当前地面不能生成触手
-            NOSLEEPTARGETS = "没看见谁需要睡前故事。",		--动作说明：阅读失败，附近没有可催眠目标
-            TOOMANYBEES = "蜂太多了。这会失控。",		--动作说明：阅读失败，附近蜜蜂数量过多
-            NOMOONINCAVES = "地下够不到月亮。",		--动作说明：阅读失败，洞穴中无法影响月亮
-            ALREADYFULLMOON = "已经是满月。多余之举。",		--动作说明：阅读失败，当前已经是满月
-            DEADBIRDS = "……天空此刻不宜有鸟。",		--动作说明：阅读失败，当前环境对鸟类不安全，不能召鸟
+            GENERIC = "还有其他事在等着。",
+            NOBIRDS = "鸟不喜欢这种天气喵。",
+            NOWATERNEARBY = "鱼类只能在水体附近被召唤出来。",
+            TOOMANYBIRDS = "地上鸟太多了，魔法没那么有效。",
+            WAYTOOMANYBIRDS = "现在天上一只鸟都没有了。",
+            BIRDSBLOCKED = "力场自然对鸟类同样有效。",
+            NOFIRES =       "所幸没有需要扑灭的明火。",
+            NOSILVICULTURE = "没有可聚焦的树栖主体。",
+            NOHORTICULTURE = "没有能种的庄稼。",
+            NOTENTACLEGROUND = "触手无法突破这里的地表。",
+            NOSLEEPTARGETS = "我没看到谁需要睡前故事。",
+            TOOMANYBEES = "那样就太多蜜蜂了，亲爱的。",
+            NOMOONINCAVES = "这个地下位置影响不到月亮喵。",
+            ALREADYFULLMOON = "那样做恐怕太多余了喵。",
+            -- rifts5.1
+            DEADBIRDS = "噢，天啊。恐怕天空现在对鸟类来说已经不安全了喵。",
         },
 		REMOTE_TELEPORT =
 		{
-			NOSKILL = "这个型号我不熟。",		--远程传送失败：尚未学习所需技能
-			NODEST = "没有接收端。传送不成立。",		--远程传送失败：没有设置目的地
+			NOSKILL = "only_used_by_winona喵",
+			NODEST = "only_used_by_winona喵",
 		},
         REMOVEMODULES =
         {
-            NO_MODULES = "错误：没有模块可拆。",		--动作说明：WX-78移除电路失败，当前没有安装电路
+            NO_MODULES = "only_used_by_wx78",
         },
         REPAIR =
         {
-            WRONGPIECE = "这一块不对。",		--化石骨架拼接错误
+            WRONGPIECE = "那明显不是正确的棋子。",
         },
         REPLATE =
         {
-            MISMATCH = "它要另一种碟子。",		--暴食-换盘子换错了 比如用碗换碟子
-            SAMEDISH = "一个碟子就够了。",		--暴食-换盘子已经换了
+            MISMATCH = "它不是盛放这种食物的餐具。",
+            SAMEDISH = "它已经装在合适的餐具中了。",
         },
         ROW_FAIL =
         {
-            BAD_TIMING0 = "太快了。",		--划船失败 第1次
-            BAD_TIMING1 = "时机不对。",		--划船失败 第2次
-            BAD_TIMING2 = "别犯第三次。",		--划船失败 第3次
+            BAD_TIMING0 = "我得找个完美的时机。",
+            BAD_TIMING1 = "我会坚韧不拔的试下去。",
+            BAD_TIMING2 = "哦，天啊，我得从头来过了喵。",
         },
 		RUMMAGE =
 		{
-			GENERIC = "做不到。",		--打开箱子失败
-			INUSE = "有人在里面翻找。",		--打开箱子 正在使用
-            NOTMASTERCHEF = "厨艺还不到火候。",		--非厨师尝试打开便携锅
-            NOTAMERM = "鱼人不会为此高兴。",		--往只有鱼人能用的箱子里放东西 但是你不是鱼人
-            NOTSOULJARHANDLER = "此非我份内之事。",		--动作说明：打开容器失败（当前角色不能操作灵魂容器）
-            RESTRICTED = "调查终止。我没有权限。",		--动作说明：打开容器失败（当前角色没有访问权限）
-            NOTAROBOT = "我不是机器。用不了。",		--动作说明：打开容器失败（仅机器人角色可使用）
-            NOTMYBACKUP = "拒绝访问。你不是我。",		--动作说明：打开容器失败（不是当前机器人的备用躯体）
-            TOOMANYBACKUPBODIES = "拒绝访问。备份已满。",		--动作说明：打开容器失败（备用躯体数量已经达到上限）
+			GENERIC = "我现在脑子里还想着别的事情。",
+			INUSE = "请务必按颜色和重量分类，亲爱的喵。",
+            NOTMASTERCHEF = "我不该乱动，太不礼貌喵。",
+            NOTAMERM = "我不相信本地人会喜欢这种行为喵。",
+            NOTSOULJARHANDLER = "最好别插手。",
+            RESTRICTED = "恐怕这不是给我的喵。",
+            NOTAROBOT = "它是机器人的财产。",
+--fallback to speech_wilson.lua             NOTMYBACKUP = "only_used_by_wx78",
+--fallback to speech_wilson.lua             TOOMANYBACKUPBODIES = "only_used_by_wx78",
 		},
         SADDLE =
         {
-            TARGETINCOMBAT = "它气着的时候，不许我靠近。",		--给战斗状态的牛上鞍
+            TARGETINCOMBAT = "靠近那场混战可不是个好主意。",
         },
 		SHAVE =
 		{
-			AWAKEBEEFALO = "它醒着，我不动手。",		--给醒着的牛刮毛
-			GENERIC = "这个不能剃。",		--刮牛毛失败
-			NOBITS = "一根毛茬都不剩，喵。",		--给没毛的牛刮毛
-            REFUSE = "我的胡须，我自己留着，喵。",		--动作说明：剃毛失败（目标拒绝该操作）
-            SOMEONEELSESBEEFALO = "别人家的牛，我不薅。",		--给别人的牛刮毛
+			AWAKEBEEFALO = "我觉得他可能会抗议。",
+			GENERIC = "我真的不想这么做喵。",
+			NOBITS = "已经剃干净了，亲爱的喵。",
+--fallback to speech_wilson.lua             REFUSE = "only_used_by_woodie",
+            SOMEONEELSESBEEFALO = "我去薅别人皮弗娄牛的毛不是很合适喵。",
 		},
         SING_FAIL =
         {
-            SAMESONG = "同一首不唱第二遍。",		--动作说明：演唱失败（与当前演奏的是同一首歌）
+--fallback to speech_wilson.lua             SAMESONG = "only_used_by_wathgrithr",
         },
         SLAUGHTER =
         {
-            TOOFAR = "它跑了。",		--屠杀？？ 因为太远而失败
+            TOOFAR = "哎呀，它逃走了。",
         },
         START_CARRAT_RACE =
         {
-            NO_RACERS = "我漏掉了什么。",		--试图开始胡萝卜鼠比赛 但是没有放胡萝卜鼠
+            NO_RACERS = "没有对象，我收集不到任何数据。",
         },
 		STORE =
 		{
-			GENERIC = "装满了。",		--存放东西失败
-			NOTALLOWED = "这东西不能放进去。",		--存放东西--不被允许
-			INUSE = "等它空出来。",		--别人正在用箱子
-            NOTMASTERCHEF = "厨艺还不到火候。",		--非厨师尝试往便携锅里塞东西
-            NOTSOULJARHANDLER = "灵魂的事，我不经手。",		--动作说明：存入容器失败（当前角色不能操作灵魂容器）
-            RESTRICTED = "调查终止。我没有权限。",		--动作说明：存入容器失败（当前角色没有访问权限）
-            NOTAROBOT = "我不是机器。用不了。",		--动作说明：存入容器失败（仅机器人角色可使用）
-            NOTMYBACKUP = "拒绝访问。你不是我。",		--动作说明：存入容器失败（不是当前机器人的备用躯体）
-            TOOMANYBACKUPBODIES = "拒绝访问。备份已满。",		--动作说明：存入容器失败（备用躯体数量已经达到上限）
+			GENERIC = "恐怕它已经装满了喵。",
+			NOTALLOWED = "胡闹喵。",
+			INUSE = "我真希望你保持有条理，亲爱的。",
+            NOTMASTERCHEF = "我不该乱动，太不礼貌。",
+            NOTSOULJARHANDLER = "最好别插手。",
+            RESTRICTED = "恐怕这不是给我的。",
+            NOTAROBOT = "它是机器人的财产。",
+--fallback to speech_wilson.lua             NOTMYBACKUP = "only_used_by_wx78",
+--fallback to speech_wilson.lua             TOOMANYBACKUPBODIES = "only_used_by_wx78",
 		},
 		STARTMAPDELIVER =
 		{
-			EMPTY = "错误：无可投递之物。",		--动作说明：运送失败（内容为空）
-			INUSE = "正被其他操作占用。",		--动作说明：运送失败（目标正在被其他操作占用）
-			NOSKILL_DRONE = "无效凭证。", 		--动作说明：运送失败（尚未解锁快递无人机技能）
+--fallback to speech_wilson.lua 			EMPTY = "only_used_by_wx78",
+--fallback to speech_wilson.lua 			INUSE = "only_used_by_wx78",
+--fallback to speech_wilson.lua 			NOSKILL_DRONE = "only_used_by_wx78", 
 		},
         SWAPBODIES_MAP =
         {
-            NOTARGET = "通信失败。目标不在了。",		--动作说明：传输意识失败（没有选定有效目标）
+--fallback to speech_wilson.lua             NOTARGET = "only_used_by_wx78",
         },
         TEACH =
         {
-            KNOWN = "这个我已经知道。",		--学习已经知道的蓝图
-            CANTLEARN = "这个我学不会。",		--学习无法学习的蓝图
+            --Recipes/Teacher
+            KNOWN = "拜托，这些知识简直太小儿科了。",
+            CANTLEARN = "一条我领悟不了的知识...有趣！",
 
-            WRONGWORLD = "这张地图，此处用不了。",		--学习另外一个世界的地图
+            --MapRecorder/MapExplorer
+            WRONGWORLD = "这张地图是用在其他地点的。",
 
-			MESSAGEBOTTLEMANAGER_NOT_FOUND = "太暗了。什么都看不见。",		--在地下使用漂流瓶
+			--MapSpotRevealer/messagebottle
+			MESSAGEBOTTLEMANAGER_NOT_FOUND = "太黑了，看不清写了些什么。",--Likely trying to read messagebottle treasure map in caves
 
-            STASH_MAP_NOT_FOUND = "没有那个叉。他们忘了标。",		--宝藏图纸没有宝藏
+            STASH_MAP_NOT_FOUND = "猿猴们忽略了应该在这张地图上做标记。",-- Likely trying to read stash map  in world without stash                  
         },
 		TELLSTORY =
 		{
-			GENERIC = "这里不适合讲鬼故事。",		--讲故事 沃比
-			NOT_NIGHT = "等天黑再讲。气氛要紧。",		--动作说明：讲故事失败（当前不是夜晚）
-			NO_FIRE = "缺一堆火。故事需要火光。",		--动作说明：讲故事失败（附近没有可供讲故事的营火）
+			GENERIC = "only_used_by_walter",
+--fallback to speech_wilson.lua 			NOT_NIGHT = "only_used_by_walter",
+--fallback to speech_wilson.lua 			NO_FIRE = "only_used_by_walter",
 		},
 		UNLOCK =
         {
-            WRONGKEY = "不行。钥匙不对。",		--动作说明：解锁失败（使用了错误钥匙）
+WRONGKEY = "I can't do that喵.",
         },
         UPGRADE =
         {
-            BEDAZZLED = "好不容易装点好。就这样吧。",		--动作说明：升级失败（装饰状态不符合要求）
+--fallback to speech_wilson.lua             BEDAZZLED = "only_used_by_webber",
         },
         USEEQUIPPEDITEM =
         {
-            BADPOSITION = "错误：位置无效。",		--动作说明：使用已装备物品失败（目标位置不合适）
+--fallback to speech_wilson.lua             BADPOSITION = "only_used_by_wx78",
         },
         USEITEMON =
         {
+            GENERIC = "I can't use this on that!",
 
-            BEEF_BELL_INVALID_TARGET = "办不到。",		--对无效目标使用牛铃铛
-            BEEF_BELL_ALREADY_USED = "这头牛已经有主了。",		--对已有主人的牛使用牛铃铛
-            BEEF_BELL_HAS_BEEF_ALREADY = "我不需要一整群牛。",		--已有牛 使用牛铃铛
+            --construction is PREFABNAME_REASON
+            BEEF_BELL_INVALID_TARGET = "那样不行。",
+            BEEF_BELL_ALREADY_USED = "它已经和别人建立了联系，亲爱的喵。",
+            BEEF_BELL_HAS_BEEF_ALREADY = "我不需要更多的皮弗娄牛了。",
 
-			NOT_MINE = "这是别人的。",		--动作说明：对目标使用物品失败（不属于当前角色）
+			NOT_MINE = "那个不属于我。",
 
-			CANNOT_FIX_DRONE = "损坏过重。修不了。",		--动作说明：对目标使用物品失败（当前物品不能修复无人机）
+			CANNOT_FIX_DRONE = "根本无法修复喵。",
 
-            GESTALT_TOO_POWERFUL = "能量超出可承受的上限。",		--动作说明：对目标使用物品失败（启蒙实体力量过强）
+--fallback to speech_wilson.lua             GESTALT_TOO_POWERFUL = "only_used_by_wx78",
         },
 		USEKLAUSSACKKEY =
         {
-            WRONGKEY = "不对。不是这把。",		--使用克劳斯钥匙
-            KLAUS = "我正忙着。",		--克劳斯
-			QUAGMIRE_WRONGKEY = "得再找一把钥匙。",		--动作说明：解锁失败（使用了暴食活动中的错误钥匙）
+            WRONGKEY = "那可能是错误的工具喵。",
+            KLAUS = "首先必须打败那头野兽喵。",
+			QUAGMIRE_WRONGKEY = "我必须找到正确的钥匙。",
         },
         WRAPBUNDLE =
         {
-            EMPTY = "总得有东西可打包。",		--打包纸是空的
+            EMPTY = "我必须知道要打包什么，亲爱的喵。",
         },
         WRITE =
         {
-            GENERIC = "它现在这样挺好，喵。",		--写字失败
-            INUSE = "只容得下一个涂鸦者。",		--写字 正在使用中
+            GENERIC = "我宁愿在自己的书里写字。",
+            INUSE = "还没用完呢亲爱的。",
         },
         YOTB_STARTCONTEST =
         {
-            DOESNTWORK = "这里不讲艺术。",		--动作说明：开始皮弗娄牛比赛失败，评委未处于工作状态
-            ALREADYACTIVE = "他大概在别处比着。",		--动作说明：开始皮弗娄牛比赛失败，比赛已经开始
-            NORESPONSE = "裁判没有回应。",		--动作说明：开始比赛失败（裁判没有响应比赛请求）
-            RIGHTTHERE = "他正忙。",		--动作说明：开始比赛失败（比赛终点位置距离过近）
+            DOESNTWORK = "比赛暂时还得等等。",
+            ALREADYACTIVE = "我猜想其他地方一定还有个比赛。",
+            NORESPONSE = "他多半是去散步了。",
+            RIGHTTHERE = "他当下正忙喵。",
         },
         YOTB_UNLOCKSKIN =
         {
-            ALREADYKNOWN = "熟悉的样式。这个我早就会了，喵。",		--牛年活动 解锁已知皮肤
+            ALREADYKNOWN = "我已经熟悉了这个样式了。",
         },
 		CARVEPUMPKIN =
 		{
-			INUSE = "有人先动手了。",		--动作说明：雕刻失败（目标正在被其他操作占用）
-			BURNING = "火在灼我的手。",		--动作说明：雕刻失败（正在燃烧）
+			INUSE = "显然已经有人在雕刻了。",
+			BURNING = "真热喵！",
 		},
 		DECORATESNOWMAN =
 		{
-			INUSE = "有人占着雪人。",		--动作说明：装饰雪人失败（目标正在被其他操作占用）
-			HASHAT = "雪人不必戴两顶帽子。",		--动作说明：装饰雪人失败（雪人已经戴有帽子）
-			STACKEDTOOHIGH = "堆得太高了。",		--动作说明：装饰雪人失败（雪人装饰堆叠位置过高）
-			MELTING = "不行。它要化了。",		--动作说明：装饰雪人失败（正在融化，不能继续装饰）
+			INUSE = "显然现在有人正在装饰它。",
+			HASHAT = "我不能把它放在帽子上。",
+			STACKEDTOOHIGH = "太高了，不能再加了。",
+			MELTING = "装饰一个快融化的雪人就是做无用功。",
 		},
         MUTATE = 
         {
-            NOGHOST = "得请阿比来。",		--动作说明：转化失败（附近没有可用幽灵）
-            NONEWMOON = "月亮还没亏到新月。",		--动作说明：转化失败（当前不是新月）
-            NOFULLMOON = "得是满月。",		--动作说明：转化失败（当前不是满月）
-            NOTNIGHT = "太阳底下不成。",		--动作说明：转化失败（当前不是夜晚）
-            CAVE = "没有月光，行不通。",		--动作说明：转化失败（位于洞穴世界）
+            NOGHOST = "only_used_by_wendy",
+            NONEWMOON = "only_used_by_wendy",
+            NOFULLMOON = "only_used_by_wendy",
+            NOTNIGHT = "only_used_by_wendy",
+            CAVE = "only_used_by_wendy",
         },
 		MODSLINGSHOT =
 		{
-			NOSLINGSHOT = "没有弹弓可改。",		--动作说明：改装弹弓失败（没有装备弹弓）
+--fallback to speech_wilson.lua 			NOSLINGSHOT = "only_used_by_walter",
 		},
 		POUNCECAPTURE =
 		{
-			MISSED = "可惜。让它溜了。",		--动作说明：捕获失败（未能抓住目标）
+			MISSED = "天哪，我失手了！",
 		},
         DIVEGRAB =
         {
-            MISSED = "可惜。没抓住。",		--动作说明：约束失败（未能抓住目标）
+            MISSED = "天哪，我失手了！",
         },
 
+		-- Winter 2025
 		SOAKIN =
 		{
-			NOSPACE = "换不了位置。",		--动作说明：泡失败（目标位置没有足够空间）
+			NOSPACE = "显然已经有人坐在那儿了。",--there's someone in that space. there's no room there.
 		},
     },
 
 	ANNOUNCE_CANNOT_BUILD =
 	{
-		NO_INGREDIENTS = "材料不全。我缺几样东西。",		--建造失败：缺少材料
-		NO_TECH = "学识尚浅。还须深造。",		--建造失败：科技等级不足
-		NO_STATION = "此处没有可用的台案。",		--建造失败：附近缺少所需制作站
+		NO_INGREDIENTS = "我应该努力收集所需的材料。",
+		NO_TECH = "不如抓住这个机会做一些研究。",
+		NO_STATION = "恐怕这需要一个特制的工作区。",
 	},
 
-	ACTIONFAIL_GENERIC = "不成。换个做法。",		--动作失败
-	ANNOUNCE_BOAT_LEAK = "水在涨。船板裂了。",		--船撞了个洞
-	ANNOUNCE_BOAT_SINK = "我不打算淹死在这里。",		--船漏水
-    ANNOUNCE_PREFALLINVOID = "脚下空了。这很不妙。",		--即将坠入虚空
-	ANNOUNCE_DIG_DISEASE_WARNING = "它看着好多了。", 		--挖起生病的植物
-	ANNOUNCE_PICK_DISEASE_WARNING = "原来一直是这个味道。", 		--（植物生病）
-	ANNOUNCE_ADVENTUREFAIL = "不顺利。再来一次。",		--没调用（废案）
-    ANNOUNCE_MOUNT_LOWHEALTH = "这头坐骑撑不住了。",		--牛血量过低
+	ACTIONFAIL_GENERIC = "我似乎做不到喵。",
+	ANNOUNCE_BOAT_LEAK = "船已经陷入十分危险的状态。",
+	ANNOUNCE_BOAT_SINK = "不妙，我们在下沉！",
+    ANNOUNCE_PREFALLINVOID = "它撑不住了！",
+	ANNOUNCE_DIG_DISEASE_WARNING = "刚好及时抓住它。根部几乎都烂掉了喵。", --removed
+	ANNOUNCE_PICK_DISEASE_WARNING = "这棵植物正在展示相关的木牌。", --removed
+	ANNOUNCE_ADVENTUREFAIL = "我们必须从失败中总结教训。",
+    ANNOUNCE_MOUNT_LOWHEALTH = "我的坐骑需要各种医疗照顾喵。",
 
-    ANNOUNCE_TOOMANYBIRDS = "鸟太多了。魔法被它们分薄了。",		--附近鸟类过多，不能再召唤鸟
-    ANNOUNCE_WAYTOOMANYBIRDS = "天上空了。一只也不剩。",		--附近鸟类数量严重超限
-    ANNOUNCE_NOWATERNEARBY = "鱼只肯在水边现身。",		--附近没有可用水域
+    --waxwell and wickerbottom specific strings
+--fallback to speech_wilson.lua     ANNOUNCE_TOOMANYBIRDS = "only_used_by_waxwell_and_wicker",
+--fallback to speech_wilson.lua     ANNOUNCE_WAYTOOMANYBIRDS = "only_used_by_waxwell_and_wicker",
+--fallback to speech_wilson.lua     ANNOUNCE_NOWATERNEARBY = "only_used_by_waxwell_and_wicker",
 
-	ANNOUNCE_SHADOWLEVEL_ITEM = "\n我的暗影傀儡，应当能从它身上取力……",		--装备具有暗影等级的物品
-	ANNOUNCE_EQUIP_SHADOWLEVEL_T1 = "有变化。暗影傀儡变强了……",		--装备一级暗影物品
-	ANNOUNCE_EQUIP_SHADOWLEVEL_T2 = "暗影傀儡的力量在增长。",		--装备二级暗影物品
-	ANNOUNCE_EQUIP_SHADOWLEVEL_T3 = "去吧。没有人能挡在我们前面。",		--装备三级暗影物品
-	ANNOUNCE_EQUIP_SHADOWLEVEL_T4 = "我召出的暗影，无人可挡。",		--装备四级暗影物品
+	--waxwell specific
+--fallback to speech_wilson.lua 	ANNOUNCE_SHADOWLEVEL_ITEM = "only_used_by_waxwell",
+--fallback to speech_wilson.lua 	ANNOUNCE_EQUIP_SHADOWLEVEL_T1 = "only_used_by_waxwell",
+--fallback to speech_wilson.lua 	ANNOUNCE_EQUIP_SHADOWLEVEL_T2 = "only_used_by_waxwell",
+--fallback to speech_wilson.lua 	ANNOUNCE_EQUIP_SHADOWLEVEL_T3 = "only_used_by_waxwell",
+--fallback to speech_wilson.lua 	ANNOUNCE_EQUIP_SHADOWLEVEL_T4 = "only_used_by_waxwell",
 
-    ANNOUNCE_NORMALTOMIGHTY = "力气回来了。",		--沃尔夫冈从普通形态变为强壮形态
-    ANNOUNCE_NORMALTOWIMPY = "身子发虚。",		--沃尔夫冈从普通形态变为虚弱形态
-    ANNOUNCE_WIMPYTONORMAL = "身子轻了些。",		--沃尔夫冈从虚弱形态恢复普通形态
-    ANNOUNCE_MIGHTYTONORMAL = "不。我还得更强。",		--沃尔夫冈从强壮形态恢复普通形态
+    --wolfgang specific
+--fallback to speech_wilson.lua     ANNOUNCE_NORMALTOMIGHTY = "only_used_by_wolfang",
+--fallback to speech_wilson.lua     ANNOUNCE_NORMALTOWIMPY = "only_used_by_wolfang",
+--fallback to speech_wilson.lua     ANNOUNCE_WIMPYTONORMAL = "only_used_by_wolfang",
+--fallback to speech_wilson.lua     ANNOUNCE_MIGHTYTONORMAL = "only_used_by_wolfang",
     ANNOUNCE_EXITGYM = {
-        MIGHTY = "状态回来了。",		--沃尔夫冈以强壮形态离开健身房
-        NORMAL = "好些了。还能更好。",		--沃尔夫冈以普通形态离开健身房
-        WIMPY = "我需要……歇一会儿……",		--沃尔夫冈以虚弱形态离开健身房
+--fallback to speech_wilson.lua         MIGHTY = "only_used_by_wolfang",
+--fallback to speech_wilson.lua         NORMAL = "only_used_by_wolfang",
+--fallback to speech_wilson.lua         WIMPY = "only_used_by_wolfang",
     },
 
-	ANNOUNCE_BEES = "蜜蜂。别靠近。",		--戴养蜂帽被蜜蜂蛰
-	ANNOUNCE_BOOMERANG = "接住。别让它落地。",		--回旋镖
-	ANNOUNCE_CHARLIE = "这感觉……很熟悉。有人吗？",		--查理即将攻击
-	ANNOUNCE_CHARLIE_ATTACK = "被咬了。它在暗处。",		--被查理攻击
-	ANNOUNCE_CHARLIE_MISSED = "你的路数，我早看清了。", 		--查理的攻击落空
-	ANNOUNCE_COLD = "冷进骨头里了。",		--过冷
-	ANNOUNCE_HOT = "需要……冰，或者阴凉……",		--过热
-	ANNOUNCE_CRAFTING_FAIL = "少了几样关键的东西。",		--没调用
-	ANNOUNCE_DEERCLOPS = "那声音，分量不轻。",		--事件说明：独眼巨鹿即将来袭
-	ANNOUNCE_CAVEIN = "头顶在晃。",		--要地震了？？？
+	ANNOUNCE_BEES = "去蜇那些讨厌的家伙！",
+	ANNOUNCE_BOOMERANG = "我错估了它飞回来的时间。",
+	ANNOUNCE_CHARLIE = "有声音！怎么会有花香？",
+	ANNOUNCE_CHARLIE_ATTACK = "哎哟！谁这么大胆？！",
+--fallback to speech_wilson.lua 	ANNOUNCE_CHARLIE_MISSED = "only_used_by_winona", --winona specific
+	ANNOUNCE_COLD = "周围温度好低喵。",
+	ANNOUNCE_HOT = "周围温度好高。",
+	ANNOUNCE_CRAFTING_FAIL = "现在我没法制作那个喵。",
+	ANNOUNCE_DEERCLOPS = "听起来似乎来了个巨人！",
+	ANNOUNCE_CAVEIN = "上面的岩石很快就会让路。",
 	ANNOUNCE_ANTLION_SINKHOLE =
 	{
-		"地面在动。",		--蚁狮地震
-		"地震。",		--蚁狮地震
-		"震波来了。站稳。",		--蚁狮地震
+		"The ground will soon give way.",
+		"Not the work of tectonic plates.",
+		"A six on the Richter scale.",
 	},
 	ANNOUNCE_ANTLION_TRIBUTE =
 	{
-        "请容我致意。",		--向蚁狮致敬
-        "贡品在此，伟大的蚁狮。",		--给蚁狮上供
-        "这能让它安静一阵……",		--给蚁狮上供
+        "For you, great Panthera auropunctata.",
+        "It ought to be more docile now.",
+        "The great Panthera auropunctata is tamed.",
 	},
-	ANNOUNCE_SACREDCHEST_YES = "我想，我配得上。",		--远古宝箱物品正确给出蓝图
-	ANNOUNCE_SACREDCHEST_NO = "它不满意这件。",		--远古宝箱
-    ANNOUNCE_DUSK = "天要黑了。该收手了。",		--进入黄昏
+	ANNOUNCE_SACREDCHEST_YES = "起作用了。",
+	ANNOUNCE_SACREDCHEST_NO = "可惜啊，我本来很有把握的喵。",
+    ANNOUNCE_DUSK = "很快就要天黑了。",
 
-    ANNOUNCE_CHARGE = "系统已恢复。",		--角色获得电荷
-	ANNOUNCE_DISCHARGE = "系统正常。",		--角色释放或失去电荷
+    --wx-78 specific
+--fallback to speech_wilson.lua     ANNOUNCE_CHARGE = "only_used_by_wx78",
+--fallback to speech_wilson.lua 	ANNOUNCE_DISCHARGE = "only_used_by_wx78",
 
-    ANNOUNCE_ROSEGLASSES = 
-    {
-        "明白了，姐妹。",		--玫瑰色眼镜效果提示
-        "查理来过。",		--玫瑰色眼镜效果提示
-        "我找到了她魔法的痕迹。",		--玫瑰色眼镜效果提示
-    },
+    -- Winona specific
+--fallback to speech_wilson.lua     ANNOUNCE_ROSEGLASSES = 
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_winona",
+--fallback to speech_wilson.lua         "only_used_by_winona",
+--fallback to speech_wilson.lua         "only_used_by_winona",
+--fallback to speech_wilson.lua     },
     ANNOUNCE_CHARLIESAVE = 
     {
-        "她救我，还是杀我？说不准。",		--查理出手保护角色
+        "only_used_by_winona",
     },
-	ANNOUNCE_ENGINEERING_CAN_UPGRADE = "我的版本，比它高明不少。",		--工程装置可以升级
-	ANNOUNCE_ENGINEERING_CAN_DOWNGRADE = "这一台，比我的更先进。",		--工程装置可以降级
-	ANNOUNCE_ENGINEERING_CAN_SIDEGRADE = "有意思。各有所长。",		--工程装置可以横向改造
+	ANNOUNCE_ENGINEERING_CAN_UPGRADE = "only_used_by_winona",
+	ANNOUNCE_ENGINEERING_CAN_DOWNGRADE = "only_used_by_winona",
+	ANNOUNCE_ENGINEERING_CAN_SIDEGRADE = "only_used_by_winona",
 
 	ANNOUNCE_EAT =
 	{
-		GENERIC = "味道不错，喵。",		--吃东西
-		PAINFUL = "这东西在伤我。",		--吃怪物肉
-		SPOILED = "腐坏的味道。没有第二口。",		--吃腐烂食物
-		STALE = "它开始变质了。",		--吃黄色食物
-		INVALID = "那东西不进我的嘴。",		--拒吃
-        YUCKY = "放进嘴里？恕我拒绝。",		--吃红色食物
+		GENERIC = "好吃！",
+		PAINFUL = "我真不应该吃那个的。",
+		SPOILED = "它已经部分腐烂了。",
+		STALE = "那已经不是最新鲜的状态了。",
+		INVALID = "这东西不能吃。",
+        YUCKY = "吃下这个是不明智的喵。",
 
-		COOKED = "尚算熟透。",		--食用符合偏好的熟食
-		DRIED = "干了些，还能吃。",		--食用符合偏好的干制食物
-        PREPARED = "这一道，可口。",		--食用符合偏好的料理
-        RAW = "生的。火候全无。",		--食用符合偏好的生食
-		SAME_OLD_1 = "菜单该换换了。",		--近期重复食用同一种食物一次
-		SAME_OLD_2 = "重复。无味。",		--近期重复食用同一种食物两次
-		SAME_OLD_3 = "我想吃点别的。",		--近期重复食用同一种食物三次
-		SAME_OLD_4 = "再吃这个，我要失礼了。",		--近期重复食用同一种食物四次
-        SAME_OLD_5 = "够了。彻底够了。",		--近期重复食用同一种食物达到最高厌倦程度
-		TASTY = "这一口，值得记下来。",		--食用角色特别喜欢的食物
+        --Warly specific ANNOUNCE_EAT strings
+--fallback to speech_wilson.lua 		COOKED = "only_used_by_warly",
+--fallback to speech_wilson.lua 		DRIED = "only_used_by_warly",
+--fallback to speech_wilson.lua         PREPARED = "only_used_by_warly",
+--fallback to speech_wilson.lua         RAW = "only_used_by_warly",
+--fallback to speech_wilson.lua 		SAME_OLD_1 = "only_used_by_warly",
+--fallback to speech_wilson.lua 		SAME_OLD_2 = "only_used_by_warly",
+--fallback to speech_wilson.lua 		SAME_OLD_3 = "only_used_by_warly",
+--fallback to speech_wilson.lua 		SAME_OLD_4 = "only_used_by_warly",
+--fallback to speech_wilson.lua         SAME_OLD_5 = "only_used_by_warly",
+--fallback to speech_wilson.lua 		TASTY = "only_used_by_warly",
     },
 
-	ANNOUNCE_FOODMEMORY = "\n同样的东西，我不想再吃。",		--食物记忆生效：近期重复食用相同食物
+	ANNOUNCE_FOODMEMORY = "only_used_by_warly",
 
     ANNOUNCE_ENCUMBERED =
     {
-        "这重量……有些失礼……",		--搬运雕像、可疑的大理石
-        "我该造一台……起重机……",		--搬运雕像、可疑的大理石
-        "用背……顶起来……",		--搬运雕像、可疑的大理石
-        "这活计……不体面……",		--搬运雕像、可疑的大理石
-        "为了……知识……",		--搬运雕像、可疑的大理石
-        "它在……弄乱我的头发。",		--搬运雕像、可疑的大理石
-        "哼。",		--搬运雕像、可疑的大理石
-        "腰快……断了……",		--搬运雕像、可疑的大理石
-        "这是我……最糟的试验……",		--搬运雕像、可疑的大理石
+        "It's all in the legs.",
+        "Goodness...",
+        "Dear me...",
+        "I've got it, dear.",
+        "I'm more spry than I look!",
+        "You just need to know how to lift!",
+        "No sweat off my back! Ho ho!",
+        "How invigorating!",
+        "This gets the blood pumping!",
     },
     ANNOUNCE_ATRIUM_DESTABILIZING =
     {
-		"该走了。",		--事件说明：远古织影者被击败后，远古大门开始失稳并即将重置（台词变体1）
-		"那是什么。",		--中庭震动
-		"此地不宜久留。",		--事件说明：远古织影者被击败后，远古大门开始失稳并即将重置（台词变体3）
+		"I do believe it's time to go.",
+		"It's dangerous to be here.",
+		"Goodness gracious!",
 	},
-    ANNOUNCE_RUINS_RESET = "它们全回来了。",		--地下重置
-    ANNOUNCE_SNARED = "骨头。全是尖的。",		--远古嘤嘤怪的骨笼
-    ANNOUNCE_SNARED_IVY = "藤蔓缠住了。割开它。",		--被针刺旋花攻击
-    ANNOUNCE_REPELLED = "它有护罩。",		--嘤嘤怪保护状态
-	ANNOUNCE_ENTER_DARK = "一点光也没有。……不妙。",		--进入黑暗
-	ANNOUNCE_ENTER_LIGHT = "又能看清了。",		--进入光源
-	ANNOUNCE_FREEDOM = "自由了。终于。",		--没调用（废案）
-	ANNOUNCE_HIGHRESEARCH = "思路通了。很好。",		--没调用（废案）
-	ANNOUNCE_HOUNDS = "林子里有脚步。",		--猎犬将至
-	ANNOUNCE_WORMS = "地下有动静。",		--蠕虫袭击
-    ANNOUNCE_WORMS_BOSS = "这声音，不太妙。",		--洞穴蠕虫首领来袭
-    ANNOUNCE_ACIDBATS = "翅膀声。不止一只。",		--酸雨蝙蝠群即将来袭
-	ANNOUNCE_HUNGRY = "饿了。",		--饥饿
-	ANNOUNCE_HUNT_BEAST_NEARBY = "足迹还新。它就在附近。",		--即将找到野兽
-	ANNOUNCE_HUNT_LOST_TRAIL = "足迹到此为止。",		--猎物（大象脚印丢失）
-	ANNOUNCE_HUNT_LOST_TRAIL_SPRING = "湿土留不住脚印。",		--大猎物丢失踪迹
-    ANNOUNCE_HUNT_START_FORK = "这条路，气味不对。",		--追踪足迹时发现岔路
-    ANNOUNCE_HUNT_SUCCESSFUL_FORK = "它跑不过我。",		--在足迹岔路中选对追踪方向
-    ANNOUNCE_HUNT_WRONG_FORK = "有什么在看我。",		--在足迹岔路中选错追踪方向
-    ANNOUNCE_HUNT_AVOID_FORK = "这边安静。走这边。",		--追踪足迹时避开岔路
-	ANNOUNCE_INV_FULL = "拿不下了。",		--身上的物品满了
-	ANNOUNCE_KNOCKEDOUT = "头……很沉。",		--被催眠
-	ANNOUNCE_LOWRESEARCH = "一无所获。",		--没调用（废案）
-	ANNOUNCE_MOSQUITOS = "走开。",		--没调用
-    ANNOUNCE_NOWARDROBEONFIRE = "衣柜在烧。换不了衣裳。",		--橱柜着火
-    ANNOUNCE_NODANGERGIFT = "四周不干净。礼物稍后再拆。",		--周围有危险的情况下打开礼物
-    ANNOUNCE_NOMOUNTEDGIFT = "先得从牛背上下来。",		--骑牛的时候打开礼物
-	ANNOUNCE_NODANGERSLEEP = "这时候睡下，未必能醒。",		--危险，不能睡觉
-	ANNOUNCE_NODAYSLEEP = "光太亮了。",		--白天睡帐篷
-	ANNOUNCE_NODAYSLEEP_CAVE = "我不困。",		--洞穴里白天睡帐篷
-	ANNOUNCE_NOHUNGERSLEEP = "饿着睡不着。肚子太吵。",		--饿了无法睡觉
-	ANNOUNCE_NOSLEEPONFIRE = "睡在火里？恕不奉陪。",		--营帐着火无法睡觉
-    ANNOUNCE_NOSLEEPHASPERMANENTLIGHT = "光照与睡眠相冲。",		--附近存在永久光源，不能入睡
-	ANNOUNCE_NODANGERSIESTA = "现在小憩，太冒险。",		--危险，不能午睡
-	ANNOUNCE_NONIGHTSIESTA = "夜里该正经睡，不是小憩。",		--夜晚睡凉棚
-	ANNOUNCE_NONIGHTSIESTA_CAVE = "在这种地方，我放松不下来。",		--在洞穴里夜晚睡凉棚
-	ANNOUNCE_NOHUNGERSIESTA = "饿着，歇不安稳。",		--饱度不足无法午睡
-	ANNOUNCE_NO_TRAP = "就这样。不难。",		--没有陷阱？？？没调用
-	ANNOUNCE_PECKED = "呀。别啄我。",		--被小高鸟啄
-	ANNOUNCE_QUAKE = "地在响。",		--地震
-	ANNOUNCE_RESEARCH = "又懂了一点。",		--没调用
-	ANNOUNCE_SHELTER = "多谢庇荫，大树。",		--下雨天躲树下
-	ANNOUNCE_THORNS = "扎手。",		--玫瑰、仙人掌、荆棘扎手
-	ANNOUNCE_BURNT = "烫！",		--烧完了
-	ANNOUNCE_TORCH_OUT = "火尽了。",		--火把用完了
-	ANNOUNCE_THURIBLE_OUT = "香炉空了。",		--香炉燃尽
-	ANNOUNCE_FAN_OUT = "扇子停了。风也散了。",		--小风车停了
-    ANNOUNCE_COMPASS_OUT = "指南针死了。它不再指路。",		--指南针用完了
-	ANNOUNCE_TRAP_WENT_OFF = "触到了。",		--触发陷阱（例如冬季陷阱）
-	ANNOUNCE_UNIMPLEMENTED = "这还没做完。",		--没调用
-	ANNOUNCE_WORMHOLE = "清醒的人不会钻这个。",		--跳虫洞
-    ANNOUNCE_WORMHOLE_SAMESPOT = "绕了一圈，回到原地。",		--虫洞出口与入口位于同一地点
-	ANNOUNCE_TOWNPORTALTELEPORT = "这算不算学问，我存疑。",		--豪华传送
-	ANNOUNCE_CANFIX = "\n这个，我能修好。",		--墙壁可以修理
-	ANNOUNCE_ACCOMPLISHMENT = "做成了。",		--没调用
-	ANNOUNCE_ACCOMPLISHMENT_DONE = "若他们此刻在场，会看见的……",		--没调用
-	ANNOUNCE_INSUFFICIENTFERTILIZER = "还饿吗，小东西。",		--土地肥力不足
-	ANNOUNCE_TOOL_SLIP = "手滑了。工具太滑。",		--工具滑出
-	ANNOUNCE_LIGHTNING_DAMAGE_AVOIDED = "闪电落空。",		--规避闪电
-	ANNOUNCE_TOADESCAPING = "蟾蜍失去了兴致。",		--蟾蜍正在逃跑
-	ANNOUNCE_TOADESCAPED = "蟾蜍走了。",		--蟾蜍逃走了
+    ANNOUNCE_RUINS_RESET = "小心，怪兽回来了。",
+    ANNOUNCE_SNARED = "你不能长时间抱着我，亲爱的喵。",
+    ANNOUNCE_SNARED_IVY = "天啊，我的花园似乎有一个相当严重的杂草问题。",
+    ANNOUNCE_REPELLED = "这里有魔法在起作用。",
+	ANNOUNCE_ENTER_DARK = "这儿漆黑一片。",
+	ANNOUNCE_ENTER_LIGHT = "这亮度足以看见东西了喵。",
+	ANNOUNCE_FREEDOM = "自由！我要找一本好书，然后在书里尽情地徜徉。",
+	ANNOUNCE_HIGHRESEARCH = "天啊，这真是太有意思了！",
+	ANNOUNCE_HOUNDS = "有东西在接近。",
+	ANNOUNCE_WORMS = "某种阴险的生物要出现了。",
+    ANNOUNCE_WORMS_BOSS = "某种可怕的东西正在逼近。",
+    ANNOUNCE_ACIDBATS = "它们发出的噪音真可怕。",
+	ANNOUNCE_HUNGRY = "图书管理员需要食物喵。",
+	ANNOUNCE_HUNT_BEAST_NEARBY = "出现这个踪迹表明动物最近出来活动过喵。",
+	ANNOUNCE_HUNT_LOST_TRAIL = "踪迹已经变得难以识别喵。",
+	ANNOUNCE_HUNT_LOST_TRAIL_SPRING = "踪迹已经被降水冲淡了。",
+    ANNOUNCE_HUNT_START_FORK = "我怀疑这条踪迹尽头的是令人生畏的存在。",
+    ANNOUNCE_HUNT_SUCCESSFUL_FORK = "看来我成功跟踪了这生物，它并没有产生警觉。",
+    ANNOUNCE_HUNT_WRONG_FORK = "哦，亲爱的……我有一种奇特的感觉，我被监视了喵。",
+    ANNOUNCE_HUNT_AVOID_FORK = "这条踪迹可能会带来不那么危险的结果喵。",
+	ANNOUNCE_INV_FULL = "我拿不了更多的东西了。",
+	ANNOUNCE_KNOCKEDOUT = "这下好了，我想这也是获得休息的一种方法吧喵。",
+	ANNOUNCE_LOWRESEARCH = "虽然不是什么很好的资源，但好歹是些有用的小东西。",
+	ANNOUNCE_MOSQUITOS = "该死的吸血鬼！",
+    ANNOUNCE_NOWARDROBEONFIRE = "你可以清楚看到，它着火了。",
+    ANNOUNCE_NODANGERGIFT = "现在不是顾着礼物的时候，生存最重要。",
+    ANNOUNCE_NOMOUNTEDGIFT = "我认为我应该第一个下马。",
+	ANNOUNCE_NODANGERSLEEP = "即使周围没有危险，我也几乎睡不着觉喵！",
+	ANNOUNCE_NODAYSLEEP = "即使是晚上我都很难入睡，更不用说在白天了喵。",
+	ANNOUNCE_NODAYSLEEP_CAVE = "在这些洞穴里面睡觉可真不是一件容易的事。",
+	ANNOUNCE_NOHUNGERSLEEP = "即使一点都不饿，我也几乎睡不着觉！",
+	ANNOUNCE_NOSLEEPONFIRE = "即使我能够睡着，这么高的温度也是极不安全的。",
+    ANNOUNCE_NOSLEEPHASPERMANENTLIGHT = "不需要关灯，亲爱的，反正我也睡不着的。",
+	ANNOUNCE_NODANGERSIESTA = "身处危险的时候，我不敢躺下来喵！",
+	ANNOUNCE_NONIGHTSIESTA = "无论躺在哪儿，我就是睡不着喵。",
+	ANNOUNCE_NONIGHTSIESTA_CAVE = "在这些洞穴中，我完全没法放松。",
+	ANNOUNCE_NOHUNGERSIESTA = "好饿啊，这下更放松不了了！",
+	ANNOUNCE_NO_TRAP = "小事一桩喵！",
+	ANNOUNCE_PECKED = "立刻给我安静下来！",
+	ANNOUNCE_QUAKE = "是地震！震级至少达到了里氏七级。",
+	ANNOUNCE_RESEARCH = "任何信息都不该被浪费，无论是多么微不足道。",
+	ANNOUNCE_SHELTER = "啊，终于可以喘息一下了。",
+	ANNOUNCE_THORNS = "真是见鬼，居然有刺！",
+	ANNOUNCE_BURNT = "至少是一级烧伤！",
+	ANNOUNCE_TORCH_OUT = "我需要另一根火炬。",
+	ANNOUNCE_THURIBLE_OUT = "就这样。",
+	ANNOUNCE_FAN_OUT = "这个脆弱的装置烂掉了喵。",
+    ANNOUNCE_COMPASS_OUT = "我的指南针消磁了。",
+	ANNOUNCE_TRAP_WENT_OFF = "哎呀！",
+	ANNOUNCE_UNIMPLEMENTED = "啧啧，我觉得它应该还没有完全弄好。",
+	ANNOUNCE_WORMHOLE = "一堂内容详实的生物课！",
+--fallback to speech_wilson.lua     ANNOUNCE_WORMHOLE_SAMESPOT = "only_used_by_winona",
+	ANNOUNCE_TOWNPORTALTELEPORT = "天哪！这是旅行的一种方式喵。",
+	ANNOUNCE_CANFIX = "\n我相信我能修好这个。",
+	ANNOUNCE_ACCOMPLISHMENT = "还没完成呢喵！",
+	ANNOUNCE_ACCOMPLISHMENT_DONE = "完成了！",
+	ANNOUNCE_INSUFFICIENTFERTILIZER = "要我说，只需要再多施一点肥就可以了。",
+	ANNOUNCE_TOOL_SLIP = "我的工具喵！",
+	ANNOUNCE_LIGHTNING_DAMAGE_AVOIDED = "谢天谢地，这件衣服不导电！",
+	ANNOUNCE_TOADESCAPING = "它将很快需要再次钻洞来让皮肤补充水分。",
+	ANNOUNCE_TOADESCAPED = "它已经钻走了。",
 
 
-	ANNOUNCE_DAMP = "有水汽。",		--潮湿（1级）
-	ANNOUNCE_WET = "衣裳开始渗水了。",		--潮湿（2级）
-	ANNOUNCE_WETTER = "湿透了。真糟糕。",		--潮湿（3级）
-	ANNOUNCE_SOAKED = "饱和了。一滴也吸不进。",		--潮湿（4级）
+	ANNOUNCE_DAMP = "开始有积水了。",
+	ANNOUNCE_WET = "我很好奇我身体的极限点是什么喵...",
+	ANNOUNCE_WETTER = "好湿啊！",
+	ANNOUNCE_SOAKED = "已经完全湿透了。",
 
-	ANNOUNCE_WASHED_ASHORE = "湿透了，但还活着。",		--落水被冲上岸
+	ANNOUNCE_WASHED_ASHORE = "希望不要弄坏了我的书喵。",
 
-    ANNOUNCE_DESPAWN = "有光。",		--下线
-	ANNOUNCE_BECOMEGHOST = "……我的形体散了。",		--变成鬼魂
-	ANNOUNCE_GHOSTDRAIN = "有什么在从我身上流走……",		--事件说明：队友死亡导致理智值下降
-	ANNOUNCE_PETRIFED_TREES = "树刚才在叫。我听见了。",		--石化树
-	ANNOUNCE_KLAUS_ENRAGE = "它怒了。现在杀不掉。",		--克劳斯被激怒（杀死了鹿）
-	ANNOUNCE_KLAUS_UNCHAINED = "锁链断了。",		--克劳斯-未上锁的  猜测是死亡准备变身？
-	ANNOUNCE_KLAUS_CALLFORHELP = "它在唤援。",		--克劳斯召唤小偷
+    ANNOUNCE_DESPAWN = "我从没读过任何描述它的内容！",
+	ANNOUNCE_BECOMEGHOST = "呜呜呜呜呜！！",
+	ANNOUNCE_GHOSTDRAIN = "我的人性…在流失。",
+	ANNOUNCE_PETRIFED_TREES = "已经催化了化学反应…",
+	ANNOUNCE_KLAUS_ENRAGE = "没必要把别人的生命扔掉。后退！",
+	ANNOUNCE_KLAUS_UNCHAINED = "不管是什么魔法抑制了它，都没有用了。",
+	ANNOUNCE_KLAUS_CALLFORHELP = "小心！它召唤了小坎普斯喵。",
 
 	ANNOUNCE_MOONALTAR_MINE =
 	{
-		GLASS_MED = "里头有东西。",		--月岛科技三个部分被挖开
-		GLASS_LOW = "快出来了。",		--月岛科技三个部分被挖开
-		GLASS_REVEAL = "出来吧。",		--月岛科技三个部分被挖开
-		IDOL_MED = "里面封着东西。",		--月岛科技三个部分被挖开
-		IDOL_LOW = "再挖两下。",		--月岛科技三个部分被挖开
-		IDOL_REVEAL = "重见天日了。",		--月岛科技三个部分被挖开
-		SEED_MED = "壳里有东西。",		--月岛科技三个部分被挖开
-		SEED_LOW = "快了，再一层。",		--月岛科技三个部分被挖开
-		SEED_REVEAL = "你可以出来了。",		--月岛科技三个部分被挖开
+		GLASS_MED = "我来了，亲爱的喵。",
+		GLASS_LOW = "接近了喵。",
+		GLASS_REVEAL = "看！",
+		IDOL_MED = "我来了，亲爱的喵。",
+		IDOL_LOW = "接近了。",
+		IDOL_REVEAL = "看！",
+		SEED_MED = "我来了，亲爱的。",
+		SEED_LOW = "接近了。",
+		SEED_REVEAL = "看！",
 	},
 
-    ANNOUNCE_SPOOKED = "……",		--被吓到
-	ANNOUNCE_BRAVERY_POTION = "那些树，看着顺眼了些。",		--勇气药剂
-	ANNOUNCE_MOONPOTION_FAILED = "大概泡得不够久……",		--万圣节月亮药水 对不能变化的物品使用
+    --hallowed nights
+    ANNOUNCE_SPOOKED = "仁慈的上帝喵！",
+	ANNOUNCE_BRAVERY_POTION = "我的勇气恢复了！",
+	ANNOUNCE_MOONPOTION_FAILED = "噢，天啊，偏离了我的计划。",
 
-	ANNOUNCE_EATING_NOT_FEASTING = "这份该分给旁人。",		--冬季盛宴的植物 单人吃（但是没调用）
-	ANNOUNCE_WINTERS_FEAST_BUFF = "节日的暖意，上来了。",		--事件说明：获得冬季盛宴食物的持续恢复效果
-	ANNOUNCE_IS_FEASTING = "冬季盛宴，诸位同乐。",		--冬季盛宴 大家一起吃
-	ANNOUNCE_WINTERS_FEAST_BUFF_OVER = "节日散得太快……",		--事件说明：冬季盛宴食物的持续恢复效果结束
+	--winter's feast
+	ANNOUNCE_EATING_NOT_FEASTING = "我一个人吃不了这么多！",
+	ANNOUNCE_WINTERS_FEAST_BUFF = "有意思! 我似乎满是 \"欢愉\"。",
+	ANNOUNCE_IS_FEASTING = "我希望每个人在饭前记得洗手。",
+	ANNOUNCE_WINTERS_FEAST_BUFF_OVER = "刚刚很有启迪。",
 
-    ANNOUNCE_REVIVING_CORPSE = "让我看看你。",		--没调用（熔炉）
-    ANNOUNCE_REVIVED_OTHER_CORPSE = "站起来了。",		--没调用（熔炉）
-    ANNOUNCE_REVIVED_FROM_CORPSE = "好多了。多谢。",		--没调用（熔炉）
+    --lavaarena event
+    ANNOUNCE_REVIVING_CORPSE = "稍等片刻，亲爱的喵。",
+    ANNOUNCE_REVIVED_OTHER_CORPSE = "现在你可以走了。",
+    ANNOUNCE_REVIVED_FROM_CORPSE = "好了！我又站起来了喵！",
 
-    ANNOUNCE_FLARE_SEEN = "谁放的光？",		--看见信号弹
-    ANNOUNCE_MEGA_FLARE_SEEN = "那道光，会招来麻烦。",		--看到远处发射的巨型信号弹
-    ANNOUNCE_OCEAN_SILHOUETTE_INCOMING = "海面下有东西。不小。",		--深海 轮廓？ 没调用
+    ANNOUNCE_FLARE_SEEN = "有人发了个信号喵。",
+    ANNOUNCE_MEGA_FLARE_SEEN = "哦，天哪。有人想挑起冲突。",
+    ANNOUNCE_OCEAN_SILHOUETTE_INCOMING = "巨型动物已经盯上了我们喵。",
 
-	ANNOUNCE_LIGHTFIRE =
-	{
-		"点起来了。",		--角色主动点火时的提示
-    },
+    --willow specific
+--fallback to speech_wilson.lua 	ANNOUNCE_LIGHTFIRE =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua 		"only_used_by_willow",
+--fallback to speech_wilson.lua     },
 
-    ANNOUNCE_HUNGRY_SLOWBUILD =
-    {
-	    "饿得脑子慢了。",		--饥饿导致建造速度降低
-    },
-    ANNOUNCE_HUNGRY_FASTBUILD =
-    {
-	    "吃饱了，手就快。",		--进食后恢复快速建造
-    },
+    --winona specific
+--fallback to speech_wilson.lua     ANNOUNCE_HUNGRY_SLOWBUILD =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua 	    "only_used_by_winona",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_HUNGRY_FASTBUILD =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua 	    "only_used_by_winona",
+--fallback to speech_wilson.lua     },
 
-    ANNOUNCE_KILLEDPLANT =
-    {
-        "抱歉了，小家伙。",		--沃姆伍德导致植物死亡
-    },
-    ANNOUNCE_GROWPLANT =
-    {
-        "长吧。",		--沃姆伍德使植物生长
-    },
-    ANNOUNCE_BLOOMING =
-    {
-        "开花了。",		--沃姆伍德进入开花状态
-    },
+    --wormwood specific
+--fallback to speech_wilson.lua     ANNOUNCE_KILLEDPLANT =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wormwood",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_GROWPLANT =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wormwood",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_BLOOMING =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wormwood",
+--fallback to speech_wilson.lua     },
 
-    ANNOUNCE_SOUL_EMPTY =
-    {
-        "灵魂见底。麻烦要来了。",		--沃拓克斯没有灵魂
-    },
-    ANNOUNCE_SOUL_EMPTY_NICE =
-    {
-        "该进食了。",		--善良倾向下没有灵魂
-    },
-    ANNOUNCE_SOUL_EMPTY_NAUGHTY =
-    {
-        "饿。撑不住了。",		--淘气倾向下没有灵魂
-    },
-    ANNOUNCE_SOUL_FEW =
-    {
-        "灵魂所剩不多。",		--沃拓克斯持有的灵魂很少
-    },
-    ANNOUNCE_SOUL_FEW_NICE =
-    {
-        "不太妙。灵魂不太够用。",		--善良倾向下灵魂数量较少
-    },
-    ANNOUNCE_SOUL_FEW_NAUGHTY =
-    {
-        "我的藏品见底了。",		--淘气倾向下灵魂数量较少
-    },
-    ANNOUNCE_SOUL_MANY =
-    {
-        "够用了。能撑下去。",		--沃拓克斯持有很多灵魂
-    },
-    ANNOUNCE_SOUL_MANY_NICE =
-    {
-        "我竟集了这么多。",		--善良倾向下持有很多灵魂
-    },
-    ANNOUNCE_SOUL_MANY_NAUGHTY =
-    {
-        "够？从来没有够。",		--淘气倾向下持有很多灵魂
-    },
-    ANNOUNCE_SOUL_OVERLOAD =
-    {
-        "太多了。我压不住。",		--沃拓克斯灵魂过载
-    },
-    ANNOUNCE_SOUL_OVERLOAD_NICE =
-    {
-        "是我贪多了。",		--善良倾向下灵魂过载
-    },
-    ANNOUNCE_SOUL_OVERLOAD_NAUGHTY =
-    {
-        "我的灵魂，别散。",		--淘气倾向下灵魂过载
-    },
-    ANNOUNCE_SOUL_OVERLOAD_WARNING =
-    {
-        "要满了。快到极限。",		--灵魂即将过载的警告
-    },
-    ANNOUNCE_SOUL_OVERLOAD_AVOIDED =
-    {
-        "收手及时。",		--成功避免灵魂过载
-    },
-    ANNOUNCE_PANFLUTE_BUFF_ACTIVE =
-    {
-        "忽然想吹一曲，喵。",		--排箫增益已经生效
-    },
-    ANNOUNCE_PANFLUTE_BUFF_USED =
-    {
-        "一曲既毕，喵。尚可。",		--触发排箫增益
-    },
+    --wortox specfic
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_EMPTY =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_EMPTY_NICE =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_EMPTY_NAUGHTY =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_FEW =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_FEW_NICE =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_FEW_NAUGHTY =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_MANY =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_MANY_NICE =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_MANY_NAUGHTY =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_OVERLOAD =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_OVERLOAD_NICE =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_OVERLOAD_NAUGHTY =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_OVERLOAD_WARNING =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_SOUL_OVERLOAD_AVOIDED =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_PANFLUTE_BUFF_ACTIVE =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua     ANNOUNCE_PANFLUTE_BUFF_USED =
+--fallback to speech_wilson.lua     {
+--fallback to speech_wilson.lua         "only_used_by_wortox",
+--fallback to speech_wilson.lua     },
 
-	ANNOUNCE_AMMO_SLOT_OVERSTACKED = "弹药装太满，换不动。",		--弹药槽装入的弹药超过容量
-	ANNOUNCE_SLINGHSOT_OUT_OF_AMMO =
-	{
-		"弹药用尽了……",		--弹弓弹药耗尽
-		"……只是玩笑。",		--弹弓弹药耗尽
-	},
-	ANNOUNCE_SLINGHSOT_NO_AMMO_SKILL = "这种弹药，我打不顺。",		--未学习对应弹弓弹药技能
-	ANNOUNCE_SLINGHSOT_NO_PARTS_SKILL = "这个零件，是做什么的？",		--未学习对应弹弓零件技能
-	ANNOUNCE_STORYTELLING_ABORT_FIREWENTOUT =
-	{
-        "火偏偏在这时熄了。",		--营火熄灭导致讲故事中止
-	},
-	ANNOUNCE_STORYTELLING_ABORT_NOT_NIGHT =
-	{
-        "下回再讲……",		--天亮导致讲故事中止
-	},
-	ANNOUNCE_WOBY_RETURN =
-	{
-		"沃比，回来。",		--命令沃比返回
-	},
-	ANNOUNCE_WOBY_SIT =
-	{
-		"沃比，待着。",		--命令沃比原地等待
-	},
-	ANNOUNCE_WOBY_FOLLOW =
-	{
-		"沃比，过来。",		--命令沃比跟随
-	},
-	ANNOUNCE_WOBY_PRAISE =
-	{
-		"好孩子，喵。",		--表扬沃比
-	},
-	ANNOUNCE_WOBY_FORAGE =
-	{
-		"去把它找出来，沃比。",		--命令沃比采集
-	},
-	ANNOUNCE_WOBY_WORK =
-	{
-		"沃比，来搭把手。",		--命令沃比工作
-	},
-	ANNOUNCE_WOBY_COURIER =
-	{
-		"去吧，沃比。快去。",		--命令沃比执行快递任务
-	},
-	ANNOUNCE_WOBY_REMEMBERCHEST_FAIL =
-	{
-		"换一处地方吧，沃比。",		--沃比记录容器位置失败
-	},
+    --walter specfic
+--fallback to speech_wilson.lua 	ANNOUNCE_AMMO_SLOT_OVERSTACKED = "only_used_by_walter",
+--fallback to speech_wilson.lua 	ANNOUNCE_SLINGHSOT_OUT_OF_AMMO =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua 		"only_used_by_walter",
+--fallback to speech_wilson.lua 		"only_used_by_walter",
+--fallback to speech_wilson.lua 	},
+--fallback to speech_wilson.lua 	ANNOUNCE_SLINGHSOT_NO_AMMO_SKILL = "only_used_by_walter",
+--fallback to speech_wilson.lua 	ANNOUNCE_SLINGHSOT_NO_PARTS_SKILL = "only_used_by_walter",
+--fallback to speech_wilson.lua 	ANNOUNCE_STORYTELLING_ABORT_FIREWENTOUT =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua         "only_used_by_walter",
+--fallback to speech_wilson.lua 	},
+--fallback to speech_wilson.lua 	ANNOUNCE_STORYTELLING_ABORT_NOT_NIGHT =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua         "only_used_by_walter",
+--fallback to speech_wilson.lua 	},
+--fallback to speech_wilson.lua 	ANNOUNCE_WOBY_RETURN =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua 		"only_used_by_walter",
+--fallback to speech_wilson.lua 	},
+--fallback to speech_wilson.lua 	ANNOUNCE_WOBY_SIT =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua 		"only_used_by_walter",
+--fallback to speech_wilson.lua 	},
+--fallback to speech_wilson.lua 	ANNOUNCE_WOBY_FOLLOW =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua 		"only_used_by_walter",
+--fallback to speech_wilson.lua 	},
+--fallback to speech_wilson.lua 	ANNOUNCE_WOBY_PRAISE =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua 		"only_used_by_walter",
+--fallback to speech_wilson.lua 	},
+--fallback to speech_wilson.lua 	ANNOUNCE_WOBY_FORAGE =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua 		"only_used_by_walter",
+--fallback to speech_wilson.lua 	},
+--fallback to speech_wilson.lua 	ANNOUNCE_WOBY_WORK =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua 		"only_used_by_walter",
+--fallback to speech_wilson.lua 	},
+--fallback to speech_wilson.lua 	ANNOUNCE_WOBY_COURIER =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua 		"only_used_by_walter",
+--fallback to speech_wilson.lua 	},
+--fallback to speech_wilson.lua 	ANNOUNCE_WOBY_REMEMBERCHEST_FAIL =
+--fallback to speech_wilson.lua 	{
+--fallback to speech_wilson.lua 		"only_used_by_walter",
+--fallback to speech_wilson.lua 	},
 
-    ANNOUNCE_WX_SCANNER_NEW_FOUND = "新样本。值得记录。",		--WX-78的扫描仪发现新的生物数据
-    ANNOUNCE_WX_SCANNER_FOUND_NO_DATA = "这一带没有新东西。无趣。",		--生物扫描仪没有发现新数据
+    -- wx specific
+    ANNOUNCE_WX_SCANNER_NEW_FOUND = "only_used_by_wx78",
+--fallback to speech_wilson.lua     ANNOUNCE_WX_SCANNER_FOUND_NO_DATA = "only_used_by_wx78",
 
-    QUAGMIRE_ANNOUNCE_NOTRECIPE = "这些配料不成菜。换一份。",		--暴食模式中提交的食物不符合食谱
-    QUAGMIRE_ANNOUNCE_MEALBURNT = "火候过了。可惜。",		--暴食模式料理烧焦
-    QUAGMIRE_ANNOUNCE_LOSE = "预感不妙。……果然。",		--暴食模式挑战失败
-    QUAGMIRE_ANNOUNCE_WIN = "该收场了。",		--暴食模式挑战成功
+    --quagmire event
+    QUAGMIRE_ANNOUNCE_NOTRECIPE = "那不是能用的食谱。",
+    QUAGMIRE_ANNOUNCE_MEALBURNT = "火上烧得太久了。",
+    QUAGMIRE_ANNOUNCE_LOSE = "我们失败了喵。",
+    QUAGMIRE_ANNOUNCE_WIN = "我们最好要继续前进。迈步！",
 
     ANNOUNCE_ROYALTY =
     {
-        "陛下。",		--向带着蜂王帽的队友鞠躬
-        "殿下。",		--向带着蜂王帽的队友鞠躬
-        "我的君主。",		--向带着蜂王帽的队友鞠躬
+        "Your Highness.",
+        "Your Grace.",
+        "You wear her crown well.",
     },
     ANNOUNCE_ROYALTY_JOKER =
     {
-        "“陛下”。",		--对鱼人王使用玩笑互动
-        "“殿下”。",		--对鱼人王使用玩笑互动
-        "“大王”。",		--对鱼人王使用玩笑互动
+        "Your \"Highness\".",
+        "Your \"Grace\".",
+        "You wear that \"crown\" well.",
     },
 
-    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "正电在我这边。",		--事件说明：获得带电攻击增益
-    ANNOUNCE_ATTACH_BUFF_ATTACK            = "手上有劲了。动手。",		--事件说明：食用辣椒粉料理后获得攻击力增益
-    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "皮厚了些。挨几下也无妨。",		--事件说明：食用大蒜粉料理后获得伤害减免增益
-    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "手脚利落了不少。",		--事件说明：食用蜂蜜粉料理后获得工作效率增益
-    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "干爽得像旧书页。正合我意。",		--事件说明：食用蓝带鱼排后获得潮湿免疫效果
-    ANNOUNCE_ATTACH_BUFF_SLEEPRESISTANCE   = "精神清明。倦意退了。",		--事件说明：食用月亮蘑菇料理后获得睡眠抗性效果
+    ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK    = "我似乎导电了喵！",
+    ANNOUNCE_ATTACH_BUFF_ATTACK            = "啊，我觉得充满了活力！",
+    ANNOUNCE_ATTACH_BUFF_PLAYERABSORPTION  = "我敢说我比外表看起来强壮！",
+    ANNOUNCE_ATTACH_BUFF_WORKEFFECTIVENESS = "我马上就能做好所有事喵！",
+    ANNOUNCE_ATTACH_BUFF_MOISTUREIMMUNITY  = "干的如此舒适！",
+    ANNOUNCE_ATTACH_BUFF_SLEEPRESISTANCE   = "我对失眠并不陌生。",
 
-    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "电退了。毛还竖着。",		--事件说明：带电攻击增益结束
-    ANNOUNCE_DETACH_BUFF_ATTACK            = "力气散了。有些可惜。",		--事件说明：辣椒粉料理提供的攻击力增益结束
-    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "护身的感觉淡了。刚才尚可。",		--事件说明：大蒜粉料理提供的伤害减免增益结束
-    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "惰性又回来了。",		--事件说明：蜂蜜粉料理提供的工作效率增益结束
-    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "干燥期结束。我不喜欢。",		--事件说明：蓝带鱼排提供的潮湿免疫效果结束
-    ANNOUNCE_DETACH_BUFF_SLEEPRESISTANCE   = "我……（哈欠）倦意……回来了……",		--事件说明：月亮蘑菇料理提供的睡眠抗性效果结束
+    ANNOUNCE_DETACH_BUFF_ELECTRICATTACK    = "又回到了自然状态。",
+    ANNOUNCE_DETACH_BUFF_ATTACK            = "哎呀，我这是怎么了？",
+    ANNOUNCE_DETACH_BUFF_PLAYERABSORPTION  = "我的防御力似乎降低了。",
+    ANNOUNCE_DETACH_BUFF_WORKEFFECTIVENESS = "我只能不知疲倦的工作一小段时间。",
+    ANNOUNCE_DETACH_BUFF_MOISTUREIMMUNITY  = "我刚刚被雨滴打湿了吗？",
+    ANNOUNCE_DETACH_BUFF_SLEEPRESISTANCE   = "真奇怪，我确实觉得有点累喵……",
 
-	ANNOUNCE_OCEANFISHING_LINESNAP = "线断了。辛苦也断了。",		--海钓 线崩断了
-	ANNOUNCE_OCEANFISHING_LINETOOLOOSE = "收线试试。总比空等好。",		--海钓失败 渔具丢失
-	ANNOUNCE_OCEANFISHING_GOTAWAY = "它走了。记下这一笔。",		--海钓 鱼跑远了
-	ANNOUNCE_OCEANFISHING_BADCAST = "这一竿，落得不太体面。",		--海钓 抛竿扔地面上去了
+	ANNOUNCE_OCEANFISHING_LINESNAP = "噢，天啊，一定是刚才太用力拉线喵。",
+	ANNOUNCE_OCEANFISHING_LINETOOLOOSE = "鱼线必须绷紧！",
+	ANNOUNCE_OCEANFISHING_GOTAWAY = "看来晚餐吃不到鱼了。",
+	ANNOUNCE_OCEANFISHING_BADCAST = "咱们再试试，如何？",
 	ANNOUNCE_OCEANFISHING_IDLE_QUOTE =
 	{
-		"鱼呢。",		--海钓 没上钩的时候闲聊
-		"该换个鱼多的地方。喵。",		--海钓 没上钩的时候闲聊
-		"海里竟也这样空。",		--海钓 没上钩的时候闲聊
-		"我本可以去做更正经的事……",		--海钓 没上钩的时候闲聊
+		"Patience is a virtue.",
+		"I do not appreciate the tardiness of these fish.",
+		"Perhaps if I tried a different lure...",
+		"I wonder if I could get some reading done while I wait.",
 	},
 
-	ANNOUNCE_WEIGHT = "重量：{weight}",		--称重 
-	ANNOUNCE_WEIGHT_HEAVY  = "重量：{weight}\n这条鱼，分量不轻。",		--称重 大鱼
+	ANNOUNCE_WEIGHT = "重量：{weight}",
+	ANNOUNCE_WEIGHT_HEAVY  = "重量: {weight}\n这个标本的大小远远超过了平均值喵。",
 
-	ANNOUNCE_WINCH_CLAW_MISS = "偏了一点。",		--绞绞吸盘 没命中
-	ANNOUNCE_WINCH_CLAW_NO_ITEM = "空的。白忙一场。",		--绞绞吸盘 没东西
+	ANNOUNCE_WINCH_CLAW_MISS = "我需要提高自己的精度喵。",
+	ANNOUNCE_WINCH_CLAW_NO_ITEM = "哦亲爱的……也许我该擦擦眼镜了。",
 
-    ANNOUNCE_KINGCREATED = "鱼人立了新王。",		--沃特拥立新的鱼人王
-    ANNOUNCE_KINGDESTROYED = "旧王不堪。我会挑个更好的。",		--鱼人王被消灭或王位失效
-    ANNOUNCE_CANTBUILDHERE_THRONE = "这里不配做王座。",		--当前位置不能建造鱼人王宝座
-    ANNOUNCE_CANTBUILDHERE_HOUSE = "房子要漂亮，沼泽也得体面。",		--当前位置不能建造鱼人房屋
-    ANNOUNCE_CANTBUILDHERE_WATCHTOWER = "不行。卫士只守沼泽。",		--当前位置不能建造鱼人瞭望塔
+    --Wurt announce strings
+--fallback to speech_wilson.lua     ANNOUNCE_KINGCREATED = "only_used_by_wurt",
+--fallback to speech_wilson.lua     ANNOUNCE_KINGDESTROYED = "only_used_by_wurt",
+--fallback to speech_wilson.lua     ANNOUNCE_CANTBUILDHERE_THRONE = "only_used_by_wurt",
+--fallback to speech_wilson.lua     ANNOUNCE_CANTBUILDHERE_HOUSE = "only_used_by_wurt",
+--fallback to speech_wilson.lua     ANNOUNCE_CANTBUILDHERE_WATCHTOWER = "only_used_by_wurt",
     ANNOUNCE_READ_BOOK =
     {
-        BOOK_SLEEP = "久远……很久……以……前……噢……",		--阅读催眠类书籍
-        BOOK_BIRDS = "书里有鸟。画得不错，喵。",		--阅读召唤鸟类的书籍
-        BOOK_TENTACLES =  "这本写得不错。",		--阅读召唤触手的书籍
-        BOOK_BRIMSTONE = "我想知道结局。就现在。",		--阅读召唤闪电的书籍
-        BOOK_GARDENING = "生僻字不少……",		--阅读园艺类书籍
-		BOOK_SILVICULTURE = "讲树的？我懂不少树的事。",		--阅读林业类书籍
-		BOOK_HORTICULTURE = "这字……一个比一个冷僻……",		--阅读应用园艺学
+--fallback to speech_wilson.lua         BOOK_SLEEP = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_BIRDS = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_TENTACLES =  "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_BRIMSTONE = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_GARDENING = "only_used_by_wurt",
+--fallback to speech_wilson.lua 		BOOK_SILVICULTURE = "only_used_by_wurt",
+--fallback to speech_wilson.lua 		BOOK_HORTICULTURE = "only_used_by_wurt",
 
-        BOOK_FISH = "最好的书。里面有鱼，喵。",		--阅读召唤鱼群的书籍
-        BOOK_FIRE = "火……这一页我不想翻。",		--阅读火焰相关书籍
-        BOOK_WEB = "韦伯，我在读蜘蛛的秘密。",		--阅读蛛网相关书籍
-        BOOK_TEMPERATURE = "衡量……热——能的单位……",		--阅读温度相关书籍
-        BOOK_LIGHT = "这些词，和我想的不同。",		--阅读光照相关书籍
-        BOOK_RAIN = "能命令雨？值得一试。",		--阅读降雨相关书籍
-        BOOK_MOON = "月亮。其实乏味得很。",		--阅读月亮相关书籍
-        BOOK_BEES = "里面没有蜂蜜……可惜。",		--阅读蜜蜂相关书籍
+--fallback to speech_wilson.lua         BOOK_FISH = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_FIRE = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_WEB = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_TEMPERATURE = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_LIGHT = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_RAIN = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_MOON = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_BEES = "only_used_by_wurt",
 
-        BOOK_HORTICULTURE_UPGRADED = "不——换本浅些的书吧……",		--阅读升级版园艺学书籍
-        BOOK_RESEARCH_STATION = "难读。但拿着它显得聪明。",		--阅读研究站相关书籍
-        BOOK_LIGHT_UPGRADED = "要认的字不止一种？……",		--阅读升级版光照书籍
+--fallback to speech_wilson.lua         BOOK_HORTICULTURE_UPGRADED = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_RESEARCH_STATION = "only_used_by_wurt",
+--fallback to speech_wilson.lua         BOOK_LIGHT_UPGRADED = "only_used_by_wurt",
     },
 
-    ANNOUNCE_WEAK_RAT = "这只胡萝卜鼠不在状态。",		--试图训练快饿死的胡萝卜鼠
+    ANNOUNCE_WEAK_RAT = "恐怕它的状态不适合赛跑。",
 
-    ANNOUNCE_CARRAT_START_RACE = "实验开始。跑。",		--胡萝卜鼠开始比赛
+    ANNOUNCE_CARRAT_START_RACE = "比赛开始喵！",
 
     ANNOUNCE_CARRAT_ERROR_WRONG_WAY = {
-        "方向错了。回头。",		--胡萝卜鼠比赛 跑错方向
-        "掉头。你的眼睛在做什么。",		--胡萝卜鼠比赛 跑错方向
+        "Wrong way, dear.",
+        "Oh my, I'll have to make a note of this.",
     },
-    ANNOUNCE_CARRAT_ERROR_FELL_ASLEEP = "不许睡。起来，我们要赢。",		--起床了，蠢胡萝卜鼠！
-    ANNOUNCE_CARRAT_ERROR_WALKING = "别走。跑。",		--胡萝卜鼠比赛 走的慢
-    ANNOUNCE_CARRAT_ERROR_STUNNED = "起来。冲。",		--胡萝卜鼠比赛 惊呆了
+    ANNOUNCE_CARRAT_ERROR_FELL_ASLEEP = "对象的耐力水平似乎偏低。",
+    ANNOUNCE_CARRAT_ERROR_WALKING = "拿出点生龙活虎的样子，亲爱的喵。",
+    ANNOUNCE_CARRAT_ERROR_STUNNED = "你必须集中注意喵！",
 
-    ANNOUNCE_GHOST_QUEST = "你丢了东西？我可以找。",		--事件说明：小惊吓开始寻找遗失玩具的任务
-    ANNOUNCE_GHOST_HINT = "你在引路。我看到了。",		--事件说明：小惊吓提示遗失玩具所在方向
-    ANNOUNCE_GHOST_TOY_NEAR = {
-        "就在附近……我感觉到了……",		--事件说明：接近小惊吓遗失的玩具（台词变体1）
-    },
-	ANNOUNCE_SISTURN_FULL = "阿比盖尔能更快回到我身边。",		--姐妹骨灰罐 装满
-    ANNOUNCE_SISTURN_FULL_EVIL = "这让我毛都竖了。但愿值得。",		--邪恶倾向下姐妹骨灰罐充满
-    ANNOUNCE_SISTURN_FULL_BLOSSOM = "阿比盖尔，这也许是我们最近的一刻。",		--姐妹骨灰罐盛开并达到完整状态
-    ANNOUNCE_ABIGAIL_DEATH = "不……别再丢下我。",		--事件说明：阿比盖尔死亡并返回花朵
-    ANNOUNCE_ABIGAIL_RETRIEVE = "抱歉……外面不安全。",		--事件说明：主动收回阿比盖尔，使其返回花朵
-	ANNOUNCE_ABIGAIL_LOW_HEALTH = "阿比盖尔，小心。",		--事件说明：阿比盖尔的生命值过低
+    ANNOUNCE_GHOST_QUEST = "only_used_by_wendy",
+--fallback to speech_wilson.lua     ANNOUNCE_GHOST_HINT = "only_used_by_wendy",
+--fallback to speech_wilson.lua     ANNOUNCE_GHOST_TOY_NEAR = {
+--fallback to speech_wilson.lua         "only_used_by_wendy",
+--fallback to speech_wilson.lua     },
+--fallback to speech_wilson.lua 	ANNOUNCE_SISTURN_FULL = "only_used_by_wendy",
+    ANNOUNCE_SISTURN_FULL_EVIL = "only_used_by_wendy",
+    ANNOUNCE_SISTURN_FULL_BLOSSOM = "only_used_by_wendy",
+--fallback to speech_wilson.lua     ANNOUNCE_ABIGAIL_DEATH = "only_used_by_wendy",
+--fallback to speech_wilson.lua     ANNOUNCE_ABIGAIL_RETRIEVE = "only_used_by_wendy",
+--fallback to speech_wilson.lua 	ANNOUNCE_ABIGAIL_LOW_HEALTH = "only_used_by_wendy",
     ANNOUNCE_ABIGAIL_SUMMON =
 	{
-		LEVEL1 = "我知道你累了。但我需要你……",		--事件说明：召唤阿比盖尔，当前幽灵羁绊为第一等级
-		LEVEL2 = "阿比盖尔，我需要你……",		--事件说明：召唤阿比盖尔，当前幽灵羁绊为第二等级
-		LEVEL3 = "你休息得够久了，姐妹。",		--事件说明：召唤阿比盖尔，当前幽灵羁绊为第三等级
+--fallback to speech_wilson.lua 		LEVEL1 = "only_used_by_wendy",
+--fallback to speech_wilson.lua 		LEVEL2 = "only_used_by_wendy",
+--fallback to speech_wilson.lua 		LEVEL3 = "only_used_by_wendy",
 	},
 
     ANNOUNCE_GHOSTLYBOND_LEVELUP =
 	{
-		LEVEL2 = "阿比盖尔，你的气色亮了。",		--事件说明：阿比盖尔的幽灵羁绊提升到第二等级
-		LEVEL3 = "黑暗里，阿比盖尔一直是那盏灯……",		--事件说明：阿比盖尔的幽灵羁绊提升到第三等级
+--fallback to speech_wilson.lua 		LEVEL2 = "only_used_by_wendy",
+--fallback to speech_wilson.lua 		LEVEL3 = "only_used_by_wendy",
 	},
 
-    ANNOUNCE_NOINSPIRATION = "让战场替我开嗓。",		--薇格弗德没有足够激励值
-    ANNOUNCE_NOTSKILLEDENOUGH = "这首曲子……我恐怕还唱不了。",		--尚未学习所需技能
-    ANNOUNCE_BATTLESONG_INSTANT_TAUNT_BUFF = "“卑鄙之徒。我会让你尝尽败意。”",		--战歌立即触发嘲讽效果
-    ANNOUNCE_BATTLESONG_INSTANT_PANIC_BUFF = "“指尖发麻，必有不祥。”",		--战歌立即触发恐慌效果
-    ANNOUNCE_BATTLESONG_INSTANT_REVIVE_BUFF = "“死亡终会到来，”但不是今天，我的盟友。",		--战歌立即触发复活效果
+--fallback to speech_wilson.lua     ANNOUNCE_NOINSPIRATION = "only_used_by_wathgrithr",
+--fallback to speech_wilson.lua     ANNOUNCE_NOTSKILLEDENOUGH = "only_used_by_wathgrithr",
+--fallback to speech_wilson.lua     ANNOUNCE_BATTLESONG_INSTANT_TAUNT_BUFF = "only_used_by_wathgrithr",
+--fallback to speech_wilson.lua     ANNOUNCE_BATTLESONG_INSTANT_PANIC_BUFF = "only_used_by_wathgrithr",
+--fallback to speech_wilson.lua     ANNOUNCE_BATTLESONG_INSTANT_REVIVE_BUFF = "only_used_by_wathgrithr",
 
-    ANNOUNCE_WANDA_YOUNGTONORMAL = "无妨。我还有时间……",		--旺达从年轻状态变为中年状态
-    ANNOUNCE_WANDA_NORMALTOOLD = "时间不多了。",		--旺达从中年状态变为年老状态
-    ANNOUNCE_WANDA_OLDTONORMAL = "死神抓不到我。",		--旺达从年老状态恢复中年状态
-    ANNOUNCE_WANDA_NORMALTOYOUNG = "青春又回来了。不错。",		--旺达从中年状态恢复年轻状态
+--fallback to speech_wilson.lua     ANNOUNCE_WANDA_YOUNGTONORMAL = "only_used_by_wanda",
+--fallback to speech_wilson.lua     ANNOUNCE_WANDA_NORMALTOOLD = "only_used_by_wanda",
+--fallback to speech_wilson.lua     ANNOUNCE_WANDA_OLDTONORMAL = "only_used_by_wanda",
+--fallback to speech_wilson.lua     ANNOUNCE_WANDA_NORMALTOYOUNG = "only_used_by_wanda",
 
-	ANNOUNCE_POCKETWATCH_PORTAL = "没人说过，穿越之后会这样酸疼……",		--旺达使用裂缝表传送门
+	ANNOUNCE_POCKETWATCH_PORTAL = "呜呜! 我是否可以建议下次将出口点重新调整到离地面更近的地方，亲爱的？",
 
-	ANNOUNCE_POCKETWATCH_MARK = "此处作锚点，很好。",		--使用溯源表记录当前位置
-	ANNOUNCE_POCKETWATCH_RECALL = "这颗心，还没为时间旅行跳够。",		--使用溯源表返回记录位置
-	ANNOUNCE_POCKETWATCH_OPEN_PORTAL = "好了。诸位，快些。",		--使用裂缝表开启传送门
-	ANNOUNCE_POCKETWATCH_OPEN_PORTAL_DIFFERENTSHARD = "留神。这一跳不小。",		--裂缝表开启跨世界传送门
+--fallback to speech_wilson.lua 	ANNOUNCE_POCKETWATCH_MARK = "only_used_by_wanda",
+--fallback to speech_wilson.lua 	ANNOUNCE_POCKETWATCH_RECALL = "only_used_by_wanda",
+--fallback to speech_wilson.lua 	ANNOUNCE_POCKETWATCH_OPEN_PORTAL = "only_used_by_wanda",
+--fallback to speech_wilson.lua 	ANNOUNCE_POCKETWATCH_OPEN_PORTAL_DIFFERENTSHARD = "only_used_by_wanda",
 
-    ANNOUNCE_ARCHIVE_NEW_KNOWLEDGE = "远古的知识，把思路拓宽了。",		--地下月岛遗迹 解锁新知识
-    ANNOUNCE_ARCHIVE_OLD_KNOWLEDGE = "这条我早知道。",		--地下月岛遗迹 解锁旧知识
-    ANNOUNCE_ARCHIVE_NO_POWER = "得给它供电。",		--地下月岛遗迹 没能量
+    ANNOUNCE_ARCHIVE_NEW_KNOWLEDGE = "多么奇特的感觉，它在用心灵感应传送蓝图！",
+    ANNOUNCE_ARCHIVE_OLD_KNOWLEDGE = "我对这种知识已经很熟悉了。",
+    ANNOUNCE_ARCHIVE_NO_POWER = "真是非常失望，我很想知道它的作用。",
 
     ANNOUNCE_PLANT_RESEARCHED =
     {
-        "对这株植物，我懂得更多了。",		--研究植物
+        "I've gained a bit more insight into the workings of this species.",
     },
 
-    ANNOUNCE_PLANT_RANDOMSEED = "会长出什么，尚不可知。",		--种下随机种子
+    ANNOUNCE_PLANT_RANDOMSEED = "等它长大了，我就可以辨认物种了。",
 
-    ANNOUNCE_FERTILIZER_RESEARCHED = "没想过我的学问会用在这东西上。",		--研究肥料
+    ANNOUNCE_FERTILIZER_RESEARCHED = "即使我有相当丰富的园艺经验，也总有新的东西要学。",
 
 	ANNOUNCE_FIRENETTLE_TOXIN =
 	{
-		"里面像有火在烧。",		--事件说明：触碰烈火荨麻后灼烧毒素发作（台词变体1）
-		"太烫了！",		--事件说明：触碰烈火荨麻后灼烧毒素发作（台词变体2）
+		"Oh dear... I seem to be afflicted by the plant's toxin.",
+		"The toxin from those nettles carries a rather unpleasant burning sensation.",
 	},
-	ANNOUNCE_FIRENETTLE_TOXIN_DONE = "记下：火荨麻的试验，到此为止。",		--事件说明：烈火荨麻造成的灼烧毒素效果结束
+	ANNOUNCE_FIRENETTLE_TOXIN_DONE = "值得庆幸的是，这种毒素的影响似乎是暂时的。",
 
 	ANNOUNCE_TALK_TO_PLANTS =
 	{
-        "长吧。再长高些。",		--和植物聊天
-        "我一直想要一株你这样的。",		--和植物聊天
-		"你好。我来给你今日的言语。",		--和植物聊天
-        "你是株好植物。喵。",		--和植物聊天
-        "你听得很好。比多数人好。",		--和植物聊天
+        "Talking to my little garden always seemed to help it grow.",
+        "My, those leaves are coming in quite nicely, dear!",
+		"All one needs to thrive is a bit of love and care, isn't that right?",
+        "No need to rush dear, you just take your time.",
+        "How are you doing today? Do you have enough water?",
 	},
 
-	ANNOUNCE_KITCOON_HIDEANDSEEK_START = "三、二、一……藏好没有，我都要找了。",		--开始小浣猫捉迷藏游戏
-	ANNOUNCE_KITCOON_HIDEANDSEEK_JOIN = "它们在玩捉迷藏。",		--加入正在进行的小浣猫捉迷藏游戏
+	ANNOUNCE_KITCOON_HIDEANDSEEK_START = "游戏已经启动，我应该开始搜索了。",
+	ANNOUNCE_KITCOON_HIDEANDSEEK_JOIN = "打扰了，我愿意加入猫科动物的搜索。",
 	ANNOUNCE_KITCOON_HIDANDSEEK_FOUND =
 	{
-		"找到你了。",		--捉迷藏时找到小浣猫
-		"在这里。",		--捉迷藏时找到小浣猫
-		"早知道你躲那儿。",		--捉迷藏时找到小浣猫
-		"看见你了，喵。",		--捉迷藏时找到小浣猫
+		"Ah, there you are.",
+		"It seems I've discovered a kitten.",
+		"I could see your tail from the distance, dear.",
+		"Finding kittens is quite simple once you become accustomed to it.",
 	},
-	ANNOUNCE_KITCOON_HIDANDSEEK_FOUND_ONE_MORE = "还剩最后一个。躲哪了？",		--捉迷藏时又找到一只小浣猫
-	ANNOUNCE_KITCOON_HIDANDSEEK_FOUND_LAST_ONE = "最后一个，也找到了。",		--捉迷藏时找到最后一只小浣猫
-	ANNOUNCE_KITCOON_HIDANDSEEK_FOUND_LAST_ONE_TEAM = "{name}找到了最后一个。",		--队伍找到捉迷藏中的最后一只小浣猫
-	ANNOUNCE_KITCOON_HIDANDSEEK_TIME_ALMOST_UP = "那些小家伙，快没耐心了……",		--小浣猫捉迷藏剩余时间不多
-	ANNOUNCE_KITCOON_HIDANDSEEK_LOSEGAME = "看来它们不想玩了。",		--小浣猫捉迷藏游戏失败
-	ANNOUNCE_KITCOON_HIDANDSEEK_TOOFAR = "它们不会躲这么远。应当不会。",		--捉迷藏时离游戏区域太远
-	ANNOUNCE_KITCOON_HIDANDSEEK_TOOFAR_RETURN = "小浣猫该在附近。",		--离开捉迷藏区域后返回游戏范围
-	ANNOUNCE_KITCOON_FOUND_IN_THE_WILD = "那边有东西躲着。我看得没错。",		--在野外发现小浣猫
+	ANNOUNCE_KITCOON_HIDANDSEEK_FOUND_ONE_MORE = "又邂逅了一只小猫喵。",
+	ANNOUNCE_KITCOON_HIDANDSEEK_FOUND_LAST_ONE = "我找到了所有不见的小猫喵。",
+	ANNOUNCE_KITCOON_HIDANDSEEK_FOUND_LAST_ONE_TEAM = "我们找到了所有不见的小猫。",
+	ANNOUNCE_KITCOON_HIDANDSEEK_TIME_ALMOST_UP = "游戏结束的时间越来越近了。",
+	ANNOUNCE_KITCOON_HIDANDSEEK_LOSEGAME = "看来我们没能及时找齐所有小猫。",
+	ANNOUNCE_KITCOON_HIDANDSEEK_TOOFAR = "我正与游戏场地拉开距离喵。",
+	ANNOUNCE_KITCOON_HIDANDSEEK_TOOFAR_RETURN = "小猫应该在这里，没错喵。",
+	ANNOUNCE_KITCOON_FOUND_IN_THE_WILD = "可怜的宝贝，你迷路了吗喵？",
 
-	ANNOUNCE_TICOON_START_TRACKING	= "气味接上了。",		--大虎开始追踪小浣猫
-	ANNOUNCE_TICOON_NOTHING_TO_TRACK = "他什么都没找到。",		--大虎附近没有可以追踪的小浣猫
-	ANNOUNCE_TICOON_WAITING_FOR_LEADER = "我该跟上他。",		--大虎停下并等待主人
-	ANNOUNCE_TICOON_GET_LEADER_ATTENTION = "他在催我跟上。",		--大虎提醒主人跟上追踪
-	ANNOUNCE_TICOON_NEAR_KITCOON = "他一定闻到了什么。",		--大虎追踪到小浣猫附近
-	ANNOUNCE_TICOON_LOST_KITCOON = "有人先一步找到了。",		--大虎失去小浣猫的踪迹
-	ANNOUNCE_TICOON_ABANDONED = "我自己去找那些小家伙。",		--主人离开太远，大虎放弃追踪
-	ANNOUNCE_TICOON_DEAD = "可怜。他本想带我去哪儿呢？",		--负责追踪的大虎死亡
+	ANNOUNCE_TICOON_START_TRACKING	= "它已经闻到了小猫的气味。",
+	ANNOUNCE_TICOON_NOTHING_TO_TRACK = "似乎明显缺乏有猫隐藏的证据。",
+	ANNOUNCE_TICOON_WAITING_FOR_LEADER = "他听候我的调遣喵。",
+	ANNOUNCE_TICOON_GET_LEADER_ATTENTION = "别担心，亲爱的，我来了。",
+	ANNOUNCE_TICOON_NEAR_KITCOON = "他坚信其中一只小猫就在附近。",
+	ANNOUNCE_TICOON_LOST_KITCOON = "有人比我们先到，找到了我们的小猫。",
+	ANNOUNCE_TICOON_ABANDONED = "看来我将不得不继续独自寻找。",
+	ANNOUNCE_TICOON_DEAD = "哦，真糟糕！我想我现在只能靠自己了喵。",
 
-    ANNOUNCE_CALL_BEEF = "过来。",		--把牛拴好
-    ANNOUNCE_CANTBUILDHERE_YOTB_POST = "放这里，裁判看不见我的牛。",		--建造牛舞台 离裁判太远
-    ANNOUNCE_YOTB_LEARN_NEW_PATTERN =  "牛形的灵感，装了一脑子。",		--牛年活动 学到了新组件
+    -- YOTB
+    ANNOUNCE_CALL_BEEF = "来吧。",
+    ANNOUNCE_CANTBUILDHERE_YOTB_POST = "把它建的离比赛场地近点会更实用。",
+    ANNOUNCE_YOTB_LEARN_NEW_PATTERN =  "我可以织出一件放牛郎的衣服。",
 
-    ANNOUNCE_EYEOFTERROR_ARRIVE = "那是什么——浮着的巨眼？",		--恐怖之眼抵达并开始袭击
-    ANNOUNCE_EYEOFTERROR_FLYBACK = "总算回来了。",		--恐怖之眼重新飞回战斗区域
-    ANNOUNCE_EYEOFTERROR_FLYAWAY = "回来。我们还没完。",		--恐怖之眼暂时飞离战斗区域
+    -- AE4AE
+    ANNOUNCE_EYEOFTERROR_ARRIVE = "来自我们维度之外的东西正试图进来。",
+    ANNOUNCE_EYEOFTERROR_FLYBACK = "这种眼球生物似乎相当执着。",
+    ANNOUNCE_EYEOFTERROR_FLYAWAY = "我想日光会让它偏头痛喵。",
 
-    ANNOUNCE_CANT_ESCAPE_CURSE = "自然不会这么便宜。",		--诅咒生效，角色不能通过传送离开
-    ANNOUNCE_MONKEY_CURSE_1 = "开始像只猴子了……",		--获得第一阶段猴子诅咒
-    ANNOUNCE_MONKEY_CURSE_CHANGE = "我的头发……！不许碰我的毛。",		--猴子诅咒累积并使角色变身
-    ANNOUNCE_MONKEY_CURSE_CHANGEBACK = "总算脱了这副猴相。",		--猴子诅咒减弱，角色恢复原状
+    -- PIRATES
+    ANNOUNCE_CANT_ESCAPE_CURSE = "我似乎就是无法放下它……",
+    ANNOUNCE_MONKEY_CURSE_1 = "这种感觉很不同寻常喵。",
+    ANNOUNCE_MONKEY_CURSE_CHANGE = "噢，天啊。这是一个不幸的变故。",
+    ANNOUNCE_MONKEY_CURSE_CHANGEBACK = "啊。好多了喵。",
 
-    ANNOUNCE_PIRATES_ARRIVE = "这号子只说明一件事……",		--月亮码头海盗即将登船袭击
+    ANNOUNCE_PIRATES_ARRIVE = "哦，天啊。那些捣蛋鬼又在放他们的喧哗的音乐了……",
 
-    ANNOUNCE_BOOK_MOON_DAYTIME = "效果要到夜里才见。",		--白天无法正常使用月亮类书籍
+    ANNOUNCE_BOOK_MOON_DAYTIME = "我们要到今天晚上才能看到效果。",
 
-    ANNOUNCE_OFF_SCRIPT = "这句不在剧本里。",		--角色没有按当前表演或训练流程行动
+    ANNOUNCE_OFF_SCRIPT = "要不要再过一下剧本，亲爱的喵？",
 
-    ANNOUNCE_COZY_SLEEP = "睡得很好。精神清明，喵。",		--获得舒适睡眠效果
+    ANNOUNCE_COZY_SLEEP = "我想值得一试。",
 
-	ANNOUNCE_TOOL_TOOWEAK = "这工具不够硬。",		--工具强度不足，不能处理目标
+	--
+	ANNOUNCE_TOOL_TOOWEAK = "需要一个更强大的工具喵。",
 
-    ANNOUNCE_LUNAR_RIFT_MAX = "那道光——是月光吗？",		--月亮裂隙强度达到最高阶段
-    ANNOUNCE_SHADOW_RIFT_MAX = "有些阴险的东西要来了。",		--暗影裂隙强度达到最高阶段
+    ANNOUNCE_LUNAR_RIFT_MAX = "我怀疑强大能量的涌入是那束奇怪的光芒的来源喵。",
+    ANNOUNCE_SHADOW_RIFT_MAX = "听起来可能很荒谬，但那个“光”有点黑暗……",
 
-    ANNOUNCE_SCRAPBOOK_FULL = "这些我都有了。",		--图鉴记录已经全部收集完成
+    ANNOUNCE_SCRAPBOOK_FULL = "我的图鉴已经完成了。",
 
-    ANNOUNCE_CHAIR_ON_FIRE = "无妨。",		--正在使用的椅子着火
+    ANNOUNCE_CHAIR_ON_FIRE = "这种行为是不可接受的。",
 
-    ANNOUNCE_HEALINGSALVE_ACIDBUFF_DONE = "该再抹一层驱酸膏了。",		--药膏提供的酸雨防护效果结束
+    ANNOUNCE_HEALINGSALVE_ACIDBUFF_DONE = "我断言我的酸雨免疫能力已经消失了。",
 
     ANNOUNCE_COACH = 
     {
-        "别慌。我在你们身边。",		--沃尔夫冈进行健身指导
-        "记住我教你的。",		--沃尔夫冈进行健身指导
-        "害怕的时候，就想我。",		--沃尔夫冈进行健身指导
-        "勇敢些。像这样。",		--沃尔夫冈进行健身指导
-        "你很强。比你以为的强。",		--沃尔夫冈进行健身指导
-        "相信自己。像我信你一样。",		--沃尔夫冈进行健身指导
-        "做得好。肌肉发热，就对了。",		--沃尔夫冈进行健身指导
-        "别停。",		--沃尔夫冈进行健身指导
-        "对。你能行。",		--沃尔夫冈进行健身指导
+        "only_used_by_wolfgang",
+        "only_used_by_wolfgang",
+        "only_used_by_wolfgang",
+        "only_used_by_wolfgang",
+        "only_used_by_wolfgang",
+        "only_used_by_wolfgang",
+        "only_used_by_wolfgang",
+        "only_used_by_wolfgang",
+        "only_used_by_wolfgang",
     },
-    ANNOUNCE_WOLFGANG_WIMPY_COACHING = "没人会这样听劝。得练。",		--沃尔夫冈以虚弱形态指导队友训练
-    ANNOUNCE_WOLFGANG_MIGHTY_COACHING = "我的样子太招眼。不必让人难堪。",		--沃尔夫冈以强壮形态指导队友训练
-    ANNOUNCE_WOLFGANG_BEGIN_COACHING = "来吧。看我的动作。",		--沃尔夫冈开始指导队友训练
-    ANNOUNCE_WOLFGANG_END_COACHING = "到此为止。让肌肉歇一歇。",		--沃尔夫冈结束指导队友训练
+    ANNOUNCE_WOLFGANG_WIMPY_COACHING = "only_used_by_wolfgang喵",
+    ANNOUNCE_WOLFGANG_MIGHTY_COACHING = "only_used_by_wolfgang",
+    ANNOUNCE_WOLFGANG_BEGIN_COACHING = "only_used_by_wolfgang喵",
+    ANNOUNCE_WOLFGANG_END_COACHING = "only_used_by_wolfgang喵",
     ANNOUNCE_WOLFGANG_NOTEAM = 
     {
-        "我的人呢？",		--沃尔夫冈没有可指导的队友
-        "我需要有人跟着练。",		--沃尔夫冈没有可指导的队友
-        "开始吧……有人吗？",		--沃尔夫冈没有可指导的队友
+        "only_used_by_wolfgang",
+        "only_used_by_wolfgang",
+        "only_used_by_wolfgang",
     },
 
-    ANNOUNCE_YOTD_NOBOATS = "船得挪近起点塔。",		--龙舟竞速不能开始：没有参赛船只
-    ANNOUNCE_YOTD_NOCHECKPOINTS = "先立几个检查点。",		--龙舟竞速不能开始：没有设置检查点
-    ANNOUNCE_YOTD_NOTENOUGHBOATS = "位置不够，容不下其余选手。",		--龙舟竞速不能开始：参赛船只不足
+    ANNOUNCE_YOTD_NOBOATS = "我必须在离起点更近的地方才能开始。",
+    ANNOUNCE_YOTD_NOCHECKPOINTS = "设置检查站的事宜似乎被忽略了。",
+    ANNOUNCE_YOTD_NOTENOUGHBOATS = "我应该努力在起点周围腾出一些空间。",
 
-    ANNOUNCE_OTTERBOAT_OUTOFSHALLOWS = "不该离浅滩这么远。",		--水獭船驶离允许活动的浅水区域
-    ANNOUNCE_OTTERBOAT_DENBROKEN = "拆了那窝，怕是引来连锁反应……",		--水獭船关联的水獭巢穴已经损坏
+    ANNOUNCE_OTTERBOAT_OUTOFSHALLOWS = "该平台的结构无法承受更深的水域喵。",
+    ANNOUNCE_OTTERBOAT_DENBROKEN = "看来那个窝对平台结构完整性的重要性比我想象的还要大。",
 
-    ANNOUNCE_GATHER_MERM = "大概是鱼人的规矩。",		--沃特召集附近鱼人跟随
+    ANNOUNCE_GATHER_MERM = "only_used_by_wurt",
 
-    ANNOUNCE_EXIT_GELBLOB = "被那些……东西淹了。",		--从黏液团内部脱离
-	ANNOUNCE_SHADOWTHRALL_STEALTH = "被咬了。它去哪了？",		--暗影随从进入潜行状态
-    ANNOUNCE_RABBITKING_AGGRESSIVE = "有东西正从土里掘出来。",		--发现好斗兔王
-    ANNOUNCE_RABBITKING_PASSIVE = "地下有东西在轻轻蠕动。",		--发现温和兔王
-    ANNOUNCE_RABBITKING_LUCKY = "这兔子长得奇怪。",		--发现幸运兔王
-    ANNOUNCE_RABBITKING_LUCKYCAUGHT = "抓到了。",		--成功抓住幸运兔王
-    ANNOUNCE_RABBITKINGHORN_BADSPAWNPOINT = "兔子们大概不喜欢这里。",		--兔王号角召唤位置无效
+    -- rifts 4
+    ANNOUNCE_EXIT_GELBLOB = "我不想再经历那样的事了喵。",
+	ANNOUNCE_SHADOWTHRALL_STEALTH = "我被隐秘的生物咬了！",
+    ANNOUNCE_RABBITKING_AGGRESSIVE = "某种生物正在地下积极地挖隧道喵。",
+    ANNOUNCE_RABBITKING_PASSIVE = "我听到小动物挖洞的声音。",
+    ANNOUNCE_RABBITKING_LUCKY = "多么奇特的兔子品种啊！",
+    ANNOUNCE_RABBITKING_LUCKYCAUGHT = "抓到你了喵！",
+    ANNOUNCE_RABBITKINGHORN_BADSPAWNPOINT = "这显然不是正确位置。",
 
-	ANNOUNCE_NOPUMPKINCARVINGONFIRE = "南瓜已经烤熟了。",		--南瓜正在燃烧，不能雕刻
+	-- Hallowed Nights 2024
+	ANNOUNCE_NOPUMPKINCARVINGONFIRE = "滚烫的麻烦。",
 
-	ANNOUNCE_SNOWBALL_TOO_BIG = "不能再大了。",		--雪球已经达到最大尺寸
-	ANNOUNCE_SNOWBALL_NO_SNOW = "雪不够。",		--地面没有足够积雪制作雪球
+	-- Winter's Feast 2024
+	ANNOUNCE_SNOWBALL_TOO_BIG = "它已经达到最大尺寸了喵。",
+	ANNOUNCE_SNOWBALL_NO_SNOW = "这里没有雪可以滚雪球。",
 
-    ANNOUNCE_WENDY_BABYSITTER_SET = "阿比，我会回来。", 		--温蒂设置阿比盖尔的照看目标
-    ANNOUNCE_WENDY_BABYSITTER_STOP = "阿比，走了。",		--温蒂停止阿比盖尔的照看任务
+    -- Meta 5
+    ANNOUNCE_WENDY_BABYSITTER_SET = "only_used_by_wendy", 
+    ANNOUNCE_WENDY_BABYSITTER_STOP = "only_used_by_wendy",
 
-	ANNOUNCE_WORTOX_REVIVER_FAILTELEPORT = "嗯。哪里出了差错。",		--沃拓克斯尝试传送救援失败
+	ANNOUNCE_WORTOX_REVIVER_FAILTELEPORT = "简直扫兴喵。",
 
-    ANNOUNCE_NO_ABIGAIL_FLOWER = "没有阿比盖尔之花，走不下去。",		--温蒂没有阿比盖尔之花
+    ANNOUNCE_NO_ABIGAIL_FLOWER = "only_used_by_wendy",
 
-    ANNOUNCE_ELIXIR_BOOSTED = "阴间的手笔。倒也管用。",		--阿比盖尔获得强化药剂效果
-    ANNOUNCE_ELIXIR_GHOSTVISION = "一阵惧意上来。",		--获得幽灵视野药剂效果
-    ANNOUNCE_ELIXIR_PLAYER_SPEED = "这速度，抱着马也不慢。",		--获得角色移速药剂效果
+    ANNOUNCE_ELIXIR_BOOSTED = "真是太好了。",
+    ANNOUNCE_ELIXIR_GHOSTVISION = "我的眼睛已经适应了黑暗。",
+    ANNOUNCE_ELIXIR_PLAYER_SPEED = "力量给年轻人纯碎是浪费！",
 
-    ANNOUNCE_ELIXIR_TOO_SUPER = "这味道，过了。",		--药剂强度过高，不能继续使用
+    ANNOUNCE_ELIXIR_TOO_SUPER = "那个过于烈性。",
 
+    -- Rift 5
 
-    ANNOUNCE_LUNARGUARDIAN_INCOMING = "它回来了。",		--月亮守卫即将出现
-    ANNOUNCE_FLOATER_HELD = "本在溺水，忽然想到……就浮起来了。",		--抓住水面漂浮物
-    ANNOUNCE_FLOATER_LETGO = "我讨厌被吊着——",		--松开水面漂浮物
+    ANNOUNCE_LUNARGUARDIAN_INCOMING = "怎么又是你！",
+    ANNOUNCE_FLOATER_HELD = "呣，相当方便喵。",
+    ANNOUNCE_FLOATER_LETGO = "该下水了！",
 
-    ANNOUNCE_LUNARHAIL_BIRD_SOUNDS = "鸦群死去，是这个声音。",		--月雹期间听到鸟类异常声响
-    ANNOUNCE_LUNARHAIL_BIRD_CORPSES = "像鸟一样落下来。",		--月雹后发现鸟类尸体
-    ANNOUNCE_FLOAT_SWIM_TIRED = "力尽了。",		--游泳时体力耗尽
-    ANOUNCE_MUTATED_BIRD_ATTACK = "有鸟。",		--变异鸟发动攻击
+    -- rifts5.1
+    ANNOUNCE_LUNARHAIL_BIRD_SOUNDS = "多么可怕的声音。",
+    ANNOUNCE_LUNARHAIL_BIRD_CORPSES = "那些可怜的鸟儿在冰雹里毫无生存的机会。",
+    ANNOUNCE_FLOAT_SWIM_TIRED = "容老妪喘口气喵。",
+    ANOUNCE_MUTATED_BIRD_ATTACK = "变异禽类正在发动攻击喵。",
 
-    ANNOUNCE_WEAPON_TOOWEAK = "这武器太轻。换一件。",		--武器强度不足，不能伤害目标
-    ANNOUNCE_VAULT_TELEPORTER_DOES_NOTHING = "另一头是不是坏了？",		--宝库传送装置当前没有效果
+    -- Rift 6
+    ANNOUNCE_WEAPON_TOOWEAK = "这需要更强大的力量喵。",
+    ANNOUNCE_VAULT_TELEPORTER_DOES_NOTHING = "定是接收端出了问题。",
 
-	ANNOUNCE_LIGHTSOUT_SHADOWHAND = "等等。那东西在下面做什么？",		--黑暗中出现暗影之手
+	-- Rift 6.1
+	ANNOUNCE_LIGHTSOUT_SHADOWHAND = "那只令人难以忍受的手似乎在妨碍解谜喵！",
 
-    ANNOUNCE_MUTATED_BUZZARD_ARRIVAL = "退开。我们还没死。等等——它们变了。", 		--变异秃鹫抵达并在角色附近盘旋
+    -- Hallowed Nights 2025
+    ANNOUNCE_MUTATED_BUZZARD_ARRIVAL = "秃鹫自然会被腐肉吸引。可是，这几只身上显然有变异的迹象。", -- Mutated buzzards arrive to lurk and circle the player
 
-    ANNOUNCE_HERMITCRAB_SHELL_BADTELEPORTPOINT = "我怎么还在这儿。",		--寄居蟹贝壳传送目标位置无效
-    ANNOUNCE_HERMITCRAB_SHELL_ARRIVE = "有些晕。像晕船。",		--通过寄居蟹贝壳传送抵达
+    -- Winter's Feast 2025
+    ANNOUNCE_HERMITCRAB_SHELL_BADTELEPORTPOINT = "不知为何它没有响应。",
+    ANNOUNCE_HERMITCRAB_SHELL_ARRIVE = "啊，是的。我到珍珠家了。",
 
-    ANNOUNCE_YOTH_ONCOOLDOWN = "他们多半在胡闹。",		--马年活动能力仍在冷却
-	ANNOUNCE_MAX_CLOCKWORKS = "只带一对。也算合理。",		--可控制的发条生物数量达到上限
+    -- Year of the Clockwork Knight
+    ANNOUNCE_YOTH_ONCOOLDOWN = "看来那些机械骑士此刻暂时无法响应喵。",
+	-- Post-YOTH
+	ANNOUNCE_MAX_CLOCKWORKS = "嗯，是的。国际象棋的规则很简单。每人最多只能有两颗这种棋子。",
 
-    ANNOUNCE_WX_SCANNER_HITDOWN_BY_CAT = "爪子比你的机器快。",		--WX-78的扫描仪被猫拍落
-    ANNOUNCE_WX_TASER_BUILDUP = "你的每一下，都在给我充电。", 		--WX-78受击后电荷持续积累，即将释放电磁脉冲
-    ANNOUNCE_WX_TASER_ABOUTTOEXPLODE = "满了。", 		--WX-78电荷已满，即将释放电磁脉冲
-    ANNOUNCE_WX_TASER_POSTEXPLOSION = "痛快。", 		--WX-78释放电磁脉冲并清空积累电荷
-    ANNOUNCE_WX_NIGHTMARECHARGE = "异常物质。电力超控已启用。", 		--WX-78使用噩梦燃料后暂时充满电荷
-	ANNOUNCE_WX_NIGHTMAREDISCHARGE = "超控解除。电力已复原。", 		--WX-78的噩梦燃料临时满电效果结束
+    -- wx specific
+--fallback to speech_wilson.lua     ANNOUNCE_WX_SCANNER_HITDOWN_BY_CAT = "only_used_by_wx78",
+--fallback to speech_wilson.lua     ANNOUNCE_WX_TASER_BUILDUP = "only_used_by_wx78", -- Wx is building up charge when getting hit, nearing EMP blast
+--fallback to speech_wilson.lua     ANNOUNCE_WX_TASER_ABOUTTOEXPLODE = "only_used_by_wx78", -- Wx is fully charged and about to release it. Take cover!
+--fallback to speech_wilson.lua     ANNOUNCE_WX_TASER_POSTEXPLOSION = "only_used_by_wx78", -- Wx has exploded and released all the build up, now they can say something about how invigorating it was.
+--fallback to speech_wilson.lua     ANNOUNCE_WX_NIGHTMARECHARGE = "only_used_by_wx78", -- WX ate/used a nightmare fuel, giving them full charge temporarily
+--fallback to speech_wilson.lua 	ANNOUNCE_WX_NIGHTMAREDISCHARGE = "only_used_by_wx78", -- WX's temporary full charge ran out.
 
+    -- Rifts 7
 
     ANNOUNCE_MITEGLAND_DEBUFF =
 	{
-		"五脏六腑都在烧。",		--螨腺灼烧减益生效
-		"胃里烧得厉害……",		--螨腺灼烧减益生效
+		"Oh dear... that gland is really disagreeing with me...",
+		"It appears that gland was not safe for consumption after all.",
 	},
-	ANNOUNCE_MITEGLAND_DEBUFF_DONE = "那个实验，不必再来一次。",		--螨腺灼烧减益结束
-    ANNOUNCE_GOT_DECON_MISTED = "哈。洒得满身都是。",		--被解构迷雾命中
-	ANNOUNCE_VAULT_SHADOW_ASSIST = "毫无疑问，它们在帮忙。",		--宝库中的暗影力量开始提供协助
-    ANNOUNCE_HEALINGSALVE_FUMAROLEBUFF_DONE = "该补一层避火膏了。",		--热能药膏提供的火焰免疫效果结束
-    ANNOUNCE_SECURITY_PULSE_FOLLOWING = "它跟着我。", 		--携带路标罗盘后安保电火花附着并跟随角色
+	ANNOUNCE_MITEGLAND_DEBUFF_DONE = "这是个以痛苦换来的教训喵。",
+    ANNOUNCE_GOT_DECON_MISTED = "啊……我的思绪莫名其妙地变清晰了。",
+	ANNOUNCE_VAULT_SHADOW_ASSIST = "看来我们与暗影野兽同仇敌忾了喵。",
+    ANNOUNCE_HEALINGSALVE_FUMAROLEBUFF_DONE = "恐怕我要失去阻燃的能力了。",--fire immunity expired
+    ANNOUNCE_SECURITY_PULSE_FOLLOWING = "这台装置吸引着它。", -- Security spark attached to us due to us holding Waymark Compass.
 
+    -- Rifts 8
 
-	ANNOUNCE_GRUE_NOCHARLIE = "这气息……很陌生。有人在？",		--事件说明：ANNOUNCE_GRUE_NOCHARLIE
-	ANNOUNCE_GRUE_NOCHARLIE_ATTACK = "嘶。有东西咬我。",		--事件说明：ANNOUNCE_GRUE_NOCHARLIE_ATTACK
-	ANNOUNCE_GRUE_NOCHARLIE_MISSED = "这一招，我没见过。", 		--事件说明：ANNOUNCE_GRUE_NOCHARLIE_MISSED
+    -- after the final fight when Charlie goes MIA and isn't the night monster anymore
+	ANNOUNCE_GRUE_NOCHARLIE = "有动静！怎么没了花香？",
+	ANNOUNCE_GRUE_NOCHARLIE_ATTACK = "哎哟！谁这么大胆？！",
+--fallback to speech_wilson.lua 	ANNOUNCE_GRUE_NOCHARLIE_MISSED = "only_used_by_winona", --winona specific
 
-	ANNOUNCE_STOMP_SHROUDEN = "这一脚，判你出局。",		--事件说明：ANNOUNCE_STOMP_SHROUDEN
+	ANNOUNCE_STOMP_SHROUDEN = "这声音实在骇人。",
 
-    ANNOUNCE_DREADSTONE_SPIKE_EXPLODING = "要炸了。我的脑子也是。", 		--事件说明：ANNOUNCE_DREADSTONE_SPIKE_EXPLODING
+    ANNOUNCE_DREADSTONE_SPIKE_EXPLODING = "这构造正在对我的精神状态作出反应。", -- exploding because of enlightenment.
 
 	BATTLECRY =
 	{
-		GENERIC = "够了。到此为止。",		--战斗
-		PIG = "过来，猪。",		--战斗 猪人
-		PREY = "你跑不掉的。",		--战斗 猎物？？大象？
-		SPIDER = "又是这种东西。",		--战斗 蜘蛛
-		SPIDER_WARRIOR = "你死，好过我死。",		--战斗 蜘蛛战士
-		DEER = "鹿。到此为止。",		--战斗 无眼鹿
+		GENERIC = "战斗喵！",
+		PIG = "令人作呕的无赖喵！",
+		PREY = "放弃吧。",
+		SPIDER = "规矩点！",
+		SPIDER_WARRIOR = "要尊敬老人！",
+		DEER = "这会很简单。",
 	},
 	COMBAT_QUIT =
 	{
-		GENERIC = "他该记住这一课了。",		--攻击目标被卡住，无法攻击
-		PIG = "这次，放过他。",		--退出战斗-猪人
-		PREY = "他跑得快。暂且记账。",		--退出战斗 猎物？？大象？
-		SPIDER = "不管怎么说，真够恶心。",		-- 退出战斗 蜘蛛
-		SPIDER_WARRIOR = "嘘……讨人厌的东西。",		--退出战斗 蜘蛛战士
+		GENERIC = "得，结束了。",
+		PIG = "噢，不好。",
+		PREY = "我必须重新评估形势。",
+		SPIDER = "我必须仔细研究一下这个！",
+		SPIDER_WARRIOR = "从头再来喵！",
 	},
 
 	DESCRIBE =
 	{
-
-		MULTIPLAYER_PORTAL = "门里映着星图。可惜坐标没一个是对的。",		--物品名：绚丽之门
-        MULTIPLAYER_PORTAL_MOONROCK = "月岩与门框咬合得很准。设计者懂行。",		--物品名：天体传送门
-        MOONROCKIDOL = "石头刻得虔敬。我只对规律低头。",		--物品名：月岩雕像
-        CONSTRUCTION_PLANS = "图纸。画得比多数人做事认真。",		--物品名：建造计划
+		MULTIPLAYER_PORTAL = "恩，可能还需要多读读。",
+        MULTIPLAYER_PORTAL_MOONROCK = "它的设计无疑是超凡脱俗的。",
+        MOONROCKIDOL = "好奇。它看起来像把钥匙。",
+        CONSTRUCTION_PLANS = "哦，我真的很喜欢它的样子。",
 
         ANTLION =
         {
-            GENERIC = "它在打量我的行囊。胃口不小。",		--物品名：蚁狮 检查状态：普通状态
-            VERYHAPPY = "它满意了。暂时不必再喂。",		--物品名：蚁狮 检查状态：蚁狮贡品满意度很高
-            UNHAPPY = "沙在震。它在讨贡品。",		--物品名：蚁狮 检查状态：蚁狮贡品满意度较低
+            GENERIC = "嗯。你肯定就是所有地震活动的罪魁祸首。",
+            VERYHAPPY = "贡品已经让他平静了喵。",
+            UNHAPPY = "蚁狮看起来很烦躁。",
         },
-        ANTLIONTRINKET = "沙滩玩具。总有人肯收。",		--物品名：沙滩玩具
-        SANDSPIKE = "差一点就被刺穿。下次站远些。",		--物品名：沙刺
-        SANDBLOCK = "沙砌的城堡。固执得令人佩服。",		--物品名：沙堡
-        GLASSSPIKE = "玻璃凝成的尖刺。碰一下就要见血。",		--物品名：玻璃尖刺
-        GLASSBLOCK = "透明的城堡。结构倒是讲究。",		--物品名：玻璃城堡
+        ANTLIONTRINKET = "它看起来像儿童的顽固。",
+        SANDSPIKE = "蚁狮今天行为不端喵。",
+        SANDBLOCK = "相当异常的才能！",
+        GLASSSPIKE = "小心，它很锋利喵。",
+        GLASSBLOCK = "我一直喜欢玻璃工艺。",
         ABIGAIL_FLOWER =
         {
-            GENERIC ="花开得过于艳了。像是有所图。",		--物品名：阿比盖尔之花 检查状态：普通状态
-			LEVEL1 = "花苞合着。她似乎不想说话。",		--物品名：阿比盖尔之花 检查状态：第一阶段
-			LEVEL2 = "花瓣在颤。她正要开口。",		--物品名：阿比盖尔之花 检查状态：第二阶段
-			LEVEL3 = "光从花心溢出来了。她醒了。",		--物品名：阿比盖尔之花 检查状态：第三阶段
+            GENERIC ="啊哈…… 我不熟悉这类花。",
+			LEVEL1 = "它发出一种奇怪的能量。",
+			LEVEL2 = "那朵花鲜艳了不少。",
+			LEVEL3 = "它的魔法已经达到了最大的力量。",
 
-            LONG = "看久了，灵魂会发凉。",		--物品名：阿比盖尔之花 检查状态：距离孵化或变化仍有较长时间
-            MEDIUM = "毛都竖起来了。这花不对劲。",		--物品名：阿比盖尔之花 检查状态：中等阶段
-            SOON = "快了。花里有什么要出来。",		--物品名：阿比盖尔之花 检查状态：即将进入下一阶段
-            HAUNTED_POCKET = "该松手了。它在口袋里发热。",		--物品名：阿比盖尔之花 检查状态：花朵在物品栏中且已被作祟激活
-            HAUNTED_GROUND = "它在地上作祟。我会记下它的把戏。",		--物品名：阿比盖尔之花 检查状态：花朵位于地面且已被作祟激活
+			-- deprecated
+            LONG = "奇怪……",
+            MEDIUM = "它发出一种奇怪的能量。",
+            SOON = "花的能量变强大了。",
+            HAUNTED_POCKET = "我想，我应该把它放下喵。",
+            HAUNTED_GROUND = "它想从我这得到点什么吗？",
         },
 
-        BALLOONS_EMPTY = "一堆瘪气球。像小丑的零钱，喵。",		--物品名：一堆气球
-        BALLOON = "轻得不像话。原理我稍后再算。",		--物品名：气球
-		BALLOONPARTY = "把小气球塞进去的手艺不错。",		--物品名：派对气球
+        BALLOONS_EMPTY = "这些似乎毫无价值。",
+        BALLOON = "用它来转移注意力应该不错。",
+		BALLOONPARTY = "每隔一段时间，合理的欢乐会对我们有好处。",
 		BALLOONSPEED =
         {
-            DEFLATED = "泄了气。所有气球最后都一样。",		--物品名：迅捷气球 检查状态：已经泄气
-            GENERIC = "中空的孔让它更顺从气流。经典。",		--物品名：迅捷气球 检查状态：普通状态
+            DEFLATED = "余下的空气不足以分析它的成分……",
+            GENERIC = "这位年轻人呼吸中的化学构成一定很迷人。",
         },
-		BALLOONVEST = "颜色已经够招摇，还偏会吱吱响。",		--物品名：充气背心
-		BALLOONHAT = "静电。我的头发全竖起来了。",		--物品名：气球帽
+		BALLOONVEST = "亲爱的，我欣赏你在实用方面的尝试喵。",
+		BALLOONHAT = "它在试图刻画兔形目的生物。",
 
         BERNIE_INACTIVE =
         {
-            BROKEN = "它到底还是散了架。",		--物品名：伯尼 检查状态：已经损坏
-            GENERIC = "烧得只剩焦壳。",		--物品名：伯尼 检查状态：普通状态
+            BROKEN = "那个熊需要修理。",
+            GENERIC = "它是一只泰迪熊。",
         },
 
-        BERNIE_ACTIVE = "那只熊在走来走去。有点意思。",		--物品名：伯尼
-        BERNIE_BIG = "别去招惹薇洛。",		--物品名：伯尼！
+        BERNIE_ACTIVE = "那个泰迪熊好像活过来了喵。",
+        BERNIE_BIG = "着实怪异，老妪参不透啊喵。",
 
 		BOOKSTATION =
 		{
-			GENERIC = "做实验比读书有用。",		--物品名：书架 检查状态：普通状态
-			BURNT = "图书馆关门了。",		--物品名：书架 检查状态：已经烧毁
+			GENERIC = "求知如渴的头脑应当永远有机会去图书馆博览群书喵。",
+			BURNT = "世上多少惨剧也比不上亲眼看到书籍被毁。",
 		},
-        BOOK_BIRDS = "一本关于鸟的书。插图不错。",		--物品名：世界鸟类大全
-        BOOK_TENTACLES = "读完这本，多半会被拖走。",		--物品名：触手的召唤
-        BOOK_GARDENING = "翻到最后一页也没见着农场。",		--物品名：应用园艺学
-		BOOK_SILVICULTURE = "造林的事，我还是自己试。",		--物品名：应用造林学
-		BOOK_HORTICULTURE = "园艺学。纸上长的东西不算数。",		--物品名：园艺学简编版
-        BOOK_SLEEP = "五百页电报码。难怪催眠。",		--物品名：睡前故事
-        BOOK_BRIMSTONE = "开头乏味，末几页才见真章。",		--物品名：末日将至！
+        BOOK_BIRDS = "虽然是删节版本，但它里面有我的最爱：西美角鸮。",
+        BOOK_TENTACLES = "真是难以释手。坦白讲，它真的很吸引人。",
+        BOOK_GARDENING = "用死去的植物来帮助活着的植物。",
+		BOOK_SILVICULTURE = "用死去的植物来帮助活着的植物。",
+		BOOK_HORTICULTURE = "这就是我让农作物开花结果的绝学。",
+        BOOK_SLEEP = "好温馨安宁的一本书，就像睡前的一杯热牛奶一样喵。",
+        BOOK_BRIMSTONE = "总感觉有什么不对劲呢？",
 
-        BOOK_FISH = "它没能钓上我，喵。",		--物品名：垂钓者生存指南
-        BOOK_FIRE = "读它并不让人心急火燎。",		--物品名：意念控火术详解
-        BOOK_WEB = "我不怕蜘蛛。……真的不怕。",		--物品名：克服蛛形纲恐惧症
-        BOOK_TEMPERATURE = "不冷不热的一本书。",		--物品名：控温学
-        BOOK_LIGHT = "写书的人，头脑很清楚。",		--物品名：永恒之光
-        BOOK_RAIN = "求雨。听上去不太严谨。",		--物品名：实用求雨仪式
-        BOOK_MOON = "对月亮的兴趣，大概也分季节。",		--物品名：月之魔典
-        BOOK_BEES = "书为什么会嗡嗡响，我需要个解释。",		--物品名：养蜂笔记
+        BOOK_FISH = "它一开始就起了一个相当勾人的钩子喵。",
+        BOOK_FIRE = "不妨将不幸之事作为学习之良机。过去犯过的错误就不要再重复喵。",
+        BOOK_WEB = "毕竟蛛形纲动物是健康的生态系统的重要组成部分。",
+        BOOK_TEMPERATURE = "你必须要注意自己的热平衡。",
+        BOOK_LIGHT = "我喜欢在傍晚时做一些轻度阅读。",
+        BOOK_RAIN = "言简意赅的指南，没有华而不实的赘述。",
+        BOOK_MOON = "事实证明，调查远古档案是相当有教育意义的喵。",
+        BOOK_BEES = "我已渐渐醉心养蜂。",
         
-        BOOK_HORTICULTURE_UPGRADED = "和盯着草长高差不多精彩。",		--物品名：园艺学扩展版
-        BOOK_RESEARCH_STATION = "薇克巴顿乐意照书上的做。",		--物品名：万物百科
-        BOOK_LIGHT_UPGRADED = "光耀夺目。这句我认。",		--物品名：永恒之光之复兴
+        BOOK_HORTICULTURE_UPGRADED = "尽管人类种植农作物的历史已经有数个世纪，但仍然有大量农业知识有待我们去学习和发现。",
+        BOOK_RESEARCH_STATION = "书中的内容是对现实世界的高度提炼喵。",
+        BOOK_LIGHT_UPGRADED = "我给了它一个高光的评价。",
 
-        FIREPEN = "趁热写下去。",		--物品名：火焰笔
+        FIREPEN = "作家只需寥寥几笔就可以释放出一场火焰风暴。",
 
         PLAYER =
         {
-            GENERIC = "你好，%s。",		--物品名：其他角色 检查状态：普通状态
-            ATTACKER = "%s 的眼神不太稳。",		--物品名：其他角色 检查状态：近期攻击过当前角色
-            MURDERER = "凶手。我记住了。",		--物品名：其他角色 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 与鬼魂交好。",		--物品名：其他角色 检查状态：近期复活过当前角色
-            GHOST = "%s 需要一颗心。",		--物品名：其他角色 检查状态：幽灵状态
-            FIRESTARTER = "烧东西不科学，%s。",		--物品名：其他角色 检查状态：近期引发过火灾
+            GENERIC = "啊哈，你好，亲爱的%s喵！",
+            ATTACKER = "这不对，%s做的不对。",
+            MURDERER = "我要把你从历史书上抹掉！",
+            REVIVER = "我要谢谢你为了集体生存所做的贡献，%s！",
+            GHOST = "好可怜，%s需要一颗心将他们固定在这个位面上。",
+            FIRESTARTER = "%s，我是怎么告诉你生火的？",
         },
         WILSON =
         {
-            GENERIC = "星星与原子。你是我的影子吗？",		--物品名：威尔逊 检查状态：普通状态
-            ATTACKER = "我平时也这么吓人吗？",		--物品名：威尔逊 检查状态：近期攻击过当前角色
-            MURDERER = "你的存在不合规律，%s。",		--物品名：威尔逊 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 把理论落到了实处。",		--物品名：威尔逊 检查状态：近期复活过当前角色
-            GHOST = "得做个复活设备。不能让他一直飘着。",		--物品名：威尔逊 检查状态：幽灵状态
-            FIRESTARTER = "纵火不合科学，%s。",		--物品名：威尔逊 检查状态：近期引发过火灾
+            GENERIC = "亲爱的%s，你好！你的定理怎么来的喵？",
+            ATTACKER = "%s，必要的话，我会揪着你耳朵带你回家。",
+            MURDERER = "%s，好像我们已经进入斗智斗勇的境界！",
+            REVIVER = "你还是知道一两件事的，科学家！",
+            GHOST = "我不是跟你说过要穿夹克？我会拿到心的…",
+            FIRESTARTER = "%s需要一次严厉警告。",
         },
         WOLFGANG =
         {
-            GENERIC = "见到你很好，%s。",		--物品名：沃尔夫冈 检查状态：普通状态
-            ATTACKER = "别去挑衅比你强的人。",		--物品名：沃尔夫冈 检查状态：近期攻击过当前角色
-            MURDERER = "凶手。我抓得住你。",		--物品名：沃尔夫冈 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 不过是一只大泰迪熊。",		--物品名：沃尔夫冈 检查状态：近期复活过当前角色
-            GHOST = "早说过那块石头别硬拉。数值全错。",		--物品名：沃尔夫冈 检查状态：幽灵状态
-            FIRESTARTER = "你打不倒火，%s。",		--物品名：沃尔夫冈 检查状态：近期引发过火灾
+            GENERIC = "啊哈，你好，亲爱的%s！",
+            ATTACKER = "%s，我忍受不了这种行为喵。",
+            MURDERER = "%s，就这样。我正摘下眼镜！",
+            REVIVER = "%s，做的很好。你学得很快喵。",
+            GHOST = "%s表现得很强硬，但是他需要我的帮助。一颗心就可以帮到。",
+            FIRESTARTER = "%s，那火是故意点起的吗喵？",
         },
         WAXWELL =
         {
-            GENERIC = "日安，%s。",		--物品名：麦斯威尔 检查状态：普通状态
-            ATTACKER = "你从“言辞干脆”变成了“舌头打结”。",		--物品名：麦斯威尔 检查状态：近期攻击过当前角色
-            MURDERER = "逻辑与推理是我的长项。要我教你？",		--物品名：麦斯威尔 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 把本事用在了正事上。",		--物品名：麦斯威尔 检查状态：近期复活过当前角色
-            GHOST = "别那样看我，%s。我在想办法。",		--物品名：麦斯威尔 检查状态：幽灵状态
-            FIRESTARTER = "%s 这是自找火烤。",		--物品名：麦斯威尔 检查状态：近期引发过火灾
+            GENERIC = "啊哈，你好，亲爱的%s！",
+            ATTACKER = "又是老把戏，是吗，%s？",
+            MURDERER = "又骗我，你太无耻！骗了我两次…你死定了！",
+            REVIVER = "你很好，%s。",
+            GHOST = "亲爱的，刺痛对吗？让我给你拿到心。",
+            FIRESTARTER = "%s，我们现在要点火吗？务必小心。",
         },
         WX78 =
         {
-            GENERIC = "日安，%s。",		--物品名：WX-78 检查状态：普通状态
-            ATTACKER = "%s，你的首要指令该重写了。",		--物品名：WX-78 检查状态：近期攻击过当前角色
-            MURDERER = "%s。你违反了第一律法。",		--物品名：WX-78 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "大概是 %s 让共情组件转了起来。",		--物品名：WX-78 检查状态：近期复活过当前角色
-            GHOST = "我早知道 %s 该长点心。现在确定了。",		--物品名：WX-78 检查状态：幽灵状态
-            FIRESTARTER = "%s，你像是要化了。",		--物品名：WX-78 检查状态：近期引发过火灾
+            GENERIC = "啊，机器人，打声招呼吧，亲爱的 %s！",
+            ATTACKER = "那个机器人到底有多可怕喵？",
+            MURDERER = "二进制很简单，%s……开还是关喵。",
+            REVIVER = "我欣赏你对团体生存的坚持，%s喵！",
+            GHOST = "了不起。%s实际上有个幽灵，而且它还在四周徘徊。",
+            FIRESTARTER = "摧毁所有生命时一定要当心，亲爱的。",
         },
         WILLOW =
         {
-            GENERIC = "日安，%s。",		--物品名：薇洛 检查状态：普通状态
-            ATTACKER = "%s 攥着那只打火机……",		--物品名：薇洛 检查状态：近期攻击过当前角色
-            MURDERER = "凶手。还有纵火犯。",		--物品名：薇洛 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 与鬼魂交好。",		--物品名：薇洛 检查状态：近期复活过当前角色
-            GHOST = "%s，你大概很想要一颗心。",		--物品名：薇洛 检查状态：幽灵状态
-            FIRESTARTER = "又一次？",		--物品名：薇洛 检查状态：近期引发过火灾
+            GENERIC = "啊哈，你好，亲爱的%s喵！",
+            ATTACKER = "亲爱的，你喜欢试探底线，不是吗？",
+            MURDERER = "%s，你要尊重长者！",
+            REVIVER = "%s，你做的很好。",
+            GHOST = "亲爱的，要是你和鬼魂的眼神相会，它们会像那样被困住。",
+            FIRESTARTER = "亲爱，我在点火这事说什么了吗喵？",
         },
         WENDY =
         {
-            GENERIC = "你好，%s。",		--物品名：温蒂 检查状态：普通状态
-            ATTACKER = "%s 身上没带尖东西吧？",		--物品名：温蒂 检查状态：近期攻击过当前角色
-            MURDERER = "你手上沾了血。",		--物品名：温蒂 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 把鬼魂当家人。",		--物品名：温蒂 检查状态：近期复活过当前角色
-            GHOST = "我看见两个影子。得给 %s 做颗心。",		--物品名：温蒂 检查状态：幽灵状态
-            FIRESTARTER = "那几把火是你点的，我知道。",		--物品名：温蒂 检查状态：近期引发过火灾
+            GENERIC = "啊哈，你好，亲爱的%s喵！",
+            ATTACKER = "%s！你够了，小姐喵！",
+            MURDERER = "你需要有人好好教教你礼仪了，%s！",
+            REVIVER = "%s，亲爱的。你独具能力，能够胜任对付妖怪的任务喵！",
+            GHOST = "天哪，这不行。%s，让我给你找到心喵。",
+            FIRESTARTER = "%s，谁给你易燃材料？",
         },
         WOODIE =
         {
-            GENERIC = "你好，%s。",		--物品名：伍迪 检查状态：普通状态
-            ATTACKER = "%s 最近精神过头了。",		--物品名：伍迪 检查状态：近期攻击过当前角色
-            MURDERER = "凶手。拿斧子来，我们砍。",		--物品名：伍迪 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 把大家的命捞了回来。",		--物品名：伍迪 检查状态：近期复活过当前角色
-            GHOST = "%s，“宇宙”里也包括虚无吗？",		--物品名：伍迪 检查状态：幽灵状态
-            BEAVER = "%s 在砍树，停不下来。",		--物品名：伍迪 检查状态：伍迪的海狸形态
-            BEAVERGHOST = "%s，若我不复活你，你会恼吗？",		--物品名：伍迪 检查状态：伍迪海狸形态的幽灵
-            MOOSE = "天。那是一头鹿。",		--物品名：伍迪 检查状态：伍迪的鹿鹅形态
-            MOOSEGHOST = "那副样子，想必不好受。",		--物品名：伍迪 检查状态：伍迪鹿形态的幽灵
-            GOOSE = "看看这位。",		--物品名：伍迪 检查状态：伍迪的鹅形态
-            GOOSEGHOST = "长点心吧，你这只笨鹅。",		--物品名：伍迪 检查状态：伍迪鹅形态的幽灵
-            FIRESTARTER = "%s，别把自己点着。",		--物品名：伍迪 检查状态：近期引发过火灾
+            GENERIC = "啊哈，你好，亲爱的%s！",
+            ATTACKER = "当心，%s。你知道纸浆是什么做成的，不是吗？",
+            MURDERER = "我会自卫的，笨蛋！",
+            REVIVER = "干得漂亮，%s。",
+            GHOST = "我是怎么说玩斧头的事了？让我们去帮你找颗心来。",
+            BEAVER = "亲爱的从来没提过他被海狸化所困扰。",
+            BEAVERGHOST = "我要把“海狸人”加入我的濒危物种名单里了喵。",
+            MOOSE = "噢，鹿啊,看来你的戏路越来越宽了。",
+            MOOSEGHOST = "莫发愁，我定会带颗心回来喵。",
+            GOOSE = "嚯，好一只蠢鹅喵！",
+            GOOSEGHOST = "可怜人儿，我来试着帮你找颗心脏喵。",
+            FIRESTARTER = "如果你想被烧着的话，一直点火，亲爱的。",
         },
         WICKERBOTTOM =
         {
-            GENERIC = "日安，%s。",		--物品名：薇克巴顿 检查状态：普通状态
-            ATTACKER = "%s 像是要拿书砸我。",		--物品名：薇克巴顿 检查状态：近期攻击过当前角色
-            MURDERER = "同行评议来了。",		--物品名：薇克巴顿 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "我对 %s 的实践心怀敬意。",		--物品名：薇克巴顿 检查状态：近期复活过当前角色
-            GHOST = "这不太科学，不是吗，%s？",		--物品名：薇克巴顿 检查状态：幽灵状态
-            FIRESTARTER = "你点火总有你的道理。",		--物品名：薇克巴顿 检查状态：近期引发过火灾
+            GENERIC = "啊哈，你好，%s！真高兴在这看到你喵。",
+            ATTACKER = "%s不道德行为破坏了我的多元宇宙猜想喵。",
+            MURDERER = "我自我批评最严格！",
+            REVIVER = "知识派上了用场，不是吗，%s 喵？",
+            GHOST = "我们所有的自助书籍最终还是有用的，嗯，%s ？",
+            FIRESTARTER = "烧书真是无礼，%s！",
         },
         WES =
         {
-            GENERIC = "你好，%s。",		--物品名：韦斯 检查状态：普通状态
-            ATTACKER = "%s 沉默得像口枯井。",		--物品名：韦斯 检查状态：近期攻击过当前角色
-            MURDERER = "这个，用哑剧演给我看。",		--物品名：韦斯 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 跳出了惯常的路子。",		--物品名：韦斯 检查状态：近期复活过当前角色
-            GHOST = "“我要个复活装备”——这句怎么用哑剧演？",		--物品名：韦斯 检查状态：幽灵状态
-            FIRESTARTER = "等等，别说。火是你点的。",		--物品名：韦斯 检查状态：近期引发过火灾
+            GENERIC = "啊哈，那个小丑。你好啊，亲爱的%s！",
+            ATTACKER = "他的身体语言说明了一切。",
+            MURDERER = "它们将讲述你的丰功伟绩，%s !",
+            REVIVER = "你是个不错的小伙子，%s。",
+            GHOST = "亲爱的，%s需要一颗心脏把他固定在这个位面上。",
+            FIRESTARTER = "你要是烧着自己，可别对着我哭，亲爱的喵。",
         },
         WEBBER =
         {
-            GENERIC = "日安，%s。",		--物品名：韦伯 检查状态：普通状态
-            ATTACKER = "我先把纸卷起来，以防万一。",		--物品名：韦伯 检查状态：近期攻击过当前角色
-            MURDERER = "杀了人还敢站着，%s。我来了结。",		--物品名：韦伯 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 跟谁都处得来。",		--物品名：韦伯 检查状态：近期复活过当前角色
-            GHOST = "%s 很想要我给他一颗心。",		--物品名：韦伯 检查状态：幽灵状态
-            FIRESTARTER = "我们得开个防火会议。",		--物品名：韦伯 检查状态：近期引发过火灾
+            GENERIC = "啊哈，你好，亲爱的%s喵！",
+            ATTACKER = "真有趣，小蜘蛛喵。",
+            MURDERER = "你需要有人好好教教你礼仪了，%s！",
+            REVIVER = "你真是个贴心的男孩，%s！",
+            GHOST = "你一复活，我就会拿颜色漂亮的绷带给你喵。",
+            FIRESTARTER = "谁给了你火柴，%s！",
         },
         WATHGRITHR =
         {
-            GENERIC = "日安，%s。",		--物品名：薇格弗德 检查状态：普通状态
-            ATTACKER = "%s 的拳头，我会避开。",		--物品名：薇格弗德 检查状态：近期攻击过当前角色
-            MURDERER = "%s 杀红了眼。",		--物品名：薇格弗德 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 精神很好。",		--物品名：薇格弗德 检查状态：近期复活过当前角色
-            GHOST = "做得不错。英灵殿还没收你呢，%s。",		--物品名：薇格弗德 检查状态：幽灵状态
-            FIRESTARTER = "%s 很会加温。",		--物品名：薇格弗德 检查状态：近期引发过火灾
+            GENERIC = "啊哈，你好，亲爱的%s喵！",
+            ATTACKER = "你没有在制造麻烦，对吧，%s？",
+            MURDERER = "你的传说到此结束，%s喵！",
+            REVIVER = "我欣赏你对团体生存的坚持，%s！",
+            GHOST = "%s，我跟你说过不要带着长矛跑。啧啧。",
+            FIRESTARTER = "亲爱的，“地狱之火”只是一种表达方式喵。",
         },
         WINONA =
         {
-            GENERIC = "日安，%s。",		--物品名：薇诺娜 检查状态：普通状态
-            ATTACKER = "%s 是个隐患。",		--物品名：薇诺娜 检查状态：近期攻击过当前角色
-            MURDERER = "到此为止，%s。",		--物品名：薇诺娜 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "你真是好用，%s。",		--物品名：薇诺娜 检查状态：近期复活过当前角色
-            GHOST = "有人在给你的计划泼冷水。",		--物品名：薇诺娜 检查状态：幽灵状态
-            FIRESTARTER = "厂里的东西烧起来了。",		--物品名：薇诺娜 检查状态：近期引发过火灾
+            GENERIC = "啊哈，你好，亲爱的%s！",
+            ATTACKER = "挺愚笨的。%s，你不觉得吗？",
+            MURDERER = "我不能忍受残暴！",
+            REVIVER = "%s真是个多面手。",
+            GHOST = "啧。你有没有戴安全帽，亲爱的喵？",
+            FIRESTARTER = "没有必要放那把火啊，亲爱的喵。",
         },
         WORTOX =
         {
-            GENERIC = "你好，%s。",		--物品名：沃拓克斯 检查状态：普通状态
-            ATTACKER = "我早知道 %s 不可信。",		--物品名：沃拓克斯 检查状态：近期攻击过当前角色
-            MURDERER = "该正面会会这只长角的恶魔了。",		--物品名：沃拓克斯 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "多谢你的爪子，%s。",		--物品名：沃拓克斯 检查状态：近期复活过当前角色
-            GHOST = "鬼魂和恶魔并存。我拒绝接受。",		--物品名：沃拓克斯 检查状态：幽灵状态
-            FIRESTARTER = "%s 正在成为累赘。",		--物品名：沃拓克斯 检查状态：近期引发过火灾
+            GENERIC = "你得多跟我讲讲你们这个物种的情况，亲爱的喵。",
+            ATTACKER = "你最好按规矩来，%s。",
+            MURDERER = "收起你的把戏%s！让我来终结你!",
+            REVIVER = "多谢帮助，%s。",
+            GHOST = "让你捉弄人，这就是你的下场，%s喵！",
+            FIRESTARTER = "%s，我忍受不了这种行为。",
         },
         WORMWOOD =
         {
-            GENERIC = "你好，%s。",		--物品名：沃姆伍德 检查状态：普通状态
-            ATTACKER = "%s 今天刺比平时多。",		--物品名：沃姆伍德 检查状态：近期攻击过当前角色
-            MURDERER = "等着被除草吧，小杂草 %s。",		--物品名：沃姆伍德 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 从不丢下朋友。",		--物品名：沃姆伍德 检查状态：近期复活过当前角色
-            GHOST = "需要搭把手吗，小家伙？",		--物品名：沃姆伍德 检查状态：幽灵状态
-            FIRESTARTER = "我以为你讨厌火，%s。",		--物品名：沃姆伍德 检查状态：近期引发过火灾
+            GENERIC = "啊，你好，亲爱的%s！",
+            ATTACKER = "%s属于荨麻属植物，我怀疑。",
+            MURDERER = "%s是一种致命的茄属植物！消灭它！",
+            REVIVER = "你是一位好朋友，%s。",
+            GHOST = "哎，一点都不好。",
+            FIRESTARTER = "你想把叶子烧掉吗，%s？",
         },
         WARLY =
         {
-            GENERIC = "你好，%s。",		--物品名：沃利 检查状态：普通状态
-            ATTACKER = "锅里在酝酿灾祸。",		--物品名：沃利 检查状态：近期攻击过当前角色
-            MURDERER = "别打杀我的主意。",		--物品名：沃利 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 总有办法。",		--物品名：沃利 检查状态：近期复活过当前角色
-            GHOST = "如今他只能用幽灵辣椒下厨了。",		--物品名：沃利 检查状态：幽灵状态
-            FIRESTARTER = "他会把这里烧光。",		--物品名：沃利 检查状态：近期引发过火灾
+            GENERIC = "啊，你好，亲爱的%s喵！",
+            ATTACKER = "没必要引起骚动，%s喵。",
+            MURDERER = "空气里有新鲜出炉的谋杀味。我不客气了喵！",
+            REVIVER = "干得漂亮，%s喵。",
+            GHOST = "亲爱的，咱们想办法让你重新站起来。",
+            FIRESTARTER = "亲爱的，我知道那火不是拿来做饭的。",
         },
 
         WURT =
         {
-            GENERIC = "日安，%s。",		--物品名：沃特 检查状态：普通状态
-            ATTACKER = "%s 今天一脸凶相。",		--物品名：沃特 检查状态：近期攻击过当前角色
-            MURDERER = "你是条杀人的鱼。",		--物品名：沃特 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "我该谢你吗，%s？",		--物品名：沃特 检查状态：近期复活过当前角色
-            GHOST = "%s 的鱼鳃比平时更绿。",		--物品名：沃特 检查状态：幽灵状态
-            FIRESTARTER = "没人教过你别玩火吗？",		--物品名：沃特 检查状态：近期引发过火灾
+            GENERIC = "你好亲爱的%s，准备好上课了吗？",
+            ATTACKER = "住手，立刻！",
+            MURDERER = "我绝不容忍这种行为，%s！",
+            REVIVER = "亲爱的，谢谢你了。",
+            GHOST = "嗷，不能让你这样，我们会帮你的。",
+            FIRESTARTER = "你记不记得我怎么说不能玩火了？好吧，你忘了！",
         },
 
         WALTER =
         {
-            GENERIC = "日安，%s。",		--物品名：沃尔特 检查状态：普通状态
-            ATTACKER = "松树先锋队员该做这种事吗？",		--物品名：沃尔特 检查状态：近期攻击过当前角色
-            MURDERER = "%s，你的故事素材用尽了？",		--物品名：沃尔特 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "%s 一向可靠。",		--物品名：沃尔特 检查状态：近期复活过当前角色
-            GHOST = "我知道你玩得开心，但得去找颗心。",		--物品名：沃尔特 检查状态：幽灵状态
-            FIRESTARTER = "那堆火可不像营火，%s。",		--物品名：沃尔特 检查状态：近期引发过火灾
+            GENERIC = "啊哈，你好，亲爱的%s喵！",
+            ATTACKER = "有事好好说，亲爱的喵。",
+            MURDERER = "天啊，先锋队的人就是这样教你行为举止的吗？",
+            REVIVER = "哎呀，你真是善良啊，%s喵。",
+            GHOST = "哦，亲爱的，你必须要多小心喵！",
+            FIRESTARTER = "不是所有的东西都是营火，亲爱的喵。",
         },
 
         WANDA =
         {
-            GENERIC = "日安，%s。",		--物品名：旺达 检查状态：普通状态
-            ATTACKER = "挑时间，也挑场合，%s。",		--物品名：旺达 检查状态：近期攻击过当前角色
-            MURDERER = "杀人犯。第二次机会不会有。",		--物品名：旺达 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "若不是 %s，我已成了历史。",		--物品名：旺达 检查状态：近期复活过当前角色
-            GHOST = "快去找颗心。",		--物品名：旺达 检查状态：幽灵状态
-            FIRESTARTER = "让我猜，这跟“保住时间线”有关？",		--物品名：旺达 检查状态：近期引发过火灾
+            GENERIC = "你好，亲爱的%s！ 你对未来的事情有什么新洞察吗？",
+            ATTACKER = "%s，你实在应该为孩子们树立一个好榜样喵。",
+            MURDERER = "你应该知道这么做的后果，%s。我动手了！",
+            REVIVER = "感谢你抽出时间救人，亲爱的。",
+            GHOST = "哦，亲爱的，即使你采取了所有的预防措施还是沦落至此吗？",
+            FIRESTARTER = "你肯定有先见之明，知道那是不明智的，不是吗喵？",
         },
 
         WONKEY =
         {
-            GENERIC = "一只猴子。",		--物品名：芜猴 检查状态：普通状态
-            ATTACKER = "别像猴子一样胡闹。",		--物品名：芜猴 检查状态：近期攻击过当前角色
-            MURDERER = "它们疯了。",		--物品名：芜猴 检查状态：近期杀害过当前角色的同伴
-            REVIVER = "救我命的……是只猴子？",		--物品名：芜猴 检查状态：近期复活过当前角色
-            GHOST = "那只猴子让人不安。",		--物品名：芜猴 检查状态：幽灵状态
-            FIRESTARTER = "当年的恐龙，大概就是这种心情。",		--物品名：芜猴 检查状态：近期引发过火灾
+            GENERIC = "它显示了比我所设想的猿猴更高的智力水平。",
+            ATTACKER = "哦，天啊，也许它并不像我最初设想的那样聪明。",
+            MURDERER = "必须解决这个野生动物！",
+            REVIVER = "这个生物似乎对我们相当依恋。我想知道为什么？",
+            GHOST = "噢，天啊……我很想帮它。",
+            FIRESTARTER = "我认为它还没有进化到正确使用火的程度。",
         },
 
-        MIGRATION_PORTAL =
-        {
-        },
+--fallback to speech_wilson.lua         MIGRATION_PORTAL =
+--fallback to speech_wilson.lua         {
+--fallback to speech_wilson.lua         --    GENERIC = "If I had any friends, this could take me to them.",
+--fallback to speech_wilson.lua         --    OPEN = "If I step through, will I still be me?",
+--fallback to speech_wilson.lua         --    FULL = "It seems to be popular over there.",
+--fallback to speech_wilson.lua         },
         GLOMMER =
         {
-            GENERIC = "趣味不佳，倒也不算难看。",		--物品名：格罗姆 检查状态：普通状态
-            SLEEPING = "这虫子睡得真好。",		--物品名：格罗姆 检查状态：正在睡眠
+            GENERIC = "昆虫纲中长相怪异的家伙喵。",
+            SLEEPING = "它好像睡着了。",
         },
         GLOMMERFLOWER =
         {
-            GENERIC = "花瓣泛着微光。",		--物品名：格罗姆花 检查状态：普通状态
-            DEAD = "花瓣枯了，还在发亮。",		--物品名：格罗姆花 检查状态：已经死亡
+            GENERIC = "它一直在滴黏液。",
+            DEAD = "虽然变成了灰色，但它还在不停地滴。",
         },
-        GLOMMERWINGS = "缝在帽子上会很合适。",		--物品名：格罗姆翅膀
-        GLOMMERFUEL = "这团黏液臭得过分。",		--物品名：格罗姆的黏液
-        BELL = "叮铃。好听，喵。",		--物品名：远古铃铛
+        GLOMMERWINGS = "那个奇怪生物的翅膀喵。",
+        GLOMMERFUEL = "它好像很不稳定。",
+        BELL = "安静！这里是图书馆！",
         STATUEGLOMMER =
         {
-            GENERIC = "我看不出那是什么。",		--物品名：格罗姆雕像 检查状态：普通状态
-            EMPTY = "砸开了。为了考据。",		--物品名：格罗姆雕像 检查状态：内容为空
+            GENERIC = "它是被石化了吗？",
+            EMPTY = "不是，只是一座雕像而已喵。",
         },
 
-        LAVA_POND_ROCK = "这块地不错。",		--物品名：岩石
+        LAVA_POND_ROCK = "冷却不久的火成岩。危险。",
 
-		WEBBERSKULL = "可怜的小东西。该给他一个体面的葬礼。",		--物品名：韦伯的头骨
-		WORMLIGHT = "看上去能吃。",		--物品名：发光浆果
-		WORMLIGHT_LESSER = "有点皱了。",		--物品名：小发光浆果
+		WEBBERSKULL = "那是最不同寻常的头骨。",
+		WORMLIGHT = "比我想象中的要柔软。",
+		WORMLIGHT_LESSER = "这东西是纯蔬菜。",
 		WORM =
 		{
-		    PLANT = "我看是安全的。",		--物品名：洞穴蠕虫 检查状态：伪装成植物
-		    DIRT = "只是一堆土。",		--物品名：洞穴蠕虫 检查状态：地面隆起形态
-		    WORM = "它是条虫子。",		--物品名：洞穴蠕虫 检查状态：蠕虫本体形态
+		    PLANT = "让我想起了琵琶鱼。",
+		    DIRT = "最好是离那个东西远点。",
+		    WORM = "蠕虫攻击喵！",
 		},
-        WORMLIGHT_PLANT = "看不出异常。",		--物品名：神秘植物
+        WORMLIGHT_PLANT = "让我想起了琵琶鱼。",
 		MOLE =
 		{
-			HELD = "没得挖了，朋友。",		--物品名：鼹鼠 检查状态：正被角色携带
-			UNDERGROUND = "下面有位在找矿的。",		--物品名：鼹鼠 检查状态：位于地下
-			ABOVEGROUND = "我想像敲地鼠那样敲它。",		--物品名：鼹鼠 检查状态：位于地面上
+			HELD = "我觉得我的口袋不能成为它的自然栖息地。",
+			UNDERGROUND = "那下面有东西正在挖地道。",
+			ABOVEGROUND = "啊，是鼹鼠科动物喵！",
 		},
-		MOLEHILL = "一个舒适的好洞。",		--物品名：鼹鼠丘
-		MOLEHAT = "气味难闻，视野极好。",		--物品名：鼹鼠帽
+		MOLEHILL = "它的洞穴通道一定四通八达！",
+		MOLEHAT = "啊，透过另一种生物的，呃，透过它们的鼻子看世界！",
 
-		EEL = "能做一道好菜，喵。",		--物品名：鳗鱼
-		EEL_COOKED = "闻着真香。",		--物品名：熟鳗鱼
-		UNAGI = "但愿没人会变成鳗鱼。",		--物品名：鳗鱼料理
-		EYETURRET = "但愿它别望向我。",		--物品名：眼睛炮塔
-		EYETURRET_ITEM = "它在睡。",		--物品名：眼睛炮塔
-		MINOTAURHORN = "那家伙的角没撞上我，万幸。",		--物品名：守护者之角
-		MINOTAURCHEST = "里头也许有更好的东西。也许更糟。",		--物品名：大号华丽箱子
-		THULECITE_PIECES = "铥矿的碎屑。",		--物品名：铥矿碎片
-		POND_ALGAE = "岸边浮着的水藻。",		--物品名：水藻
-		GREENSTAFF = "迟早用得上。",		--物品名：拆解魔杖
-		GIFT = "给我的？",		--物品名：礼物
-        GIFTWRAP = "包得很体面。",		--物品名：礼物包装
-		POTTEDFERN = "盆里的蕨。",		--物品名：蕨类盆栽
-        SUCCULENT_POTTED = "盆里的多肉。",		--物品名：多肉盆栽
-		SUCCULENT_PLANT = "那一株是芦荟。",		--物品名：多肉植物
-		SUCCULENT_PICKED = "能吃，但我不打算吃。",		--物品名：多肉植物
-		SENTRYWARD = "测绘用的，颇为严谨。",		--物品名：月眼守卫
+		EEL = "是鳗鱼。",
+		EEL_COOKED = "这条鳗鱼已经烤熟了。",
+		UNAGI = "一种常见的制作鳗鱼料理的方法。",
+		EYETURRET = "那两种野兽的能量已经被铥矿石聚集起来了。",
+		EYETURRET_ITEM = "我得把这个放置好喵。",
+		MINOTAURHORN = "它的角也太大了吧。真有点怀疑是不是借助噩梦燃料才长这么大的。",
+		MINOTAURCHEST = "那个箱子绝对豪华喵。",
+		THULECITE_PIECES = "这些碎片可以合成更大的一块。",
+		POND_ALGAE = "还好这种藻类不需要进行光合作用喵。",
+		GREENSTAFF = "似乎能让物体回到过去的样子。",
+		GIFT = "哦天哪，多可爱啊！",
+        GIFTWRAP = "包装礼物是一件抚慰人的活儿，不是吗喵？",
+		POTTEDFERN = "盆栽植物。",
+        SUCCULENT_POTTED = "我想知道，没了我，我的花园会变成什么。",
+		SUCCULENT_PLANT = "独特地适应了干旱气候。",
+		SUCCULENT_PICKED = "如果不移植，它就会凋零。",
+		SENTRYWARD = "啊！一颗占卜宝球喵。",
         TOWNPORTAL =
         {
-			GENERIC = "这座金字塔管着沙子。",		--物品名：懒人传送塔 检查状态：普通状态
-			ACTIVE = "传送就绪。站稳。",		--物品名：懒人传送塔 检查状态：正在运作
+			GENERIC = "它把对象解构，并在其他地方重构喵。",
+			ACTIVE = "道路打开了喵。",
 		},
         TOWNPORTALTALISMAN =
         {
-			GENERIC = "一只小分离器。",		--物品名：沙之石 检查状态：普通状态
-			ACTIVE = "识相的人宁愿走路。",		--物品名：沙之石 检查状态：正在运作
+			GENERIC = "在大型野兽内脏中形成的牛黄。",
+			ACTIVE = "牛黄的魔法已经被激活了喵。",
 		},
-        WETPAPER = "但愿它快点干。",		--物品名：纸张
-        WETPOUCH = "这包裹勉强绑住了。",		--物品名：起皱的包裹
-        MOONROCK_PIECES = "我大概能敲碎它。",		--物品名：月亮石碎块
+        WETPAPER = "这可能证明是有用的喵。",
+        WETPOUCH = "或许里面有什么有用的东西？",
+        MOONROCK_PIECES = "多么复杂的转化啊。",
         MOONBASE =
         {
-            GENERIC = "中间有个洞，像是能投东西。",		--物品名：月亮石 检查状态：普通状态
-            BROKEN = "全毁了。",		--物品名：月亮石 检查状态：已经损坏
-            STAFFED = "接着呢？",		--物品名：月亮石 检查状态：已经插入法杖
-            WRONGSTAFF = "我明显感到不对。",		--物品名：月亮石 检查状态：插入了不匹配的法杖
-            MOONSTAFF = "石头把它点亮了。称奇。",		--物品名：月亮石 检查状态：插入了唤星者魔杖
+            GENERIC = "这一结构的魔法在可预测的周期中衰退。",
+            BROKEN = "古老的碎片。也许它可以被修复？",
+            STAFFED = "现在我们必须有耐心。",
+            WRONGSTAFF = "嗯……法杖看似不可互换。",
+            MOONSTAFF = "石头的魔法似乎是用不完的喵。",
         },
         MOONDIAL =
         {
-			GENERIC = "水放大了刻度，于是月亮可量。",		--物品名：月晷 检查状态：普通状态
-			NIGHT_NEW = "新月。",		--物品名：月晷 检查状态：夜间新月状态
-			NIGHT_WAX = "月亮在慢慢变圆。",		--物品名：月晷 检查状态：夜间盈月状态
-			NIGHT_FULL = "满月。",		--物品名：月晷 检查状态：夜间满月状态
-			NIGHT_WANE = "月亮在瘦下去。",		--物品名：月晷 检查状态：夜间亏月状态
-			CAVE = "洞穴深处没有月亮。无从测量。",		--物品名：月晷 检查状态：位于洞穴世界
-			WEREBEAVER = "露西，时候又到了。", 		--物品名：月晷 检查状态：月晷显示伍迪将变成海狸
-			GLASSED = "有种被注视的错觉。不，不是错觉。",		--物品名：月晷 检查状态：月晷表面已经玻璃化
+			GENERIC = "这里正在发生古怪的事情。",
+			NIGHT_NEW = "月亮的周期重新开始了。",
+			NIGHT_WAX = "月亮慢慢在变圆。",
+			NIGHT_FULL = "月亮的这一周期快结束了喵。",
+			NIGHT_WANE = "月亮正在变小。",
+			CAVE = "它似乎会在地下条件中失去功能喵。",
+--fallback to speech_wilson.lua 			WEREBEAVER = "only_used_by_woodie", --woodie specific
+			GLASSED = "真奇特，水的反应跟我在洞窟中观察到的一致。",
         },
-		THULECITE = "这矿从哪来，我想知道。",		--物品名：铥矿
-		ARMORRUINS = "轻得古怪。不像石头。",		--物品名：铥矿甲
-		ARMORSKELETON = "白骨森然。",		--物品名：骨头盔甲
-		SKELETONHAT = "它给我看见可怕的东西。",		--物品名：骨头头盔
-		RUINS_BAT = "提着压手。",		--物品名：铥矿棒
-		RUINSHAT = "我的发型如何？",		--物品名：铥矿皇冠
+		THULECITE = "这似乎是一种有趣的、含有灵质杂质的变种黝帘石喵。",
+		ARMORRUINS = "坚固耐用的铥矿护甲喵。",
+		ARMORSKELETON = "现在是外骨架。噢，噢！",
+		SKELETONHAT = "这对凡人的心灵会造成有害的影响。",
+		RUINS_BAT = "实施毁灭性打击的工具。",
+		RUINSHAT = "对我来说有点过于俗丽，但似乎还挺有用的喵。",
 		NIGHTMARE_TIMEPIECE =
 		{
-            CALM = "都平静了。",		--物品名：铥矿徽章 检查状态：噩梦循环处于平静阶段
-            WARN = "这里的魔力相当浓。",		--物品名：铥矿徽章 检查状态：噩梦循环即将进入危险阶段
-            WAXING = "越来越密了。",		--物品名：铥矿徽章 检查状态：噩梦循环正在增强
-            STEADY = "像是稳住了。",		--物品名：铥矿徽章 检查状态：噩梦循环处于稳定阶段
-            WANING = "魔力在退。",		--物品名：铥矿徽章 检查状态：噩梦循环正在减弱
-            DAWN = "噩梦快结束了。",		--物品名：铥矿徽章 检查状态：噩梦循环接近结束
-            NOMAGIC = "此处没有魔力。",		--物品名：铥矿徽章 检查状态：当前没有噩梦魔力活动
+            CALM = "灵质残渣的能量水平似乎已经达到了最低喵。",
+            WARN = "虽然灵质残渣的能量水平现在很低，但它正在不断升高喵。",
+            WAXING = "灵质残渣的能量水平似乎越来越高了。",
+            STEADY = "灵质残渣的能量水平似乎已经达到了峰值喵。",
+            WANING = "灵质残渣的能量水平很高，但似乎在逐渐降低。",
+            DAWN = "灵质残渣的能量水平微乎其微。",
+            NOMAGIC = "这附近似乎没有任何灵质的东西喵。",
 		},
-		BISHOP_NIGHTMARE = "它在崩解。",		--物品名：损坏的发条主教
-		ROOK_NIGHTMARE = "真难看。",		--物品名：损坏的发条战车
-		KNIGHT_NIGHTMARE = "一具残暴的发条骑士。",		--物品名：损坏的发条骑士
-		MINOTAUR = "那家伙不太高兴。",		--物品名：远古守护者
-		SPIDER_DROPPER = "记着：别抬头。",		--物品名：穴居悬蛛
-		NIGHTMARELIGHT = "这灯的用途，我还没想明白。",		--物品名：梦魇灯座
-		NIGHTSTICK = "它身上有电。",		--物品名：晨星锤
-		GREENGEM = "绿的，有光。",		--物品名：绿宝石
-		MULTITOOL_AXE_PICKAXE = "高明。",		--物品名：多用斧镐
-		ORANGESTAFF = "比走路省事。",		--物品名：懒人魔杖
-		YELLOWAMULET = "握着是温的。",		--物品名：魔光护符
-		GREENAMULET = "每个基地都该有一个。",		--物品名：建造护符
-		SLURPERPELT = "死了也还是这副模样。",		--物品名：啜食者皮
+		BISHOP_NIGHTMARE = "好复杂的技术，太令人兴奋了。",
+		ROOK_NIGHTMARE = "看起来它随时都可能分崩离析。",
+		KNIGHT_NIGHTMARE = "周围噩梦燃料的使用破坏了它的程序设计。",
+		MINOTAUR = "走远点，你这个野兽！",
+		SPIDER_DROPPER = "啊，这种蛛形纲动物已经适应了悬挂在洞穴顶上的生活。",
+		NIGHTMARELIGHT = "古人似乎曾用噩梦燃料来为一切事物提供能量喵。",
+		NIGHTSTICK = "我怀疑它是不是以金星命名的？",
+		GREENGEM = "因为含铬杂质而呈现绿色喵。",
+		MULTITOOL_AXE_PICKAXE = "功能很强大，既能当斧子用又能当鹤嘴锄用喵。",
+		ORANGESTAFF = "很方便在短距离范围内使用。",
+		YELLOWAMULET = "这个护符的发光波长为530纳米左右。",
+		GREENAMULET = "几乎和神奇的粘合剂具备一样的功效。",
+		SLURPERPELT = "这东西肯定有些用处。",
 
-		SLURPER = "毛真多。",		--物品名：啜食者
-		SLURPER_PELT = "皮剥下来，区别不大。",		--物品名：啜食者皮
-		ARMORSLURPER = "一条湿漉漉的腰带，能替你挨饿。",		--物品名：饥饿腰带
-		ORANGEAMULET = "瞬移很管用。",		--物品名：懒人护符
-		YELLOWSTAFF = "棍上嵌了宝石。天才的发明。",		--物品名：唤星者魔杖
-		YELLOWGEM = "黄宝石。",		--物品名：黄宝石
-		ORANGEGEM = "一颗橙宝石。",		--物品名：橙宝石
-        OPALSTAFF = "宝石嵌在棍顶更亮。这有据可依。",		--物品名：唤月者魔杖
-        OPALPRECIOUSGEM = "这颗宝石很特别。",		--物品名：彩虹宝石
+		SLURPER = "典型的共生关系实例喵。",
+		SLURPER_PELT = "这东西肯定有些用处。",
+		ARMORSLURPER = "恶心但又很神奇的衣服。",
+		ORANGEAMULET = "这块宝石每使用一次就会逝去一点。",
+		YELLOWSTAFF = "还好这颗星星不是特别大，可以掌控。",
+		YELLOWGEM = "也许它和黄水晶类似。",
+		ORANGEGEM = "看起来像锰铝石榴石。",
+        OPALSTAFF = "看似要召唤出一颗寒星。",
+        OPALPRECIOUSGEM = "衍射准矿物的珍贵的亮光。",
         TELEBASE =
 		{
-			VALID = "它已经就绪。",		--物品名：传送焦点 检查状态：宝石组合有效，可以激活
-			GEMS = "还差紫宝石。",		--物品名：传送焦点 检查状态：已插入宝石但尚未完全激活
+			VALID = "它看起来已经准备好了喵。",
+			GEMS = "还没充能呢喵。",
 		},
 		GEMSOCKET =
 		{
-			VALID = "看来可以用了。",		--物品名：宝石底座 检查状态：宝石组合有效，可以激活
-			GEMS = "它要一颗宝石。",		--物品名：宝石底座 检查状态：已插入宝石但尚未完全激活
+			VALID = "好奇妙的反应。",
+			GEMS = "放宝石的地方喵。",
 		},
-		STAFFLIGHT = "那东西很危险。",		--物品名：矮星
-        STAFFCOLDLIGHT = "冷得叫人打颤。",		--物品名：极光
+		STAFFLIGHT = "也许法杖再大点，就可以召唤更大的星星了。",
+        STAFFCOLDLIGHT = "某种自有的曙光。",
 
-        ANCIENT_ALTAR = "古老的祭坛。神秘得有理。",		--物品名：远古伪科学站
+        ANCIENT_ALTAR = "某位死去很久的神的纪念碑。",
 
-        ANCIENT_ALTAR_BROKEN = "这座似乎坏了。",		--物品名：损坏的远古伪科学站
+        ANCIENT_ALTAR_BROKEN = "它少了些东西喵。",
 
-        ANCIENT_STATUE = "它在震，与这世界格格不入。",		--物品名：远古雕像
+        ANCIENT_STATUE = "它似乎与现实世界存在某种神秘的联系喵。",
 
-        LICHEN = "这种光线下，只有蓝藻长得起来。",		--物品名：洞穴苔藓
-		CUTLICHEN = "有营养，放不久。",		--物品名：苔藓
+        LICHEN = "一种共生生物！一种菌类加上一种共生藻菌喵。",
+		CUTLICHEN = "这不会保质很久的。",
 
-		CAVE_BANANA = "捏着发软。",		--物品名：香蕉
-		CAVE_BANANA_COOKED = "好吃。",		--物品名：熟香蕉
-		CAVE_BANANA_TREE = "它能否光合作用，我存疑。",		--物品名：洞穴香蕉树
+		CAVE_BANANA = "它们的基因全都是相同的。",
+		CAVE_BANANA_COOKED = "比之前要好些。",
+		CAVE_BANANA_TREE = "以前一定有种子掉进陷洞。",
         ROCKY =
         {
-            GENERIC = "它的爪子叫人发怵。",		--物品名：石虾 检查状态：普通状态
-            BOULDER = "装不进我的口袋。", 		--物品名：石虾 检查状态：收缩成岩石状
-            ACID = "它变小了？", 		--物品名：石虾 检查状态：受到酸液影响
+            GENERIC = "它们的甲壳是岩石做的喵。",
+            BOULDER = "一块巨大的沉积岩。", -- in boulder state, it looks like a normal boulder
+            ACID = "酸雨正在溶解它外骨骼中的矿物质喵。", -- in acid form
         },
 
 		COMPASS =
 		{
-			GENERIC="我朝哪边？",		--物品名：指南针 检查状态：普通状态
-			N = "指北。",		--物品名：指南针 检查状态：指南针指向北方
-			S = "指南。",		--物品名：指南针 检查状态：指南针指向南方
-			E = "指东。",		--物品名：指南针 检查状态：指南针指向东方
-			W = "指西。",		--物品名：指南针 检查状态：指南针指向西方
-			NE = "偏东北。",		--物品名：指南针 检查状态：指南针指向东北方
-			SE = "偏东南。",		--物品名：指南针 检查状态：指南针指向东南方
-			NW = "偏西北。",		--物品名：指南针 检查状态：指南针指向西北方
-			SW = "偏西南。",		--物品名：指南针 检查状态：指南针指向西南方
+			GENERIC="坐标仍然未知。",
+			N = "北。",
+			S = "南。",
+			E = "东。",
+			W = "西。",
+			NE = "东北。",
+			SE = "东南喵。",
+			NW = "西北。",
+			SW = "西南喵。",
 		},
 
-        HOUNDSTOOTH = "很利。",		--物品名：犬牙
-        ARMORSNURTLESHELL = "穿上它，会黏在背上。",		--物品名：蜗壳护甲
+        HOUNDSTOOTH = "成分是钙和硫磺。",
+        ARMORSNURTLESHELL = "这里面很宽敞。",
         BAT =
         {
-            GENERIC = "呀。这东西真吓人。",		--物品名：洞穴蝙蝠 检查状态：普通状态
-            ACID = "硝石养出来的东西。", 		--物品名：洞穴蝙蝠 检查状态：受到酸液影响
+            GENERIC = "会飞的哺乳动物。",
+            ACID = "酸雨使它进入了狂暴状态。", -- in acid form
         },
-        BATBAT = "拿两根，我说不定能飞。",		--物品名：蝙蝠棒
-        BATWING = "这些东西死了也讨厌。",		--物品名：洞穴蝙蝠翅膀
-        BATWING_COOKED = "至少它不会再活了。",		--物品名：熟蝙蝠翅膀
-        BATCAVE = "我不想吵醒它们。",		--物品名：蝙蝠洞
-        BEDROLL_FURRY = "又暖又软，喵。",		--物品名：毛皮铺盖
-        BUNNYMAN = "先做点研究。我等不及了。",		--物品名：兔人
-        FLOWER_CAVE = "发光是科学的作用。",		--物品名：荧光花
-        GUANO = "另一种气味的粪。",		--物品名：鸟粪
-        LANTERN = "文明些的灯。",		--物品名：提灯
-        LIGHTBULB = "奇怪。它看着竟像能吃。",		--物品名：荧光果
-        MANRABBIT_TAIL = "手里有个东西抓着，安心。",		--物品名：兔绒
-        MUSHROOMHAT = "戴上它，人会显得有趣。",		--物品名：蘑菇帽
+        BATBAT = "有意思。这件武器好像是活的。",
+        BATWING = "理论上是可以食用的。",
+        BATWING_COOKED = "理论上是可以食用的喵。",
+        BATCAVE = "这个隐蔽的地方实际上是一处居所喵。",
+        BEDROLL_FURRY = "我不要睡在地上。",
+        BUNNYMAN = "一种有感情的兔类动物喵。",
+        FLOWER_CAVE = "你可以借助那个光来看书喵。",
+        GUANO = "更多的代谢副产品。",
+        LANTERN = "一种可重复加燃料的光源。",
+        LIGHTBULB = "它是动物还是蔬菜？",
+        MANRABBIT_TAIL = "它们利用尾巴保持平衡喵。",
+        MUSHROOMHAT = "唔。多么欢快却枯萎的外表啊。",
         MUSHROOM_LIGHT2 =
         {
-            ON = "蓝色显然最讲道理。",		--物品名：菌伞灯 检查状态：处于开启状态
-            OFF = "用三原色，也能配出主光源。",		--物品名：菌伞灯 检查状态：处于关闭状态
-            BURNT = "不是我让它发霉的，我保证。",		--物品名：菌伞灯 检查状态：已经烧毁
+            ON = "红色和蓝色孢子组合在一起时会产生可爱的亮光，看书时可用喵。",
+            OFF = "色彩基础理论是必须要有的。",
+            BURNT = "呃哼。我会需要新的灯光来读书。",
         },
-
         MUSHROOM_LIGHT =
         {
-            ON = "灯亮着。光，恰到好处。",		--物品名：蘑菇灯 检查状态：处于开启状态
-            OFF = "熄了。留着也好。",		--物品名：蘑菇灯 检查状态：处于关闭状态
-            BURNT = "烧透了。没什么可救的。",		--物品名：蘑菇灯 检查状态：已经烧毁
+            ON = "相当迷人，不是吗喵？",
+            OFF = "一株生物性发光的真菌。既不是伞菌目，也不是炭角菌目。",
+            BURNT = "那就是真菌学。吼吼！",
         },
-        SLEEPBOMB = "睡进去，就由不得自己了。",		--物品名：睡袋
-        MUSHROOMBOMB = "蘑菇云。请退后。",		--物品名：炸弹蘑菇
-        SHROOM_SKIN = "疣。一层又一层。",		--物品名：蘑菇皮
+        SLEEPBOMB = "已经超过了你的就寝时间。",
+        MUSHROOMBOMB = "大家和挥发性的落叶松蕈保持安全距离！",
+        SHROOM_SKIN = "青蛙的皮肤必须保持潮湿，否则它们会窒息。这只在意的不是那事。",
         TOADSTOOL_CAP =
         {
-            EMPTY = "地上只剩下一个洞。",		--物品名：毒菌蟾蜍 检查状态：内容为空
-            INGROUND = "有东西正在往外探。",		--物品名：毒菌蟾蜍 检查状态：仍埋在地下
-            GENERIC = "它只是想被砍下来。",		--物品名：毒菌蟾蜍 检查状态：普通状态
+            EMPTY = "这里的土壤被干扰了。",
+            INGROUND = "它的生长需要催化剂来打破表面。",
+            GENERIC = "落叶松蕈属的新成员？",
         },
         TOADSTOOL =
         {
-            GENERIC = "失礼。我不吻这种东西。",		--物品名：毒菌蟾蜍 检查状态：普通状态
-            RAGE = "它跳得厉害。别站在它面前。",		--物品名：毒菌蟾蜍 检查状态：毒菌蟾蜍处于愤怒强化状态
+            GENERIC = "他已经和真菌孢子形成了一种危险的共生关系。",
+            RAGE = "蟾蜍和真菌之间的共生关系已经达到了顶点。",
         },
         MUSHROOMSPROUT =
         {
-            GENERIC = "多么讲究的结构。",		--物品名：孢子帽 检查状态：普通状态
-            BURNT = "多么不体面的下场。",		--物品名：孢子帽 检查状态：已经烧毁
+            GENERIC = "我们必须摧毁那棵高耸的落叶松蕈喵。",
+            BURNT = "一棵高耸的烧焦的落叶松蕈。",
         },
         MUSHTREE_TALL =
         {
-            GENERIC = "这株蘑菇，大得没有分寸。",		--物品名：蓝蘑菇树 检查状态：普通状态
-            BLOOM = "远看无碍，近闻失礼。",		--物品名：蓝蘑菇树 检查状态：处于开花状态
-            ACIDCOVERED = "酸液覆身。别碰。",		--物品名：蓝蘑菇树 检查状态：被酸雨覆盖
+            GENERIC = "一棵寄生着菌类的树。",
+            BLOOM = "显而易见，现在是这个物种的繁殖期。",
+            ACIDCOVERED = "酸会加速产出菌类的变质速度。",
         },
         MUSHTREE_MEDIUM =
         {
-            GENERIC = "我旧日的浴室里长过这个。",		--物品名：红蘑菇树 检查状态：普通状态
-            BLOOM = "这让我颇为不适。",		--物品名：红蘑菇树 检查状态：处于开花状态
-            ACIDCOVERED = "酸液覆身。离远些。",		--物品名：红蘑菇树 检查状态：被酸雨覆盖
+            GENERIC = "红色品种的发光蘑菇喵。",
+            BLOOM = "这个味道可以用于抵御捕食者。",
+            ACIDCOVERED = "酸会加速产出菌类的变质速度。",
         },
         MUSHTREE_SMALL =
         {
-            GENERIC = "会魔法的蘑菇？",		--物品名：绿蘑菇树 检查状态：普通状态
-            BLOOM = "它在努力繁衍。由它去。",		--物品名：绿蘑菇树 检查状态：处于开花状态
-            ACIDCOVERED = "酸液覆身。离远些。",		--物品名：绿蘑菇树 检查状态：被酸雨覆盖
+            GENERIC = "哎呀！好巨大的发光蘑菇。",
+            BLOOM = "光亮由化学反应引起。",
+            ACIDCOVERED = "酸会加速产出菌类的变质速度。",
         },
         MUSHTREE_TALL_WEBBED =
         {
-            GENERIC = "蜘蛛们很看重它。",		--物品名：蛛网蓝蘑菇树 检查状态：普通状态
-            ACIDCOVERED = "覆满酸液。别碰。",		--物品名：蛛网蓝蘑菇树 检查状态：被酸雨覆盖
+            GENERIC = "这个似乎是共生关系。",
+            ACIDCOVERED = "酸会加速产出菌类的变质速度。",
         },
         SPORE_TALL =
         {
-            GENERIC = "它四处漂着。",		--物品名：蓝色孢子 检查状态：普通状态
-            HELD = "口袋里，装一点光。",		--物品名：蓝色孢子 检查状态：正被角色携带
+            GENERIC = "遗传信息的淡蓝携带者。",
+            HELD = "我是遗传信息携带者的携带者。",
         },
         SPORE_MEDIUM =
         {
-            GENERIC = "这世上已没有它牵挂的东西。",		--物品名：红色孢子 检查状态：普通状态
-            HELD = "口袋里，装一点光。",		--物品名：红色孢子 检查状态：正被角色携带
+            GENERIC = "遗传信息的亮红携带者。",
+            HELD = "我是遗传信息携带者的携带者喵。",
         },
         SPORE_SMALL =
         {
-            GENERIC = "那是孢子眼中的世界。",		--物品名：绿色孢子 检查状态：普通状态
-            HELD = "口袋里，装一点光。",		--物品名：绿色孢子 检查状态：正被角色携带
+            GENERIC = "遗传信息的可爱绿色的携带者喵。",
+            HELD = "我是遗传信息携带者的携带者喵。",
         },
         RABBITHOUSE =
         {
-            GENERIC = "那不是真的胡萝卜。",		--物品名：兔屋 检查状态：普通状态
-            BURNT = "那也不是真的烤胡萝卜。",		--物品名：兔屋 检查状态：已经烧毁
+            GENERIC = "真可悲，它只是被漆得像一根胡萝卜。",
+            BURNT = "它连烧起来都不像是胡萝卜喵。",
         },
-        SLURTLE = "……失礼。这东西让人反胃。",		--物品名：蛞蝓龟
-        SLURTLE_SHELLPIECES = "拼不回去的拼图。",		--物品名：外壳碎片
-        SLURTLEHAT = "它会弄乱我的头发。",		--物品名：背壳头盔
-        SLURTLEHOLE = "一座“恶心”的洞穴。",		--物品名：蛞蝓龟窝
-        SLURTLESLIME = "若非有用，我绝不碰它。",		--物品名：蛞蝓龟黏液
-        SNURTLE = "它不算太恶心。只是仍旧恶心。",		--物品名：蜗牛龟
-        SPIDER_HIDER = "呀。又是蜘蛛。",		--物品名：洞穴蜘蛛
-        SPIDER_SPITTER = "我讨厌蜘蛛。",		--物品名：喷吐蜘蛛
-        SPIDERHOLE = "外面盖满了蛛网。",		--物品名：蛛网岩
-        SPIDERHOLE_ROCK = "外面盖满了蛛网。",		--物品名：蛛穴岩块
-        STALAGMITE = "依我看，就是块石头。",		--物品名：石笋
-        STALAGMITE_TALL = "石头，石头，石头……",		--物品名：石笋
+        SLURTLE = "吞食矿物的腹足类动物。",
+        SLURTLE_SHELLPIECES = "一堆碎片喵。",
+        SLURTLEHAT = "它能提供保护喵。",
+        SLURTLEHOLE = "腹足类动物的巢穴。",
+        SLURTLESLIME = "它们的黏液由于某种原因会发生爆炸。",
+        SNURTLE = "腹足类动物的罕见变种。",
+        SPIDER_HIDER = "长着厚甲壳的蛛形纲动物。",
+        SPIDER_SPITTER = "会吐出抛射物的蛛形纲动物。",
+        SPIDERHOLE = "这就是蜘蛛肆虐的源头。",
+        SPIDERHOLE_ROCK = "这就是蜘蛛肆虐的源头。",
+        STALAGMITE = "奇怪的岩层喵。",
+        STALAGMITE_TALL = "又一块石笋喵。",
 
-        TURF_CARPETFLOOR = "颇为扎人。",		--物品名：地毯地板
-        TURF_CHECKERFLOOR = "这些相当华丽。",		--物品名：棋盘地板
-        TURF_DIRT = "一块地皮。",		--物品名：泥土地皮
-        TURF_FOREST = "一块地皮。",		--物品名：森林地皮
-        TURF_GRASS = "一块地皮。",		--物品名：长草地皮
-        TURF_MARSH = "一块地皮。",		--物品名：沼泽地皮
-        TURF_METEOR = "一块月面。",		--物品名：月球环形山地皮
-        TURF_PEBBLEBEACH = "一片海滩。",		--物品名：岩石海滩地皮
-        TURF_ROAD = "草草铺就的石路。",		--物品名：卵石路
-        TURF_ROCKY = "一块地皮。",		--物品名：岩石地皮
-        TURF_SAVANNA = "一块地皮。",		--物品名：热带草原地皮
-        TURF_WOODFLOOR = "木地板。铺得尚可。",		--物品名：木地板
+        TURF_CARPETFLOOR = "地皮。你正踩在它上面。",
+        TURF_CHECKERFLOOR = "地皮。你正踩在它上面。",
+        TURF_DIRT = "地皮。你正踩在它上面。",
+        TURF_FOREST = "地皮。你正踩在它上面。",
+        TURF_GRASS = "地皮。你正踩在它上面喵。",
+        TURF_MARSH = "地皮。你正踩在它上面喵。",
+        TURF_METEOR = "吼吼，一颗流星受引力的作用陨落了。",
+        TURF_PEBBLEBEACH = "地皮。你可以踩在它上面。",
+        TURF_ROAD = "地皮。你正踩在它上面。",
+        TURF_ROCKY = "地皮。你正踩在它上面。",
+        TURF_SAVANNA = "地皮。你正踩在它上面喵。",
+        TURF_WOODFLOOR = "地皮。你正踩在它上面。",
 
-		TURF_CAVE="又一种地皮。",		--物品名：鸟粪地皮
-		TURF_FUNGUS="地皮罢了。",		--物品名：真菌地皮
-		TURF_FUNGUS_MOON = "还是地皮。",		--物品名：变异真菌地皮
-		TURF_ARCHIVE = "又一种地皮。",		--物品名：远古石刻
-        TURF_VAULT = "又一种地皮。",		--物品名：远古圣殿石刻
-        TURF_VENT = "又一种地皮。",		--物品名：洞穴喷气孔地皮
-		TURF_SINKHOLE="地皮，又一种。",		--物品名：黏滑地皮
-		TURF_UNDERROCK="地皮，又一种。",		--物品名：洞穴岩石地皮
-		TURF_MUD="地皮，又一种。",		--物品名：泥泞地皮
+		TURF_CAVE="地皮。你正踩在它上面。",
+		TURF_FUNGUS="地皮。你正踩在它上面喵。",
+		TURF_FUNGUS_MOON = "地皮。你正踩在它上面。",
+		TURF_ARCHIVE = "地皮。你正踩在它上面喵。",
+        TURF_VAULT = "地皮。你正踩在它上面。",
+        TURF_VENT = "地皮。你正踩在它上面。",
+		TURF_SINKHOLE="地皮。你正踩在它上面喵。",
+		TURF_UNDERROCK="地皮。你正踩在它上面喵。",
+		TURF_MUD="地皮。你正踩在它上面喵。",
 
-		TURF_DECIDUOUS = "又一种地皮。",		--物品名：落叶林地皮
-		TURF_SANDY = "又一种地皮。",		--物品名：沙土地皮
-		TURF_BADLANDS = "又一种地皮。",		--物品名：荒地地皮
-		TURF_DESERTDIRT = "一块地皮。",		--物品名：沙漠地皮
-		TURF_FUNGUS_GREEN = "一块地皮。",		--物品名：真菌地皮
-		TURF_FUNGUS_RED = "又一块地皮。",		--物品名：真菌地皮
-		TURF_DRAGONFLY = "你想证明它防火？",		--物品名：龙鳞地板
+		TURF_DECIDUOUS = "地皮。你正踩在它上面喵。",
+		TURF_SANDY = "地皮。你正踩在它上面喵。",
+		TURF_BADLANDS = "地皮。你正踩在它上面。",
+		TURF_DESERTDIRT = "地皮。你正踩在它上面。",
+		TURF_FUNGUS_GREEN = "地皮。你正踩在它上面。",
+		TURF_FUNGUS_RED = "地皮。你正踩在它上面。",
+		TURF_DRAGONFLY = "这种物质充满了某种天然的阻燃剂。",
 
-        TURF_SHELLBEACH = "一片海滩。",		--物品名：贝壳海滩地皮
+        TURF_SHELLBEACH = "地皮。你正踩在它上面。",
 
-		TURF_RUINSBRICK = "又一种地皮。",		--物品名：远古地面
-		TURF_RUINSBRICK_GLOW = "仿的。也算一种地皮。",		--物品名：仿远古地面
-		TURF_RUINSTILES = "又一种地皮。",		--物品名：远古瓷砖
-		TURF_RUINSTILES_GLOW = "仿的。铺得还算齐整。",		--物品名：仿远古瓷砖
-		TURF_RUINSTRIM = "又一种地皮。",		--物品名：远古砖雕
-		TURF_RUINSTRIM_GLOW = "仿的。聊胜于无。",		--物品名：仿远古砖雕
+		TURF_RUINSBRICK = "地皮。你正踩在它上面。",
+		TURF_RUINSBRICK_GLOW = "地皮。你正踩在它上面。",
+		TURF_RUINSTILES = "地皮。你正踩在它上面。",
+		TURF_RUINSTILES_GLOW = "地皮。你正踩在它上面。",
+		TURF_RUINSTRIM = "地皮。你正踩在它上面。",
+		TURF_RUINSTRIM_GLOW = "地皮。你正踩在它上面。",
 
-        TURF_MONKEY_GROUND = "一片沙地。",		--物品名：月亮码头海滩地皮
+        TURF_MONKEY_GROUND = "地皮。你正踩在它上面喵。",
 
-        TURF_CARPETFLOOR2 = "它软得出人意料。",		--物品名：茂盛地毯
-        TURF_MOSAIC_GREY = "又一种地皮。",		--物品名：灰色马赛克地板
-        TURF_MOSAIC_RED = "又一种地皮。",		--物品名：红色马赛克地板
-        TURF_MOSAIC_BLUE = "又一种地皮。",		--物品名：蓝色马赛克地板
+        TURF_CARPETFLOOR2 = "地皮。你正踩在它上面。",
+        TURF_MOSAIC_GREY = "地皮。你正踩在它上面。",
+        TURF_MOSAIC_RED = "地皮。你正踩在它上面喵。",
+        TURF_MOSAIC_BLUE = "地皮。你正踩在它上面喵。",
 
-        TURF_BEARD_RUG = "用我自己的胡须做的。",		--物品名：胡须地毯
+        TURF_BEARD_RUG = "噢，天啊……",
 
-		POWCAKE = "这需要一点奇迹。或一点科学。",		--物品名：粉末蛋糕
-        CAVE_ENTRANCE = "我在想，那块岩石能否挪开。",		--物品名：被堵住的洞穴
-        CAVE_ENTRANCE_RUINS = "它或许在隐瞒什么。",		--物品名：被堵住的陷洞
+		POWCAKE = "农业与工业结合所产生的最伟大成就喵。",
+        CAVE_ENTRANCE = "似乎是有人故意把这块岩石放在这里的喵。",
+        CAVE_ENTRANCE_RUINS = "通道被堵塞了。",
 
        	CAVE_ENTRANCE_OPEN =
         {
-            GENERIC = "大地本身在拒绝我。",		--物品名：洞穴 检查状态：普通状态
-            OPEN = "那下面值得一探。",		--物品名：洞穴 检查状态：处于打开状态
-            FULL = "等有人出来，我再进去。",		--物品名：洞穴 检查状态：内容已满
+            GENERIC = "也许我得准备得更充分点喵。",
+            OPEN = "地下世界正等着我喵。",
+            FULL = "太拥挤了，我不喜欢喵。",
         },
         CAVE_EXIT =
         {
-            GENERIC = "我想，我该留在下面。",		--物品名：楼梯 检查状态：普通状态
-            OPEN = "我暂时不想再探了。",		--物品名：楼梯 检查状态：处于打开状态
-            FULL = "上面太挤。",		--物品名：楼梯 检查状态：内容已满
+            GENERIC = "可能要过会儿。",
+            OPEN = "也许我应该上去呼吸一点新鲜空气。",
+            FULL = "和所有那些人一起？这肯定不和谐。",
         },
 
-		MAXWELLPHONOGRAPH = "音乐原来出自这里。",		--物品名：麦斯威尔的留声机
-		BOOMERANG = "空气动力学。",		--物品名：回旋镖
-		PIGGUARD = "他看上去不太友善。",		--物品名：猪人守卫
+		MAXWELLPHONOGRAPH = "它好像没有电源。",--single player
+		BOOMERANG = "它就是一个扁平的翼片。",
+		PIGGUARD = "一位武士喵。",
 		ABIGAIL =
 		{
             LEVEL1 =
             {
-                "噢，她有个可爱的小蝴蝶结。",		--物品名：阿比盖尔 检查状态：第一阶段 / 第1条台词变体
-                "那蝴蝶结，倒真衬她。",		--物品名：阿比盖尔 检查状态：第一阶段 / 第2条台词变体
+                "Fascinating. Can you speak, specter?",
+                "Fascinating. Can you speak, specter?",
             },
             LEVEL2 =
             {
-                "噢，她有个可爱的小蝴蝶结。",		--物品名：阿比盖尔 检查状态：第二阶段 / 第1条台词变体
-                "蝴蝶结还在。很好。",		--物品名：阿比盖尔 检查状态：第二阶段 / 第2条台词变体
+                "Fascinating. Can you speak, specter?",
+                "Fascinating. Can you speak, specter?",
             },
             LEVEL3 =
             {
-                "噢，她有个可爱的小蝴蝶结。",		--物品名：阿比盖尔 检查状态：第三阶段 / 第1条台词变体
-                "她长大了。蝴蝶结也是。",		--物品名：阿比盖尔 检查状态：第三阶段 / 第2条台词变体
+                "Fascinating. Can you speak, specter?",
+                "Fascinating. Can you speak, specter?",
             },
         },
 
-		ADVENTURE_PORTAL = "我不会再上一次当。",		--物品名：麦斯威尔之门
-		AMULET = "戴着它，我安心。",		--物品名：重生护符
-		ANIMAL_TRACK = "食物留下的痕迹。我是说，一只动物。",		--物品名：动物足迹
-		ARMORGRASS = "但愿里面没有虫子。",		--物品名：草甲
-		ARMORMARBLE = "那看起来真沉。",		--物品名：大理石甲
-		ARMORWOOD = "这身衣服很合身。",		--物品名：木甲
-		ARMOR_SANITY = "穿上它虽安全，心里却不踏实。",		--物品名：暗夜甲
+		ADVENTURE_PORTAL = "那违反了一些最基本的物理定律。",
+		AMULET = "来自另一个时代的遗留物。",
+		ANIMAL_TRACK = "动物活动的标志。指向某个方向。",
+		ARMORGRASS = "足够多的层数可以带来惊人的效果喵。",
+		ARMORMARBLE = "选这种材料来做护甲，有意思。",
+		ARMORWOOD = "由一段段木头拼凑而成的粗糙铠甲喵。",
+		ARMOR_SANITY = "通过将敌人的攻击转移到另一个次元来提供保护的护甲。",
 		ASH =
 		{
-			GENERIC = "火烧尽之后，剩下的一切。",		--物品名：灰烬 检查状态：普通状态
-			REMAINS_GLOMMERFLOWER = "传送时，花被火吞了。",		--物品名：灰烬 检查状态：格罗姆花烧毁后留下的灰烬
-			REMAINS_EYE_BONE = "传送时，眼骨被火吞了。",		--物品名：灰烬 检查状态：眼骨烧毁后留下的灰烬
-			REMAINS_THINGIE = "这必定有个完美的科学解释。",		--物品名：灰烬 检查状态：传送机零件烧毁后留下的灰烬
+			GENERIC = "大火之后剩下的一些非水相残留物。",
+			REMAINS_GLOMMERFLOWER = "这花似乎已经完全被烧毁了。",
+			REMAINS_EYE_BONE = "眼骨似乎已经完全被烧毁了。",
+			REMAINS_THINGIE = "这过去应该是个东西，但现在化成了一堆灰烬喵。",
 		},
-		AXE = "可靠的斧头。",		--物品名：斧头
+		AXE = "一根杆上连着两个斜面喵。",
 		BABYBEEFALO =
 		{
-			GENERIC = "啊。真是可爱。",		--物品名：小皮弗娄牛 检查状态：普通状态
-		    SLEEPING = "好梦，小家伙。喵。",		--物品名：小皮弗娄牛 检查状态：正在睡眠
+			GENERIC = "看他的脸好可爱！（嗯哼！）",
+		    SLEEPING = "他在睡觉时甚至是更惹人喜爱了喵。",
         },
-        BUNDLE = "我们的物资都在里面。",		--物品名：捆绑物资
-        BUNDLEWRAP = "打包之后，搬起来该省力些。",		--物品名：捆绑包装
-		BACKPACK = "那里能装下许多科学。",		--物品名：背包
-		BACONEGGS = "科学家的完美早餐。",		--物品名：培根煎蛋
-		BANDAGE = "看起来还算卫生。",		--物品名：蜂蜜药膏
-		BASALT = "太硬了，敲不碎。", 		--物品名：玄武岩
-		BEARDHAIR = "只要不是自己的，就都恶心。",		--物品名：胡须
-		BEARGER = "熊一般大的獾。",		--物品名：熊獾
-		BEARGERVEST = "欢迎来到冬眠站。",		--物品名：熊皮背心
-		ICEPACK = "毛皮替包内保温。",		--物品名：保鲜背包
-		BEARGER_FUR = "一块厚毛皮。",		--物品名：熊皮
-		BEDROLL_STRAW = "看着舒适，闻着一股霉味。",		--物品名：草席卷
-		BEEQUEEN = "让那根蜂刺离我远些。",		--物品名：蜂王
+        BUNDLE = "至少有人把它捆起来了。",
+        BUNDLEWRAP = "为保存食品的抗菌包装喵。",
+		BACKPACK = "那个可以带这么多书喵。",
+		BACONEGGS = "蓝蛋和培根！",
+		BANDAGE = "医用敷料喵。",
+		BASALT = "高密度材料！", --removed
+		BEARDHAIR = "这是人类的面部毛发。",
+		BEARGER = "它是一种犬型亚目动物...除此之外，我一无所知。",
+		BEARGERVEST = "不管它以前是什么动物，它的毛皮倒是一件很不错的衣服。",
+		ICEPACK = "完美的隔热喵。",
+		BEARGER_FUR = "天啊！那东西好厚喵。",
+		BEDROLL_STRAW = "我不要睡在地上。",
+		BEEQUEEN = "工蜂勇猛地保护她。",
 		BEEQUEENHIVE =
 		{
-			GENERIC = "太黏了，走不过去。",		--物品名：小块蜂蜜 检查状态：普通状态
-			GROWING = "那东西以前在那儿吗？",		--物品名：小块蜂蜜 检查状态：正在生长
+			GENERIC = "密集的西方蜜蜂蜂巢喵。",
+			GROWING = "西方蜜蜂在建造一个新的蜂巢。",
 		},
-        BEEQUEENHIVEGROWN = "不合常理。它怎么能长到这么大？",		--物品名：巨大蜂窝
-        BEEGUARD = "它在守卫女王。",		--物品名：嗡嗡蜜蜂
-        HIVEHAT = "戴上它，这世界似乎少些疯狂。",		--物品名：蜂王冠
+        BEEQUEENHIVEGROWN = "一个大小不寻常的西方蜜蜂蜂巢喵。",
+        BEEGUARD = "西方蜜蜂工人很生气！",
+        HIVEHAT = "它正散发出强大的信息素。",
         MINISIGN =
         {
-            GENERIC = "我能画得比这好。",		--物品名：小木牌 检查状态：普通状态
-            UNDRAWN = "该在上面画点什么。",		--物品名：小木牌 检查状态：尚未绘制图案
+            GENERIC = "一个很棒的图表！非常精确喵。",
+            UNDRAWN = "一个画好的图表可以帮助保持东西的整齐性喵。",
         },
-        MINISIGN_ITEM = "这样放着没什么用。放下吧。",		--物品名：小木牌
+        MINISIGN_ITEM = "终于，一个合适的组织工具喵。",
 		BEE =
 		{
-			GENERIC = "嗡嗡，嗡嗡。",		--物品名：蜜蜂 检查状态：普通状态
-			HELD = "当心。",		--物品名：蜜蜂 检查状态：正被角色携带
+			GENERIC = "西方蜜蜂。长得好大！",
+			HELD = "它看起来不高兴喵。",
 		},
 		BEEBOX =
 		{
-			READY = "里面装满了蜂蜜。",		--物品名：蜂箱 检查状态：已经准备就绪
-			FULLHONEY = "蜂蜜已满。",		--物品名：蜂箱 检查状态：蜂蜜储量已满
-			GENERIC = "蜜蜂。",		--物品名：蜂箱 检查状态：普通状态
-			NOHONEY = "空的。",		--物品名：蜂箱 检查状态：没有蜂蜜
-			SOMEHONEY = "还得等一会儿。",		--物品名：蜂箱 检查状态：存有少量蜂蜜
-			BURNT = "怎么烧成这样的。",		--物品名：蜂箱 检查状态：已经烧毁
+			READY = "可以在它那里采到蜜。",
+			FULLHONEY = "可以在它那里采到蜜喵。",
+			GENERIC = "简陋的蜂房喵。",
+			NOHONEY = "里面没有蜂蜜。",
+			SOMEHONEY = "还没到收获蜂蜜的时候。",
+			BURNT = "可怜的蜜蜂！",
 		},
 		MUSHROOM_FARM =
 		{
-			STUFFED = "蘑菇多得过分。",		--物品名：蘑菇农场 检查状态：种植槽已塞满材料
-			LOTS = "木头上长满了蘑菇。",		--物品名：蘑菇农场 检查状态：内容数量很多
-			SOME = "现在该继续长了。",		--物品名：蘑菇农场 检查状态：内容数量较少
-			EMPTY = "放一个孢子进去。或者一株蘑菇。",		--物品名：蘑菇农场 检查状态：内容为空
-			ROTTEN = "木头死了。得换一块活的。",		--物品名：蘑菇农场 检查状态：已经腐烂
-			BURNT = "科学点燃了它。真是好极了。",		--物品名：蘑菇农场 检查状态：已经烧毁
-			SNOWCOVERED = "这种天寒地冻，它长不了。",		--物品名：蘑菇农场 检查状态：被积雪覆盖
+			STUFFED = "我们应当在它们长过头之前把它们摘下来喵。",
+			LOTS = "杰出的真菌产量。",
+			SOME = "真菌正在很好地结果。",
+			EMPTY = "它首先必须用切好的标本或真菌孢子进行播种。",
+			ROTTEN = "腐烂的状态太超前了，没法支持任何标本了喵。",
+			BURNT = "被一个发出热量的化学反应所碳化。",
+			SNOWCOVERED = "它的生长受到了极度寒冷的阻碍。",
 		},
 		BEEFALO =
 		{
-			FOLLOWER = "他安静地跟着我。",		--物品名：皮弗娄牛 检查状态：已经成为当前角色的跟随者
-			GENERIC = "是皮弗娄牛。",		--物品名：皮弗娄牛 检查状态：普通状态
-			NAKED = "唉，他很难过。",		--物品名：皮弗娄牛 检查状态：皮毛已经被剃掉
-			SLEEPING = "这些家伙睡得很沉。",		--物品名：皮弗娄牛 检查状态：正在睡眠
-            DOMESTICATED = "这头没那么臭。",		--物品名：皮弗娄牛 检查状态：已经完全驯化
-            ORNERY = "它看上去火气不小。",		--物品名：皮弗娄牛 检查状态：战斗倾向已驯化
-            RIDER = "这家伙看着好骑。",		--物品名：皮弗娄牛 检查状态：骑乘倾向较高
-            PUDGY = "嗯，它大概吃太多了。",		--物品名：皮弗娄牛 检查状态：肥胖倾向已驯化
-            MYPARTNER = "我们永远是朋友。",		--物品名：皮弗娄牛 检查状态：是当前角色绑定的牛伙伴
-            DEAD = "它很坚强。",		--物品名：皮弗娄牛 检查状态：已经死亡
-            DEAD_MYPARTNER = "但愿还能重逢。",		--物品名：皮弗娄牛 检查状态：已死亡，且曾是当前角色的伙伴
+			FOLLOWER = "它似乎一直在跟着我。",
+			GENERIC = "它看起来和家牛好像。",
+			NAKED = "它看起来好冷。",
+			SLEEPING = "它在睡觉。",
+            --Domesticated states:
+            DOMESTICATED = "驯服的时候，它已经独立于自己的主人。",
+            ORNERY = "那个生物已经形成令人讨厌的性格。",
+            RIDER = "这个家伙既纤细又健硕喵。",
+            PUDGY = "营养充足有助于形成友好的性格。",
+            MYPARTNER = "它变得对我十分依赖了喵。",
+            DEAD = "它不喘气了喵。",
+            DEAD_MYPARTNER = "或许还有办法让它复活……",
 		},
 
-		BEEFALOHAT = "我的发型要毁在帽子上了。",		--物品名：牛角帽
-		BEEFALOWOOL = "闻起来像皮弗娄牛的眼泪。",		--物品名：牛毛
-		BEEHAT = "护得住皮肤，压得坏发型。",		--物品名：养蜂帽
-        BEESWAX = "蜂蜡能防腐。科学说的。",		--物品名：蜂蜡
-		BEEHIVE = "蜜蜂嗡嗡，忙个不停。",		--物品名：蜂窝
-		BEEMINE = "一晃就嗡嗡响。",		--物品名：蜜蜂地雷
-		BEEMINE_MAXWELL = "地雷里塞满了狂暴的蚊子。",		--物品名：麦斯威尔的蚊子陷阱
-		BERRIES = "红浆果最好吃。",		--物品名：浆果
-		BERRIES_COOKED = "我以为加热并不会让它们更好。",		--物品名：烤浆果
-        BERRIES_JUICY = "美味。可惜美味总是短暂。",		--物品名：多汁浆果
-        BERRIES_JUICY_COOKED = "最好在变质前吃掉。",		--物品名：烤多汁浆果
+		BEEFALOHAT = "这帽子丑死了。",
+		BEEFALOWOOL = "从皮弗娄牛身上收获的长毛。",
+		BEEHAT = "适当的保护装备是必须的！",
+        BEESWAX = "天然抗菌。如果使用合理，就能减缓食品变质。",
+		BEEHIVE = "蜜蜂的天然家园喵。",
+		BEEMINE = "用蜜蜂填装的危险地雷喵。",
+		BEEMINE_MAXWELL = "用蚊子填装的危险地雷。",--removed
+		BERRIES = "我想这是一些朱砂根浆果喵。",
+		BERRIES_COOKED = "烤朱砂根浆果，只是为了以防万一喵。",
+        BERRIES_JUICY = "一种朱砂根浆果变体。水合作用很好喵。",
+        BERRIES_JUICY_COOKED = "腐坏一直是个威胁。",
 		BERRYBUSH =
 		{
-			BARREN = "它该施肥了。",		--物品名：浆果丛 检查状态：资源枯竭，需要施肥
-			WITHERED = "这么热，什么都长不成。",		--物品名：浆果丛 检查状态：已经枯萎
-			GENERIC = "这些应该能吃。",		--物品名：浆果丛 检查状态：普通状态
-			PICKED = "或许还会再长。",		--物品名：浆果丛 检查状态：已经采集
-			DISEASED = "病得不轻。",		--物品名：浆果丛 检查状态：已经患病
-			DISEASING = "唔……有些不对。",		--物品名：浆果丛 检查状态：正在进入患病阶段
-			BURNING = "大半都烧起来了。",		--物品名：浆果丛 检查状态：正在燃烧
+			BARREN = "需要给它施点肥。",
+			WITHERED = "朱砂根浆果不是特别耐热喵。",
+			GENERIC = "是朱砂根浆果丛。",
+			PICKED = "浆果会慢慢再长出来的喵。",
+			DISEASED = "它得了种农业病，我治不好。",--removed
+			DISEASING = "嗯……叶子卷边了喵。",--removed
+			BURNING = "烧起来了！",
 		},
 		BERRYBUSH_JUICY =
 		{
-			BARREN = "这状态下，它结不出浆果。",		--物品名：多汁浆果丛 检查状态：资源枯竭，需要施肥
-			WITHERED = "高温把浆果的水分抽干了。",		--物品名：多汁浆果丛 检查状态：已经枯萎
-			GENERIC = "留到饭点再采。",		--物品名：多汁浆果丛 检查状态：普通状态
-			PICKED = "下一批正在努力长。",		--物品名：多汁浆果丛 检查状态：已经采集
-			DISEASED = "它看上去很不舒服。",		--物品名：多汁浆果丛 检查状态：已经患病
-			DISEASING = "唔……有些不对。",		--物品名：多汁浆果丛 检查状态：正在进入患病阶段
-			BURNING = "大半都烧起来了。",		--物品名：多汁浆果丛 检查状态：正在燃烧
+			BARREN = "它需要些农艺照顾。",
+			WITHERED = "朱砂根变体已经在高温下枯萎了。",
+			GENERIC = "那个灌木丛看起来可以丰收了喵。",
+			PICKED = "它必须等待。",
+			DISEASED = "它得了种农业病，我治不好。",--removed
+			DISEASING = "嗯……叶子卷边了。",--removed
+			BURNING = "烧起来了！",
 		},
-		BIGFOOT = "那可真是只大得离谱的脚。",		--物品名：大脚怪
+		BIGFOOT = "史前怪物！",--removed
 		BIRDCAGE =
 		{
-			GENERIC = "现在只差一只鸟。",		--物品名：鸟笼 检查状态：普通状态
-			OCCUPIED = "哪只是好鸟？",		--物品名：鸟笼 检查状态：当前已有使用者或内容物
-			SLEEPING = "呀，他睡着了。",		--物品名：鸟笼 检查状态：正在睡眠
-			HUNGRY = "它有点饿了。",		--物品名：鸟笼 检查状态：处于饥饿状态
-			STARVING = "很久没人喂了吧。",		--物品名：鸟笼 检查状态：极度饥饿
-			DEAD = "也许它只是在休息？",		--物品名：鸟笼 检查状态：已经死亡
-			SKELETON = "那只鸟确实死了。",		--物品名：鸟笼 检查状态：鸟笼中只剩骨架
+			GENERIC = "这能安全地关住一只鸟。",
+			OCCUPIED = "关住他了。",
+			SLEEPING = "嘘！",
+			HUNGRY = "他饿了！",
+			STARVING = "它看上去有点营养不良。",
+			DEAD = "我真的认为它是饿死的。",
+			SKELETON = "我猜我可以研究这些骨骼喵。",
 		},
-		BIRDTRAP = "蛛网换来的收成。",		--物品名：捕鸟陷阱
-		CAVE_BANANA_BURNT = "不是我做的。",		--物品名：烧焦的洞穴香蕉树
-		BIRD_EGG = "一颗正常的、小小的鸟蛋。",		--物品名：鸟蛋
-		BIRD_EGG_COOKED = "很不错。喵。",		--物品名：熟鸟蛋
-		BISHOP = "退后，传教士。",		--物品名：发条主教
-		BLOWDART_FIRE = "这东西谈不上安全。",		--物品名：火焰吹箭
-		BLOWDART_SLEEP = "别倒吸。",		--物品名：催眠吹箭
-		BLOWDART_PIPE = "正好练练吹蜡烛。",		--物品名：吹箭
-		BLOWDART_YELLOW = "准得令人吃惊。",		--物品名：雷电吹箭
-		BLUEAMULET = "冷得像冰。",		--物品名：寒冰护符
-		BLUEGEM = "它泛着冰冷的能量。",		--物品名：蓝宝石
+		BIRDTRAP = "一种简单的捕鸟拍网喵。",
+		CAVE_BANANA_BURNT = "我不相信这东西能复原。",
+		BIRD_EGG = "它还没有孵化喵。",
+		BIRD_EGG_COOKED = "只要一点烤面包喵。",
+		BISHOP = "一位上了发条的神职人员喵。",
+		BLOWDART_FIRE = "简易的燃烧装置。",
+		BLOWDART_SLEEP = "简易的镇定装置。",
+		BLOWDART_PIPE = "简易的发射装置。",
+		BLOWDART_YELLOW = "简易电气装置。",
+		BLUEAMULET = "这个宝石无论接触到什么东西，似乎都会把它们的能量吸走喵。",
+		BLUEGEM = "冰冷的。",
 		BLUEPRINT =
 		{
-            COMMON = "科学啊。",		--物品名：蓝图 检查状态：普通品质
-            RARE = "这太科学了。",		--物品名：蓝图 检查状态：稀有品质
+            COMMON = "详细的技术图纸。",
+            RARE = "这么稀罕且精细的图画！",
         },
-        SKETCH = "一张雕像的图样。得找个地方做出来。",		--物品名：{item}草图
+        SKETCH = "一个石头雕像的详细的图像。",
 		COOKINGRECIPECARD =
 		{
-			GENERIC = "科学帮帮我。这笔迹我实在读不懂。",		--物品名：{item}食谱卡 检查状态：普通状态
+			GENERIC = "哦，亲爱的，我似乎无法理解它喵。",
 		},
-		BLUE_CAP = "古怪，而且黏。",		--物品名：采摘的蓝蘑菇
-		BLUE_CAP_COOKED = "这回不一样了……",		--物品名：熟蓝蘑菇
+		BLUE_CAP = "它似乎有药用价值喵",
+		BLUE_CAP_COOKED = "化学改变了它喵。",
 		BLUE_MUSHROOM =
 		{
-			GENERIC = "是蘑菇。",		--物品名：蓝蘑菇 检查状态：普通状态
-			INGROUND = "它在睡觉。",		--物品名：蓝蘑菇 检查状态：仍埋在地下
-			PICKED = "不知它会不会长回来。",		--物品名：蓝蘑菇 检查状态：已经采集
+			GENERIC = "它是一种菌类植物。",
+			INGROUND = "每天这个时候它会休眠。",
+			PICKED = "它需要经过水合作用才能再次结果。",
 		},
-		BOARDS = "木板。",		--物品名：木板
-		BONESHARD = "一小片骨头。",		--物品名：骨头碎片
-		BONESTEW = "能让骨头上长出些肉的炖菜。",		--物品名：炖肉汤
-		BUGNET = "抓虫子用的。",		--物品名：捕虫网
-		BUSHHAT = "看着扎人。",		--物品名：灌木丛帽
-		BUTTER = "真难相信这是黄油。",		--物品名：黄油
+		BOARDS = "经过粗刨的木板。",
+		BONESHARD = "某个生命的残留物。",
+		BONESTEW = "虽然和妈妈以前做的不太一样，但闻起来很香！",
+		BUGNET = "昆虫学者的工具。",
+		BUSHHAT = "完美的伪装。",
+		BUTTER = "鳞翅目昆虫的脂肪？",
 		BUTTERFLY =
 		{
-			GENERIC = "蝴蝶。扑扑翅膀就飞走了。喵。",		--物品名：蝴蝶 检查状态：普通状态
-			HELD = "总算抓到你了。",		--物品名：蝴蝶 检查状态：正被角色携带
+			GENERIC = "五颜六色的鳞翅目昆虫。",
+			HELD = "抓住它了喵。",
 		},
-		BUTTERFLYMUFFIN = "我们丢开食谱，即兴了一回。",		--物品名：蝴蝶松饼
-		BUTTERFLYWINGS = "没了这些，它只是条毛虫。",		--物品名：蝴蝶翅膀
-		BUZZARD = "好一只丑怪的秃鹫。",		--物品名：秃鹫
+		BUTTERFLYMUFFIN = "用蝴蝶居然可以做出这么好的烘焙食品，谁知道呢？",
+		BUTTERFLYWINGS = "从被抓蝴蝶身上获得的翅膀。",
+		BUZZARD = "是美洲鹫，毫无疑问。",
 
-		SHADOWDIGGER = "哦，好极了。现在不止他一个。",		--物品名：暗影挖掘者
-        SHADOWDANCER = "有些东西，看过就想赶紧忘掉……",		--物品名：暗影舞者
+		SHADOWDIGGER = "好吧，我想我们确实需要额外的人手…嗯喵。",
+        SHADOWDANCER = "...最近有没有人看望过他？",
 
 		CACTUS =
 		{
-			GENERIC = "有刺，但很美味。",		--物品名：仙人掌 检查状态：普通状态
-			PICKED = "干瘪了，刺倒还在。",		--物品名：仙人掌 检查状态：已经采集
+			GENERIC = "还没完全成熟的桶形仙人掌。",
+			PICKED = "艰难的时期就需要采取极端措施喵。",
 		},
-		CACTUS_MEAT_COOKED = "来自沙漠的烤果子。",		--物品名：熟仙人掌肉
-		CACTUS_MEAT = "想吃，得先把刺去掉。",		--物品名：仙人掌肉
-		CACTUS_FLOWER = "多刺的植物，也开好看的花。",		--物品名：仙人掌花
+		CACTUS_MEAT_COOKED = "没有刺，真是太好了。",
+		CACTUS_MEAT = "我不确定我处理得对不对。",
+		CACTUS_FLOWER = "让我想起了布若斯写的《仙人掌花》。那可是我在图书馆的最爱喵。",
 
 		COLDFIRE =
 		{
-			EMBERS = "该添柴了。不然就灭了。",		--物品名：吸热营火 检查状态：只剩余烬
-			GENERIC = "能驱走黑暗。",		--物品名：吸热营火 检查状态：普通状态
-			HIGH = "火要失控了。",		--物品名：吸热营火 检查状态：高等级或高储量状态
-			LOW = "火小了些。",		--物品名：吸热营火 检查状态：低等级或低储量状态
-			NORMAL = "很舒服。",		--物品名：吸热营火 检查状态：普通形态
-			OUT = "哦，火灭了。",		--物品名：吸热营火 检查状态：火焰已经熄灭
+			EMBERS = "火焰快要自动熄灭了喵。",
+			GENERIC = "相当古怪而神奇的火堆。",
+			HIGH = "营火正在以惊人的速度燃烧。",
+			LOW = "应该再加一些燃料喵。",
+			NORMAL = "相当奇异的火喵。",
+			OUT = "可以再点燃。",
 		},
 		CAMPFIRE =
 		{
-			EMBERS = "得加燃料，不然要灭。",		--物品名：营火 检查状态：只剩余烬
-			GENERIC = "能驱走黑暗。",		--物品名：营火 检查状态：普通状态
-			HIGH = "火要失控了。",		--物品名：营火 检查状态：高等级或高储量状态
-			LOW = "火小了些。",		--物品名：营火 检查状态：低等级或低储量状态
-			NORMAL = "很舒服。喵。",		--物品名：营火 检查状态：普通形态
-			OUT = "哦，火灭了。",		--物品名：营火 检查状态：火焰已经熄灭
+			EMBERS = "火焰快要自动熄灭了。",
+			GENERIC = "一处营火。",
+			HIGH = "营火正在以惊人的速度燃烧喵。",
+			LOW = "应该再加一些燃料。",
+			NORMAL = "相当普通的火。",
+			OUT = "可以再点燃。",
 		},
-		CANE = "严格说，走路就是有控制的跌倒。",		--物品名：步行手杖
-		CATCOON = "顽皮的小东西。喵。",		--物品名：浣猫
+		CANE = "我不是手杖收藏家。",
+		CATCOON = "一种野猫。帅气的家伙喵。",
 		CATCOONDEN =
 		{
-			GENERIC = "树桩里的窝。",		--物品名：空心树桩 检查状态：普通状态
-			EMPTY = "它的主人已经没了。",		--物品名：空心树桩 检查状态：内容为空
+			GENERIC = "适合做窝的中空树桩。",
+			EMPTY = "看来是耗竭了喵。",
 		},
-		CATCOONHAT = "遮住耳朵的帽子。",		--物品名：猫帽
-		COONTAIL = "我觉得它还在摆。喵。",		--物品名：猫尾
-		CARROT = "真恶心。这蔬菜是从土里出来的。",		--物品名：胡萝卜
-		CARROT_COOKED = "软塌塌的。",		--物品名：烤胡萝卜
-		CARROT_PLANTED = "土地在孕育植物宝宝。",		--物品名：胡萝卜
-		CARROT_SEEDS = "一颗种子。",		--物品名：椭圆形种子
+		CATCOONHAT = "虽然不太像大卫·克洛科特的浣熊皮帽，但也不错了。",
+		COONTAIL = "柔软灵活的躯干附属物。",
+		CARROT = "胡萝卜。不仅可以吃，而且很美味。",
+		CARROT_COOKED = "烤得恰到好处的胡萝卜。",
+		CARROT_PLANTED = "胡萝卜是一种根用蔬菜喵。",
+		CARROT_SEEDS = "亲爱的，不种下的话它是不能生长的。",
 		CARTOGRAPHYDESK =
 		{
-			GENERIC = "现在能让大家看看我找到了什么。",		--物品名：制图桌 检查状态：普通状态
-			BURNING = "到此为止。",		--物品名：制图桌 检查状态：正在燃烧
-			BURNT = "现在只剩灰烬。",		--物品名：制图桌 检查状态：已经烧毁
+			GENERIC = "啊！一张合适的书桌！看看那块木材上的蜡喵！",
+			BURNING = "我们可以一点得体的东西都没有吗喵？",
+			BURNT = "对知识的破坏真是一件难以忍受的事情喵。",
 		},
-		WATERMELON_SEEDS = "一颗种子。",		--物品名：方形种子
-		CAVE_FERN = "一株蕨。",		--物品名：蕨类植物
-		CHARCOAL = "又小又黑，闻着像烧焦的木头。",		--物品名：木炭
-        CHESSPIECE_PAWN = "我深有同感。",		--物品名：卒子雕塑
+		WATERMELON_SEEDS = "亲爱的，不种下的话它是不能生长的。",
+		CAVE_FERN = "令人心情愉悦的观赏植物。",
+		CHARCOAL = "主要是碳和灰。",
+        CHESSPIECE_PAWN = "寻求权力宝座的兵卒可能会相当危险。",
         CHESSPIECE_ROOK =
         {
-            GENERIC = "它比看上去更重。",		--物品名：战车雕塑 检查状态：普通状态
-            STRUGGLE = "棋子自己在动。",		--物品名：战车雕塑 检查状态：雕塑正在挣扎活动
+            GENERIC = "代表国王的城堡的保护墙。",
+            STRUGGLE = "看起来魔法正在准备中。",
         },
         CHESSPIECE_KNIGHT =
         {
-            GENERIC = "当然，它是匹马。",		--物品名：骑士雕塑 检查状态：普通状态
-            STRUGGLE = "棋子自己在动。",		--物品名：骑士雕塑 检查状态：雕塑正在挣扎活动
+            GENERIC = "效力于国王或女王的骑士。",
+            STRUGGLE = "看起来魔法正在准备中。",
         },
         CHESSPIECE_BISHOP =
         {
-            GENERIC = "一尊石头主教。",		--物品名：主教雕塑 检查状态：普通状态
-            STRUGGLE = "棋子自己在动。",		--物品名：主教雕塑 检查状态：雕塑正在挣扎活动
+            GENERIC = "一块雕刻成主教象棋棋子的装饰性石头。",
+            STRUGGLE = "看起来魔法正在准备中喵。",
         },
-        CHESSPIECE_MUSE = "嗯……看着眼熟。",		--物品名：女王雕塑
-        CHESSPIECE_FORMAL = "在我看来，算不上“高贵”。",		--物品名：国王雕塑
-        CHESSPIECE_HORNUCOPIA = "光看着，肚子就叫了。",		--物品名：丰饶角雕塑
-        CHESSPIECE_PIPE = "那从来不合我的口味。",		--物品名：泡泡烟斗雕塑
-        CHESSPIECE_DEERCLOPS = "总觉得它的目光跟着人。",		--物品名：独眼巨鹿雕塑
-        CHESSPIECE_BEARGER = "走近了，才发现它这么大。",		--物品名：熊獾雕塑
+        CHESSPIECE_MUSE = "在国际象棋当中，女王是目前为止在战略上最强大的存在。",
+        CHESSPIECE_FORMAL = "总的来说，国王是棋盘上每个子的职责所在喵。",
+        CHESSPIECE_HORNUCOPIA = "目前普遍认为艺术是来源于生活的。",
+        CHESSPIECE_PIPE = "我希望这不会给孩子们带来不好的影响。",
+        CHESSPIECE_DEERCLOPS = "对这些奇怪野兽的解剖学研究。",
+        CHESSPIECE_BEARGER = "相当具有表现力！",
         CHESSPIECE_MOOSEGOOSE =
         {
-            "呃。太逼真了。",		--物品名：麋鹿鹅雕塑 检查状态：第1条台词变体
+            "Bust of Alces canadensis.",
         },
-        CHESSPIECE_DRAGONFLY = "啊，让我想起些事。不太好的事。",		--物品名：龙蝇雕塑
-		CHESSPIECE_MINOTAUR = "现在轮到你被吓得动不了了。",		--物品名：远古守护者雕塑
-        CHESSPIECE_BUTTERFLY = "看着挺美，不是吗？",		--物品名：月蛾雕塑
-        CHESSPIECE_ANCHOR = "果然和看上去一样沉。",		--物品名：锚雕塑
-        CHESSPIECE_MOON = "近来我颇受启发。",		--物品名：“月亮” 雕塑
-        CHESSPIECE_CARRAT = "有人赢了。",		--物品名：胡萝卜鼠雕塑
-        CHESSPIECE_MALBATROSS = "它不追着人杀的时候，还挺可爱。",		--物品名：邪天翁雕塑
-        CHESSPIECE_CRABKING = "看样子，脾气不如麦斯威尔大。",		--物品名：帝王蟹雕塑
-        CHESSPIECE_TOADSTOOL = "不能拿来当凳子坐，对吧？",		--物品名：毒菌蟾蜍雕塑
-        CHESSPIECE_STALKER = "一副不会动的骨架。",		--物品名：远古织影者雕塑
-        CHESSPIECE_KLAUS = "能给我来个“非节日版”的克劳斯吗？",		--物品名：克劳斯雕塑
-        CHESSPIECE_BEEQUEEN = "很有雕塑感。",		--物品名：蜂王雕塑
-        CHESSPIECE_ANTLION = "蚁狮雕塑。",		--物品名：蚁狮雕塑
-        CHESSPIECE_BEEFALO = "这头牛，雕得不错。",		--物品名：皮弗娄牛雕塑
-		CHESSPIECE_KITCOON = "这些倒很容易找。",		--物品名：小浣猫雕塑
-		CHESSPIECE_CATCOON = "拿它当抓柱正合适。",		--物品名：浣猫雕塑
-        CHESSPIECE_MANRABBIT = "想抱抱它，又怕蹭破皮。",		--物品名：兔人雕塑
-        CHESSPIECE_GUARDIANPHASE3 = "我更喜欢它这个样子。",		--物品名：天体英雄雕塑
-        CHESSPIECE_EYEOFTERROR = "它冷冷地盯着我。",		--物品名：恐怖之眼雕塑
-        CHESSPIECE_TWINSOFTERROR = "恐怖之夜里，很不舒服的一场对视。",		--物品名：双子魔眼雕塑
-        CHESSPIECE_DAYWALKER = "谁知道他现在在哪。",		--物品名：梦魇疯猪雕塑
-        CHESSPIECE_DAYWALKER2 = "这东西该进垃圾堆。",		--物品名：拾荒疯猪雕塑
-        CHESSPIECE_DEERCLOPS_MUTATED = "这座雕塑看着有点刺眼。",		--物品名：晶体独眼巨鹿雕塑
-        CHESSPIECE_WARG_MUTATED = "就差一口口臭。",		--物品名：附身座狼雕塑
-        CHESSPIECE_BEARGER_MUTATED = "不知为何，它比正版更暴躁。",		--物品名：装甲熊獾雕塑
-        CHESSPIECE_SHARKBOI = "怎么看，都觉得有几分蹊跷。",		--物品名：大霜鲨雕塑
-        CHESSPIECE_WORMBOSS = "它仍让我心有余悸。",		--物品名：巨大洞穴蠕虫雕塑
-        CHESSPIECE_YOTS = "淘金者，我一向敬而远之。",		--物品名：镀金洞穴蠕虫雕塑
-        CHESSPIECE_WAGBOSS_ROBOT = "设计精妙，做工堪忧。",		--物品名：战争瓦器人雕塑
-        CHESSPIECE_WAGBOSS_LUNAR = "月亮看得越久，心情越好。",		--物品名：天体后裔雕塑
-        CHESSPIECE_YOTH = "那位骑士，马马虎虎。",		--物品名：镀金骑士雕塑
-        CHESSPIECE_VAULT_PILLAR_GUARD = "这个个头偏矮。",		--物品名：远古戍卫塔雕塑
-        CHESSPIECE_BATBOSS_SHADOW = "那一次，元气被抽干了。",		--物品名：暗影蝙蝠首领雕像（测试版暂译）
-        CHESSPIECE_ROCKYBOSS_SHADOW = "那只龙虾坏了。",		--物品名：暗影石虾首领雕像（测试版暂译）
-        CHESSPIECE_WORMBOSS_SHADOW = "我绝不会对它有好感。",		--物品名：暗影蠕虫首领雕像（测试版暂译）
-        CHESSPIECE_CHARLIE_BOSS = "她当时绝没安好心。",		--物品名：查理首领雕像（测试版暂译）
-        CHESSPIECE_SHROUDEN = "我再也不想见到那东西。",		--物品名：暗影实体雕像（测试版暂译）
+        CHESSPIECE_DRAGONFLY = "艺术家对虚构双翅目生物的演绎。",
+		CHESSPIECE_MINOTAUR = "颇有几分神似呢。",
+        CHESSPIECE_BUTTERFLY = "参照月蛾的形象雕琢而成喵。",
+        CHESSPIECE_ANCHOR = "艺术家就喜欢引用他们熟悉的事物。",
+        CHESSPIECE_MOON = "残缺的部分是最近才变成这样的。",
+        CHESSPIECE_CARRAT = "完美再现了胡萝卜鼠的神韵喵。",
+        CHESSPIECE_MALBATROSS = "我要为 \"世界鸟类大全\"加一笔附录了喵。",
+        CHESSPIECE_CRABKING = "展现了一只痴迷宝藏的甲壳动物。",
+        CHESSPIECE_TOADSTOOL = "艺术家美丽的捕捉到了这种寄生关系喵。",
+        CHESSPIECE_STALKER = "雕塑家忠实还原了它的骨架结构。",
+        CHESSPIECE_KLAUS = "把季节的细节刻画的活灵活现。",
+        CHESSPIECE_BEEQUEEN = "向西方蜜蜂的女王致敬喵。",
+        CHESSPIECE_ANTLION = "豹科火蚁的庄严雕像。",
+        CHESSPIECE_BEEFALO = "它把我的皮弗娄牛刻画的栩栩如生喵。",
+		CHESSPIECE_KITCOON = "我应该警告孩子们玩耍时不要离它太近。",
+		CHESSPIECE_CATCOON = "与亚非野猫的相似程度令人称奇。",
+        CHESSPIECE_MANRABBIT = "这些兔类动物很调皮捣蛋。",
+        CHESSPIECE_GUARDIANPHASE3 = "我想特别表扬一下艺术家的细节呈现喵。",
+        CHESSPIECE_EYEOFTERROR = "这个战利品可以用作解剖学模型喵。",
+        CHESSPIECE_TWINSOFTERROR = "用石材表达出了机械奇迹的神韵。",
+        CHESSPIECE_DAYWALKER = "那个行为不端的生物的精确石制模型。",
+        CHESSPIECE_DAYWALKER2 = "得承认它有些机智。但究其本质，仍旧是莽夫一名。",
+        CHESSPIECE_DEERCLOPS_MUTATED = "如此奇特狰狞的痛苦喵……",
+        CHESSPIECE_WARG_MUTATED = "关于这头野兽，我还有很多不明白的地方喵。",
+        CHESSPIECE_BEARGER_MUTATED = "艺术家真实地捕捉到了它的凶猛喵！",
+        CHESSPIECE_SHARKBOI = "它是同类中嘴巴最毒的。",
+        CHESSPIECE_WORMBOSS = "这种掠食性环节动物的祖先才是真正的可怕。",
+        CHESSPIECE_YOTS = "这是最饥饿的大型无脊椎动物之一喵。",
+        CHESSPIECE_WAGBOSS_ROBOT = "杀人机器人的微缩模型。嗯喵。",
+        CHESSPIECE_WAGBOSS_LUNAR = "此等可怕的融合是前所未有的。",
+        CHESSPIECE_YOTH = "这名机械骑士会效忠于任何穿上其守护对象的衣服的人。",
+        CHESSPIECE_VAULT_PILLAR_GUARD = "事实证明，它是古代建筑学的一项奇迹。",
+        CHESSPIECE_BATBOSS_SHADOW = "受诅咒的形态并未影响它对鲜血的渴求喵。",
+        CHESSPIECE_ROCKYBOSS_SHADOW = "无论哪种形态，都极具破坏力且致命。",
+        CHESSPIECE_WORMBOSS_SHADOW = "一种食欲永无止境的生物。",
+        CHESSPIECE_CHARLIE_BOSS = "看来她的所得远超她的预料。",
+        CHESSPIECE_SHROUDEN = "它究竟能否被彻底消灭？",
 
-        CHESSJUNK1 = "一堆废发条。",		--物品名：损坏的发条装置
-        CHESSJUNK2 = "又一堆废发条。",		--物品名：损坏的发条装置
-        CHESSJUNK3 = "更多废发条。",		--物品名：损坏的发条装置
-		CHESTER = "一只短腿的……箱子，先生。",		--物品名：切斯特
+        CHESSJUNK1 = "魔术师未完成的项目？",
+        CHESSJUNK2 = "魔术师未完成的项目喵？",
+        CHESSJUNK3 = "魔术师未完成的项目喵？",
+		CHESTER = "一个能到处跑的储物箱。",
 		CHESTER_EYEBONE =
 		{
-			GENERIC = "它在看我。",		--物品名：眼骨 检查状态：普通状态
-			WAITING = "它睡着了。",		--物品名：眼骨 检查状态：正在等待对应跟随生物出现
+			GENERIC = "神秘的眼睛。",
+			WAITING = "这个眼睛毫无生气。",
 		},
-		COOKEDMANDRAKE = "可怜的小家伙。",		--物品名：熟曼德拉草
-		COOKEDMEAT = "烤得透熟。",		--物品名：熟肉
-		COOKEDMONSTERMEAT = "只比生吃好上一点。",		--物品名：熟怪物肉
-		COOKEDSMALLMEAT = "做熟了。总算不必担心寄生虫。",		--物品名：熟小肉
-
+		COOKEDMANDRAKE = "本着探索精神而做成的烤曼德拉草。",
+		COOKEDMEAT = "烤熟后味道会更好一点。",
+		COOKEDMONSTERMEAT = "还是会有一点毒性。",
+		COOKEDSMALLMEAT = "烤熟后味道会更好一点。",
 		COOKPOT =
 		{
-			COOKING_LONG = "火候未足，再等等。",		--物品名：烹饪锅 检查状态：正在烹饪，剩余时间较长
-			COOKING_SHORT = "快了。再等片刻。",		--物品名：烹饪锅 检查状态：正在烹饪，即将完成
-			DONE = "成了。可以开动了。",		--物品名：烹饪锅 检查状态：处理已经完成
-			EMPTY = "空的。连香气都没有。",		--物品名：烹饪锅 检查状态：内容为空
-			BURNT = "锅已经废了。可惜。",		--物品名：烹饪锅 检查状态：已经烧毁
+			COOKING_LONG = "还要等一会儿才能煮好。",
+			COOKING_SHORT = "快好了喵！",
+			DONE = "晚餐时间到！",
+			EMPTY = "没有烹饪东西的时候，它看起来就像是废弃了一样喵。",
+			BURNT = "现在它是真正的废弃了。",
 		},
-		CORN = "颗粒饱满，糖分不低。",		--物品名：玉米
-		CORN_COOKED = "烤过之后，更甜了。",		--物品名：爆米花
-		CORN_SEEDS = "一粒子。可作来年的打算。",		--物品名：簇状种子
+		CORN = "玉米，一种很好的主食喵。",
+		CORN_COOKED = "爆开了的玉米！",
+		CORN_SEEDS = "亲爱的，不种下的话它是不能生长的喵。",
         CANARY =
 		{
-			GENERIC = "人工培育的黄色小鸟。",		--物品名：金丝雀 检查状态：普通状态
-			HELD = "我没有用力。安静些。",		--物品名：金丝雀 检查状态：正被角色携带
+			GENERIC = "金丝雀。历史有益的哨兵物种喵。",
+			HELD = "金丝雀。我们不应不带一只金丝雀就进洞穴。",
 		},
-        CANARY_POISONED = "它还有气。也许能救。",		--物品名：金丝雀（中毒）
+        CANARY_POISONED = "噢，天啊。",
 
-		CRITTERLAB = "里面藏着什么？",		--物品名：岩石巢穴
-        CRITTER_GLOMLING = "这身形很合空气动力学，喵。",		--物品名：小格罗姆
-        CRITTER_DRAGONLING = "它钻进我心里了。",		--物品名：小龙蝇
-		CRITTER_LAMB = "比它母亲干净些。黏液少。",		--物品名：小钢羊
-        CRITTER_PUPPY = "小怪物，生得倒可爱。",		--物品名：小座狼
-        CRITTER_KITTEN = "你会是个好助手。我看得出来。",		--物品名：浣猫崽
-        CRITTER_PERDLING = "长羽毛的小朋友。",		--物品名：小火鸡
-		CRITTER_LUNARMOTHLING = "留着你，为蛾类学研究。",		--物品名：小蛾子
-        CRITTER_BULBIN = "你可别背着我腐坏。",		--物品名：芽葱
-        CRITTER_EETS = "两足、无毛，必是人。",		--物品名：一吃
+		CRITTERLAB = "筑巢动物的完美洞穴。",
+        CRITTER_GLOMLING = "你是怎么保持飞行的，亲爱的？",
+        CRITTER_DRAGONLING = "多么惹人喜爱的双翅目少年啊！",
+		CRITTER_LAMB = "我可以把那张脸挤扁。",
+        CRITTER_PUPPY = "谁是最亲爱的那头小狼喵？",
+        CRITTER_KITTEN = "现在它有个家了。",
+        CRITTER_PERDLING = "你是一只多么好看的小火鸡啊！",
+		CRITTER_LUNARMOTHLING = "谁最疼小标本呢喵？",
+        CRITTER_BULBIN = "你算动物还是植物呢，亲爱的喵？",
+        CRITTER_EETS = "它似乎偏好蛋糕之类的甜食喵。",
 
 		CROW =
 		{
-			GENERIC = "羽毛蓬乱，叫声难听。",		--物品名：乌鸦 检查状态：普通状态
-			HELD = "它不喜欢被握着。",		--物品名：乌鸦 检查状态：正被角色携带
+			GENERIC = "短嘴鸦喵。",
+			HELD = "非常帅气的标本。",
 		},
-		CUTGRASS = "割下的草。编绳织布都用得上。",		--物品名：采下的草
-		CUTREEDS = "芦苇。能编东西，也能消磨时间。",		--物品名：采下的芦苇
-		CUTSTONE = "切面平整，手感不错。",		--物品名：石砖
-		DEADLYFEAST = "这一餐，代价不小。", 		--物品名：致命盛宴
+		CUTGRASS = "一些割下来的草喵。",
+		CUTREEDS = "一些割下来的灯芯草属植物喵。",
+		CUTSTONE = "一些磨得非常光滑的石头方块。",
+		DEADLYFEAST = "我不确定那东西吃了好不好。", --unimplemented
 		DEER =
 		{
-			GENERIC = "它在看我？……大概没有。",		--物品名：无眼鹿 检查状态：普通状态
-			ANTLER = "这副角真漂亮。……失礼了。",		--物品名：无眼鹿 检查状态：长有鹿角
+			GENERIC = "它已经为暖和的季节脱落了自己的鹿角。",
+			ANTLER = "它的鹿角正在为冬天而生长。",
 		},
-        DEER_ANTLER = "掉得这么干脆，正常么？",		--物品名：鹿角
-        DEER_GEMMED = "它被那头野兽操纵着。",		--物品名：无眼鹿
-		DEERCLOPS = "大得离谱。不必慌。",		--物品名：独眼巨鹿
-		DEERCLOPS_EYEBALL = "这颗眼球，恕我不想碰。",		--物品名：独眼巨鹿眼球
-		EYEBRELLAHAT = "它会替佩戴者挡一挡。",		--物品名：眼球伞
+        DEER_ANTLER = "它看起来像把钥匙，但非常脆弱。",
+        DEER_GEMMED = "那可怜的生物已经被强制性地融合到一颗魔法宝石中了。",
+		DEERCLOPS = "劳亚兽！",
+		DEERCLOPS_EYEBALL = "我有一种难以名状的成就感。",
+		EYEBRELLAHAT =	"眼角膜一定很防水喵。",
 		DEPLETED_GRASS =
 		{
-			GENERIC = "大约是一丛草。",		--物品名：草 检查状态：普通状态
+			GENERIC = "一丛禾草喵。",
 		},
-        GOGGLESHAT = "这副护目镜，很衬我。",		--物品名：时髦的护目镜
-        DESERTHAT = "挡沙的好东西。",		--物品名：沙漠护目镜
-        ANTLIONHAT = "从土里刨出来的成就。",		--物品名：刮地皮头盔
-		DEVTOOL = "有培根的味道。奇怪。",		--物品名：开发工具
-		DEVTOOL_NODEV = "我挥不动它。力气不够。",		--物品名：开发工具（非开发环境）
-		DIRTPILE = "一堆土。……还是别的什么？",		--物品名：可疑的土堆
+        GOGGLESHAT = "我不能想象这些能提高能见度喵。",
+        DESERTHAT = "比老花镜效率高多了。",
+        ANTLIONHAT = "有了它造景就方便多了。",
+DEVTOOL = "It smells of bacon!",
+DEVTOOL_NODEV = "I'm not strong enough to wield it喵.",
+		DIRTPILE = "太不卫生了！",
 		DIVININGROD =
 		{
-			COLD = "信号微弱。方向不明。", 		--物品名：探测杖 检查状态：温度较低
-			GENERIC = "某种自动引导装置。", 		--物品名：探测杖 检查状态：普通状态
-			HOT = "它疯了一样在响。", 		--物品名：探测杖 检查状态：温度很高
-			WARM = "方向对了。", 		--物品名：探测杖 检查状态：温度较暖
-			WARMER = "很近了。就在附近。", 		--物品名：探测杖 检查状态：接近目标，探测温度升高
+			COLD = "上面的圆盘只是微微在动。", --singleplayer
+			GENERIC = "一种采用了魔法技术的探测装置。", --singleplayer
+			HOT = "就是这里喵！", --singleplayer
+			WARM = "这当然是正确的路喵。", --singleplayer
+			WARMER = "越来越近了喵。", --singleplayer
 		},
 		DIVININGRODBASE =
 		{
-			GENERIC = "用途待考。", 		--物品名：探测杖底座 检查状态：普通状态
-			READY = "缺一把大钥匙。", 		--物品名：探测杖底座 检查状态：已经准备就绪
-			UNLOCKED = "机关通了。可以用了。", 		--物品名：探测杖底座 检查状态：已经解锁
+			GENERIC = "它需要修理，才能用。", --singleplayer
+			READY = "现在只需要一把钥匙了喵。", --singleplayer
+			UNLOCKED = "啊哈。功能之美。", --singleplayer
 		},
-		DIVININGRODSTART = "那根杖，值得一看。", 		--物品名：探测杖底座
-		DRAGONFLY = "龙蝇。别靠太近。",		--物品名：龙蝇
-		ARMORDRAGONFLY = "鳞甲尚温。倒是暖和。",		--物品名：鳞甲
-		DRAGON_SCALES = "余温未散。",		--物品名：鳞片
+		DIVININGRODSTART = "这个法杖会很有用喵！", --singleplayer
+		DRAGONFLY = "它是双翅目昆虫的某种神秘变异体喵。",
+		ARMORDRAGONFLY = "真是令人眼花缭乱的护甲！",
+		DRAGON_SCALES = "昆虫身上的鳞片？真是前所未闻！",
 		DRAGONFLYCHEST =
 		{
-			GENERIC = "仅次于保险箱。很好。",		--物品名：龙鳞宝箱 检查状态：普通状态
-            UPGRADED_STACKSIZE = "容量之大，堪称箱中之龙。",		--物品名：龙鳞宝箱 检查状态：已经升级容器堆叠容量
+			GENERIC = "鳞片！鳞片才是最终的胜利者！",
+            UPGRADED_STACKSIZE = "一个防火箱子，内部空间大得惊人。",
 		},
 		DRAGONFLYFURNACE =
 		{
-			HAMMERED = "被砸过。不太对劲。",		--物品名：龙鳞火炉 检查状态：遭锤击后进入受损状态
-			GENERIC = "热得多，亮得少。", 		--物品名：龙鳞火炉 检查状态：普通状态
-			NORMAL = "它好像在朝我眨眼。", 		--物品名：龙鳞火炉 检查状态：普通形态
-			HIGH = "滚烫。退开些。", 		--物品名：龙鳞火炉 检查状态：高等级或高储量状态
+			HAMMERED = "嗯，那是改变的一个有趣的选择喵。",
+			GENERIC = "一个非常有用的魔法驱动的火炉。", --no gems
+			NORMAL = "目前它正在以一半的强度燃烧。", --one gem
+			HIGH = "两颗宝石的魔法让它以最大的强度燃烧喵。", --two gems
 		},
 
-        HUTCH = "哈奇·蛋戈鱼，私家侦探。",		--物品名：哈奇
+        HUTCH = "万古地下演变，变成了这个恶心的畸形怪。",
         HUTCH_FISHBOWL =
         {
-            GENERIC = "这样的装备，我早想要一件。",		--物品名：星空 检查状态：普通状态
-            WAITING = "也许它缺一点科学的助力。",		--物品名：星空 检查状态：正在等待对应跟随生物出现
+            GENERIC = "红腹鱼。",
+            WAITING = "嗜血鱼喵。",
         },
 		LAVASPIT =
 		{
-			HOT = "唾液还是烫的。",		--物品名：龙蝇唾液 检查状态：温度很高
-			COOL = "我称它为“干唾液”。",		--物品名：龙蝇唾液 检查状态：已经冷却
+			HOT = "它喷出的火很像熔岩喵。",
+			COOL = "它已经冷却下来了，就跟玄武岩一样喵。",
 		},
-		LAVA_POND = "壮观。……离远些看。",		--物品名：岩浆池
-		LAVAE = "太烫，无从下手。",		--物品名：岩浆虫
-		LAVAE_COCOON = "冷下来。安静下来。",		--物品名：冷冻虫卵
+		LAVA_POND = "熔化的石头。最好不要靠得太近。",
+		LAVAE = "我相信它是一只龙蝇幼虫。",
+		LAVAE_COCOON = "我会说那是驯化的好机会喵。",
 		LAVAE_PET =
 		{
-			STARVING = "饿成这样，可怜。",		--物品名：超级可爱岩浆虫 检查状态：极度饥饿
-			HUNGRY = "它肚子里在响。",		--物品名：超级可爱岩浆虫 检查状态：处于饥饿状态
-			CONTENT = "它很满足。看得出来。",		--物品名：超级可爱岩浆虫 检查状态：宠物状态满足
-			GENERIC = "谁是好怪物？……是你，喵。",		--物品名：超级可爱岩浆虫 检查状态：普通状态
+			STARVING = "这个生物需要立即进食喵！",
+			HUNGRY = "这个生物饿了。",
+			CONTENT = "我得承认它相当迷人。",
+			GENERIC = "一只健康的幼小岩浆虫。",
 		},
 		LAVAE_EGG =
 		{
-			GENERIC = "里面透出一点暖意。",		--物品名：岩浆虫卵 检查状态：普通状态
+			GENERIC = "一个大的多黄蛋喵。",
 		},
 		LAVAE_EGG_CRACKED =
 		{
-			COLD = "蛋凉了。得加温。",		--物品名：岩浆虫卵 检查状态：温度较低
-			COMFY = "一只蛋能这么惬意，稀奇。",		--物品名：岩浆虫卵 检查状态：温度舒适
+			COLD = "这个蛋的温度低于理想温度喵。",
+			COMFY = "这个蛋处于合适的孵化温度。",
 		},
-		LAVAE_TOOTH = "一枚蛋牙。收着。",		--物品名：岩浆虫尖牙
+		LAVAE_TOOTH = "爬虫宝宝为了从蛋中破壳而出而使用的牙齿。",
 
-		DRAGONFRUIT = "这果子，模样奇特。",		--物品名：火龙果
-		DRAGONFRUIT_COOKED = "熟了，还是古怪。",		--物品名：熟火龙果
-		DRAGONFRUIT_SEEDS = "种子。外壳坚硬。",		--物品名：球茎状种子
-		DRAGONPIE = "这一块，很顶饿。",		--物品名：火龙果派
-		DRUMSTICK = "可以吃了。不必讲究。",		--物品名：鸟腿
-		DRUMSTICK_COOKED = "烤过之后，更香。",		--物品名：炸鸟腿
-		DUG_BERRYBUSH = "搬走也无妨。它认土。",		--物品名：浆果丛
-		DUG_BERRYBUSH_JUICY = "种在门口，随手可摘。",		--物品名：多汁浆果丛
-		DUG_GRASS = "随处可种。",		--物品名：草丛
-		DUG_MARSH_BUSH = "得找个地方栽下。",		--物品名：尖刺灌木
-		DUG_SAPLING = "先栽进土里再说。",		--物品名：树苗
-		DURIAN = "气味失礼。",		--物品名：榴莲
-		DURIAN_COOKED = "烤过之后，更臭了。",		--物品名：超臭榴莲
-		DURIAN_SEEDS = "一粒子。气味尚可。",		--物品名：脆籽荚
-		EARMUFFSHAT = "耳朵暖和了，人就安稳。",		--物品名：兔耳罩
-		EGGPLANT = "名不副实。它不是蛋。",		--物品名：茄子
-		EGGPLANT_COOKED = "烤过，更不像蛋了。",		--物品名：烤茄子
-		EGGPLANT_SEEDS = "种子。留着有用。",		--物品名：漩涡种子
+		DRAGONFRUIT = "量天尺属火龙果。",
+		DRAGONFRUIT_COOKED = "精心制作的量天尺属火龙果喵。",
+		DRAGONFRUIT_SEEDS = "亲爱的，不种下的话它是不能生长的。",
+		DRAGONPIE = "我喜欢不错的水果派。",
+		DRUMSTICK = "禽类的腿。",
+		DRUMSTICK_COOKED = "虽然不是特别健康，但它真的是太美味了！",
+		DUG_BERRYBUSH = "它需要土壤才能生长喵。",
+		DUG_BERRYBUSH_JUICY = "它需要土壤才能生长。",
+		DUG_GRASS = "它需要土壤才能生长。",
+		DUG_MARSH_BUSH = "它需要土壤才能生长喵。",
+		DUG_SAPLING = "它需要土壤才能生长喵。",
+		DURIAN = "啊哈，榴莲。它闻起来真的很臭。",
+		DURIAN_COOKED = "烤熟之后的气味显然也不好闻。",
+		DURIAN_SEEDS = "亲爱的，不种下的话它是不能生长的。",
+		EARMUFFSHAT = "可怜的兔兔。至少它很暖和。",
+		EGGPLANT = "一个茄属植物。特别是，矮瓜。",
+		EGGPLANT_COOKED = "请享用：红烧茄子。",
+		EGGPLANT_SEEDS = "亲爱的，不种下的话它是不能生长的喵。",
 
 		ENDTABLE =
 		{
-			BURNT = "烧焦的桌子，烧焦的瓶。",		--物品名：茶几 检查状态：已经烧毁
-			GENERIC = "瓶里一枝花。仅此而已。",		--物品名：茶几 检查状态：普通状态
-			EMPTY = "空着可惜。该插点什么。",		--物品名：茶几 检查状态：内容为空
-			WILTED = "蔫了。水该换了。",		--物品名：茶几 检查状态：花朵已经枯萎
-			FRESHLIGHT = "有一点光，夜就不同了。",		--物品名：茶几 检查状态：插着新鲜发光花朵
-			OLDLIGHT = "新灯泡，带了吗？", 		--物品名：茶几 检查状态：插着已经枯萎的发光花朵
+			BURNT = "好吧，不过如此。",
+			GENERIC = "除此之外，看到一个小装饰品是令人愉快的喵。",
+			EMPTY = "啊，可以用一张小垫补，你不是说这样吗？",
+			WILTED = "真遗憾。我们要找替代品吗？",
+			FRESHLIGHT = "在我看来，光越亮，读起来越轻松。",
+			OLDLIGHT = "轮到麦斯威尔获得灯泡了。我这里有记录。", -- will be wilted soon, light radius will be very small at this point
 		},
 		DECIDUOUSTREE =
 		{
-			BURNING = "可惜了这一树好木头。",		--物品名：桦栗树 检查状态：正在燃烧
-			BURNT = "我本可以拦下这场火。",		--物品名：桦栗树 检查状态：已经烧毁
-			CHOPPED = "就这样。自然也得让步。",		--物品名：桦栗树 检查状态：已经砍伐
-			POISON = "动了它的果子，它记仇。",		--物品名：桦栗树 检查状态：桦栗树进入毒化敌对状态
-			GENERIC = "阔叶繁密。多半如此。",		--物品名：桦栗树 检查状态：普通状态
+			BURNING = "树在燃烧喵。",
+			BURNT = "完全被碳化了的树喵。",
+			CHOPPED = "它已经被砍伐了。",
+			POISON = "我以前从没见过这种树！",
+			GENERIC = "某种壳斗目植物。长大后会结出果实。",
 		},
-		ACORN = "里面有东西。会动的。",		--物品名：桦栗果
-        ACORN_SAPLING = "再过些年，就是一棵树。",		--物品名：桦栗树树苗
-		ACORN_COOKED = "火候正好。",		--物品名：烤桦栗果
-		BIRCHNUTDRAKE = "一颗疯了的坚果。",		--物品名：桦栗果精
+		ACORN = "包裹在果皮里的落叶植物种子喵。",
+        ACORN_SAPLING = "快要成熟的落叶植物种子。",
+		ACORN_COOKED = "已经用它们成功地制出了毒药。",
+		BIRCHNUTDRAKE = "快跑——喵！",
 		EVERGREEN =
 		{
-			BURNING = "烧得可惜。",		--物品名：常青树 检查状态：正在燃烧
-			BURNT = "这场火，我本可拦下。",		--物品名：常青树 检查状态：已经烧毁
-			CHOPPED = "让开吧，自然。",		--物品名：常青树 检查状态：已经砍伐
-			GENERIC = "松针厚密，气味清冽。",		--物品名：常青树 检查状态：普通状态
+			BURNING = "树在燃烧。",
+			BURNT = "完全被碳化了的树。",
+			CHOPPED = "它已经被砍伐了。",
+			GENERIC = "一棵普通的针叶树。",
 		},
 		EVERGREEN_SPARSE =
 		{
-			BURNING = "烧了，可惜。",		--物品名：臃肿常青树 检查状态：正在燃烧
-			BURNT = "我本可拦下。",		--物品名：臃肿常青树 检查状态：已经烧毁
-			CHOPPED = "树倒了。收工。",		--物品名：臃肿常青树 检查状态：已经砍伐
-			GENERIC = "这棵树，连球果都没有。",		--物品名：臃肿常青树 检查状态：普通状态
+			BURNING = "树在燃烧。",
+			BURNT = "完全被碳化了的树。",
+			CHOPPED = "它已经被砍伐了。",
+			GENERIC = "这个物种似乎缺乏繁殖能力喵。",
 		},
 		TWIGGYTREE =
 		{
-			BURNING = "枝条烧得噼啪响。",		--物品名：多枝树 检查状态：正在燃烧
-			BURNT = "只剩焦炭了。",		--物品名：多枝树 检查状态：已经烧毁
-			CHOPPED = "枝条归我了。",		--物品名：多枝树 检查状态：已经砍伐
-			GENERIC = "满树细枝，编筐正好。",		--物品名：多枝树 检查状态：普通状态
-			DISEASED = "病得比寻常更重。", 		--物品名：多枝树 检查状态：已经患病
+			BURNING = "树在燃烧。",
+			BURNT = "完全被碳化了的树。",
+			CHOPPED = "它已经被砍伐了。",
+			GENERIC = "这个物种生长木材和柔韧的小枝。很有用。",
+			DISEASED = "它得了种农业病，我治不好。", --unimplemented
 		},
-		TWIGGY_NUT_SAPLING = "它自己能长。不必扶。",		--物品名：多枝树苗
-        TWIGGY_OLD = "这棵老树，气力不济。",		--物品名：老枝桠树
-		TWIGGY_NUT = "里面困着一棵想出来的树。",		--物品名：多枝树种
-		EYEPLANT = "有东西在盯着我。",		--物品名：眼球草
-		INSPECTSELF = "四肢俱全。毛也还在。",		--物品名：角色自身
+		TWIGGY_NUT_SAPLING = "它快速长成一棵可爱的小树。",
+        TWIGGY_OLD = "砍掉那个老东西会浪费时间和资源。",
+		TWIGGY_NUT = "包裹在成熟球果中的种子。",
+		EYEPLANT = "我相信它们肯定被更大的植物控制着喵。",
+		INSPECTSELF = "我是不是老化得像上等的智能酒？",
 		FARMPLOT =
 		{
-			GENERIC = "该种点什么了。",		--物品名：农场田地 检查状态：普通状态
-			GROWING = "长吧。我不催你。",		--物品名：农场田地 检查状态：正在生长
-			NEEDSFERTILIZER = "地力不足。该施肥。",		--物品名：农场田地 检查状态：土地需要施肥
-			BURNT = "只剩灰，长不出庄稼。",		--物品名：农场田地 检查状态：已经烧毁
+			GENERIC = "一小片耕地。",
+			GROWING = "植物正在从地里吸取矿物养分。",
+			NEEDSFERTILIZER = "它已经因为缺乏养分而变成了贫瘠之地。",
+			BURNT = "它再也长不出农作物了喵。",
 		},
-		FEATHERHAT = "扮成鸟。毛很软，喵。",		--物品名：羽毛帽
-		FEATHER_CROW = "乌鸦的黑羽。",		--物品名：黑色羽毛
-		FEATHER_ROBIN = "红雀的羽毛。颜色不错。",		--物品名：红色羽毛
-		FEATHER_ROBIN_WINTER = "雪雀的蓝羽。",		--物品名：蓝色羽毛
-		FEATHER_CANARY = "金丝雀的羽毛。",		--物品名：黄色羽毛
-		FEATHERPENCIL = "羽毛笔写的字，自然工整。",		--物品名：羽毛笔
-        COOKBOOK = "我对知识，从不嫌饱。",		--物品名：烹饪指南
-		FEM_PUPPET = "她被囚住了。", 		--物品名：女性角色傀儡
+		FEATHERHAT = "虽然不是真正的东西，但也许能够骗过一些鸟。",
+		FEATHER_CROW = "乌鸦科还是海雀科的羽毛喵？",
+		FEATHER_ROBIN = "北美红雀的羽毛喵。",
+		FEATHER_ROBIN_WINTER = "它看起来像北美红雀的羽毛，只是它是白色的。",
+		FEATHER_CANARY = "金丝雀的羽毛。",
+		FEATHERPENCIL = "哦，我多么想念合适的书写用具喵！",
+        COOKBOOK = "烹调智慧的集锦。",
+		FEM_PUPPET = "可怜的丫头。", --single player
 		FIREFLIES =
 		{
-			GENERIC = "抓到一只，就是一盏灯。",		--物品名：萤火虫 检查状态：普通状态
-			HELD = "口袋里装着光。",		--物品名：萤火虫 检查状态：正被角色携带
+			GENERIC = "每当我走近时它们就会散开。",
+			HELD = "它们那会发光的身体也许会有用。",
 		},
-		FIREHOUND = "它身上有火光。",		--物品名：火焰猎犬
+		FIREHOUND = "那只猎犬比其他的都危险。",
 		FIREPIT =
 		{
-			EMBERS = "趁余烬未灭，添些柴。",		--物品名：火坑 检查状态：只剩余烬
-			GENERIC = "能挡一挡黑。",		--物品名：火坑 检查状态：普通状态
-			HIGH = "火被圈住了。很好。",		--物品名：火坑 检查状态：高等级或高储量状态
-			LOW = "火头弱了。",		--物品名：火坑 检查状态：低等级或低储量状态
-			NORMAL = "暖得刚好，喵。",		--物品名：火坑 检查状态：普通形态
-			OUT = "熄了。还能再点起来。",		--物品名：火坑 检查状态：火焰已经熄灭
+			EMBERS = "火焰快要自动熄灭了。",
+			GENERIC = "一处火坑。",
+			HIGH = "营火正在以惊人的速度燃烧喵。",
+			LOW = "应该再加一些燃料。",
+			NORMAL = "相当普通的火喵。",
+			OUT = "可以再点燃。",
 		},
 		COLDFIREPIT =
 		{
-			EMBERS = "余烬还红。添柴。",		--物品名：吸热火坑 检查状态：只剩余烬
-			GENERIC = "能驱黑，也能消暑。",		--物品名：吸热火坑 检查状态：普通状态
-			HIGH = "火被圈住了。放心。",		--物品名：吸热火坑 检查状态：高等级或高储量状态
-			LOW = "火头弱下去一些。",		--物品名：吸热火坑 检查状态：低等级或低储量状态
-			NORMAL = "凉意正好。",		--物品名：吸热火坑 检查状态：普通形态
-			OUT = "熄了。我再点一次。",		--物品名：吸热火坑 检查状态：火焰已经熄灭
+			EMBERS = "火焰快要自动熄灭了。",
+			GENERIC = "一处火坑。冒着寒气喵。",
+			HIGH = "营火正在以惊人的速度燃烧喵。",
+			LOW = "应该再加一些燃料，无论燃料是什么。",
+			NORMAL = "一处营火。对，某种形式的营火喵。",
+			OUT = "可以再点燃。",
 		},
-		FIRESTAFF = "点着世界？我无意如此。",		--物品名：火魔杖
+		FIRESTAFF = "某种能投掷火焰的奇妙装置喵。",
 		FIRESUPPRESSOR =
 		{
-			ON = "它开始喷雪了。",		--物品名：雪球发射器 检查状态：处于开启状态
-			OFF = "静下来了。",		--物品名：雪球发射器 检查状态：处于关闭状态
-			LOWFUEL = "燃料见底了。",		--物品名：雪球发射器 检查状态：燃料即将耗尽
+			ON = "雪球发射！",
+			OFF = "这儿什么也没有。",
+			LOWFUEL = "燃料不足。",
 		},
 
-		FISH = "新鲜。今晚有口福了，喵。",		--物品名：鱼
-		FISHINGROD = "钩、线、杆。齐了。",		--物品名：淡水钓竿
-		FISHSTICKS = "裹粉炸过。能饱。",		--物品名：炸鱼排
-		FISHTACOS = "外皮松脆。不错。",		--物品名：鱼肉玉米卷
-		FISH_COOKED = "烤得恰到好处。",		--物品名：熟鱼
-		FLINT = "燧石。边口很利。",		--物品名：燧石
+		FISH = "我猜应该是某种白鲑鱼喵。",
+		FISHINGROD = "我已经读过了所有关于钓鱼的知识。这对我来说应该是小菜一碟喵。",
+		FISHSTICKS = "给我一点塔塔酱，那我简直可以说是身在天堂。",
+		FISHTACOS = "我个人喜欢在鱼肉上加点香料喵。",
+		FISH_COOKED = "烤得真好。",
+		FLINT = "一块坚硬的石英矿石喵。",
 		FLOWER =
 		{
-            GENERIC = "好看。可惜有股汗味。",		--物品名：花 检查状态：普通状态
-            ROSE = "插在耳边，衬我的毛色。",		--物品名：花 检查状态：玫瑰花变体
+            GENERIC = "是一种野花。我不太熟悉这个物种。",
+            ROSE = "啊，是玫瑰…它在这里做什么喵？",
         },
-        FLOWER_WITHERED = "太阳晒得不够。",		--物品名：枯萎的花
-		FLOWERHAT = "戴在头上，香气随身，喵。",		--物品名：花环
-		FLOWER_EVIL = "这花，透着邪气。",		--物品名：邪恶花
-		FOLIAGE = "一把蕨叶。",		--物品名：蕨叶
-		FOOTBALLHAT = "运动之物，我不感兴趣。",		--物品名：橄榄球头盔
-        FOSSIL_PIECE = "骨头。该把它们拼回去。",		--物品名：化石碎片
+        FLOWER_WITHERED = "这朵花缺乏生长所需的养分。",
+		FLOWERHAT = "好欢乐喵。",
+		FLOWER_EVIL = "像这样拥有强大灵气的花可不是很常见。",
+		FOLIAGE = "这些东西也许有点营养价值。",
+		FOOTBALLHAT = "近身战斗时使用的保护装备。",
+        FOSSIL_PIECE = "埋葬处理所保存的变硬的遗骸。",
         FOSSIL_STALKER =
         {
-			GENERIC = "碎片还没凑齐。",		--物品名：奇异的骨架 检查状态：普通状态
-			FUNNY = "直觉说，拼错了一块。",		--物品名：奇异的骨架 检查状态：化石拼装方式错误
-			COMPLETE = "它活了。……不，并没有。",		--物品名：奇异的骨架 检查状态：已经完整组装
+			GENERIC = "还有骨架碎片需要组合起来喵。",
+			FUNNY = "古生物学的无能给生物捏造了一个悲哀的借口喵。",
+			COMPLETE = "哦！适合图书馆的标本！",
         },
-        STALKER = "骨与影，长成了一体。",		--物品名：复活的骨架
-        STALKER_ATRIUM = "何必长到这么大。",		--物品名：远古织影者
-        STALKER_MINION = "小心脚踝。",		--物品名：编织暗影
-        THURIBLE = "金石之气。不太好闻。",		--物品名：暗影香炉
-        ATRIUM_OVERGROWTH = "这些符号，我一个也不识。",		--物品名：远古方尖碑
+        STALKER = "一个需要改正的错误。",
+        STALKER_ATRIUM = "我们可以从对方身上学到很多喵。",
+        STALKER_MINION = "织布工正在编织作品。",
+        THURIBLE = "我们是它的计划接收者喵。",
+        ATRIUM_OVERGROWTH = "破解译文需要太长的时间。",
 		FROG =
 		{
-			DEAD = "死了。不必再补一刀。",		--物品名：青蛙 检查状态：已经死亡
-			GENERIC = "模样倒有几分可爱。",		--物品名：青蛙 检查状态：普通状态
-			SLEEPING = "睡相不错。别吵它。",		--物品名：青蛙 检查状态：正在睡眠
+			DEAD = "这在某些国家可是一道上品佳肴。",
+			GENERIC = "一种两栖四足动物。",
+			SLEEPING = "它在睡觉。",
 		},
-		FROGGLEBUNWICH = "蛙腿三明治。粗食。",		--物品名：蛙腿三明治
-		FROGLEGS = "听说这是道好菜。",		--物品名：蛙腿
-		FROGLEGS_COOKED = "像鸡肉。仅此而已。",		--物品名：熟蛙腿
-		FRUITMEDLEY = "果香扑鼻。甜得直接。",		--物品名：水果圣代
-		FURTUFT = "黑白毛。摸着应当软，喵。",		--物品名：毛丛
-		GEARS = "齿轮。机械的关节。",		--物品名：齿轮
-		GHOST = "我不信鬼神。你冒犯我了。",		--物品名：幽灵
-		GOLDENAXE = "斧头而已，镀了金。",		--物品名：黄金斧头
-		GOLDENPICKAXE = "金子软。这不合常理。",		--物品名：黄金鹤嘴锄
-		GOLDENPITCHFORK = "一把叉子，也做得这般讲究。",		--物品名：黄金干草叉
-		GOLDENSHOVEL = "挖个坑。我有分寸。",		--物品名：黄金铲子
-		GOLDNUGGET = "不能吃。倒是好看。",		--物品名：金块
+		FROGGLEBUNWICH = "把它看做一个三明治很好玩。",
+		FROGLEGS = "它们还在抽搐。",
+		FROGLEGS_COOKED = "就像鸡翅一样喵。",
+		FRUITMEDLEY = "水果搭配得真好喵！",
+		FURTUFT = "熊獾的毛皮喵。",
+		GEARS = "各种齿轮和轮子喵。",
+		GHOST = "肯定是假的。我才不相信呢。",
+		GOLDENAXE = "黄金是最具可塑性的金属，不过我们还是先看看它砍树的效果吧。",
+		GOLDENPICKAXE = "黄金是最具可塑性的金属，不过我们还是先看看它挖矿的效果吧。",
+		GOLDENPITCHFORK = "黄金是最具可塑性的金属，不过我们还是先看看它松土的效果吧喵。",
+		GOLDENSHOVEL = "黄金是最具可塑性的金属，不过我们还是先看看它挖掘的效果吧喵。",
+		GOLDNUGGET = "一小块金子。原子数79喵。",
 		GRASS =
 		{
-			BARREN = "地力耗尽。需肥。",		--物品名：草 检查状态：资源枯竭，需要施肥
-			WITHERED = "热成这样，长不回来了。",		--物品名：草 检查状态：已经枯萎
-			BURNING = "烧得这么快。",		--物品名：草 检查状态：正在燃烧
-			GENERIC = "一丛草。用处不少。",		--物品名：草 检查状态：普通状态
-			PICKED = "正当时被采走了。可惜。",		--物品名：草 检查状态：已经采集
-			DISEASED = "它病着。看得出来。", 		--物品名：草 检查状态：已经患病
-			DISEASING = "有点不对。气息变了。", 		--物品名：草 检查状态：正在进入患病阶段
+			BARREN = "它需要施肥。",
+			WITHERED = "天气太炎热了，它会死的。",
+			BURNING = "烧起来了喵！",
+			GENERIC = "一丛禾草茎秆喵。",
+			PICKED = "我想它会重新长出来的喵。",
+			DISEASED = "它得了种农业病，我治不好喵。", --unimplemented
+			DISEASING = "嗯……这里有一些污点。", --unimplemented
 		},
 		GRASSGEKKO =
 		{
-			GENERIC = "长着叶子的蜥蜴。稀奇。",		--物品名：草壁虎 检查状态：普通状态
-			DISEASED = "它病得不轻。", 		--物品名：草壁虎 检查状态：已经患病
+			GENERIC = "我之前从未遇到过这一物种，它看起来无害。",
+			DISEASED = "它好像被不知名的细菌感染了。", --unimplemented
 		},
-		GREEN_CAP = "看着寻常。未必无害。",		--物品名：采摘的绿蘑菇
-		GREEN_CAP_COOKED = "变了。气味不同了。",		--物品名：熟绿蘑菇
+		GREEN_CAP = "看上去可以吃，尽管吃掉它可能不是很理智的做法。",
+		GREEN_CAP_COOKED = "化学改变了它喵。",
 		GREEN_MUSHROOM =
 		{
-			GENERIC = "蘑菇。伞盖很正。",		--物品名：绿蘑菇 检查状态：普通状态
-			INGROUND = "还埋在土里。",		--物品名：绿蘑菇 检查状态：仍埋在地下
-			PICKED = "还会长回来么？",		--物品名：绿蘑菇 检查状态：已经采集
+			GENERIC = "它是一种菌类植物喵。",
+			INGROUND = "每天这个时候它会休眠。",
+			PICKED = "它需要补充水分才能再次结果。",
 		},
-		GUNPOWDER = "像胡椒粉。可别弄错。",		--物品名：火药
-		HAMBAT = "这不利于卫生。",		--物品名：火腿棒
-		HAMMER = "让开。该敲点东西了。",		--物品名：锤子
-		HEALINGSALVE = "刺痛便是起效。忍着。",		--物品名：治疗药膏
+		GUNPOWDER = "知识就是力量！",
+		HAMBAT = "这可能不是最有效的资源使用。",
+		HAMMER = "工人用的工具。",
+		HEALINGSALVE = "天然消毒剂喵。",
 		HEATROCK =
 		{
-			FROZEN = "比冰还冷。别握太久。",		--物品名：暖石 检查状态：已经冻结
-			COLD = "石头是凉的。寻常。",		--物品名：暖石 检查状态：温度较低
-			GENERIC = "温度由我调。",		--物品名：暖石 检查状态：普通状态
-			WARM = "温温的。抱在怀里正好。",		--物品名：暖石 检查状态：温度较暖
-			HOT = "烫得舒服，喵。",		--物品名：暖石 检查状态：温度很高
+			FROZEN = "它的温度已经降到冰点以下了。",
+			COLD = "它变得有点冷了。",
+			GENERIC = "这点温度不行啊。",
+			WARM = "它还有热量，但只有一点点喵。",
+			HOT = "它已经足够暖和，能发出光和热喵！",
 		},
-		HOME = "这里有人住。",		--物品名：家园目标
+		HOME = "休息放松的好地方。",
 		HOMESIGN =
 		{
-			GENERIC = "写着“你在这里”。",		--物品名：木牌 检查状态：普通状态
-            UNWRITTEN = "牌面空着。",		--物品名：木牌 检查状态：尚未写入文字
-			BURNT = "“不要玩火柴。”……教训。",		--物品名：木牌 检查状态：已经烧毁
+			GENERIC = "导航辅助标志，表明“你在这里”。",
+            UNWRITTEN = "指路的好机会。",
+			BURNT = "现在可没太大的帮助了。",
 		},
 		ARROWSIGN_POST =
 		{
-			GENERIC = "指向“那个方向”。",		--物品名：指路木牌 检查状态：普通状态
-            UNWRITTEN = "字迹全无。",		--物品名：指路木牌 检查状态：尚未写入文字
-			BURNT = "“不要玩火柴。”可惜。",		--物品名：指路木牌 检查状态：已经烧毁
+			GENERIC = "导航帮助。“那个方向。”",
+            UNWRITTEN = "提供指示方向的机会。",
+			BURNT = "现在可没有太大的帮助了喵。",
 		},
 		ARROWSIGN_PANEL =
 		{
-			GENERIC = "箭头指着那头。",		--物品名：指路木牌 检查状态：普通状态
-            UNWRITTEN = "空牌。等谁写字。",		--物品名：指路木牌 检查状态：尚未写入文字
-			BURNT = "只剩下焦木。",		--物品名：指路木牌 检查状态：已经烧毁
+			GENERIC = "导航帮助。“那个方向。”",
+            UNWRITTEN = "提供指示方向的机会。",
+			BURNT = "现在可没有太大的帮助了喵。",
 		},
-		HONEY = "蜜色清亮。好东西。",		--物品名：蜂蜜
-		HONEYCOMB = "蜂曾住过。巢还在。",		--物品名：蜜脾
-		HONEYHAM = "甜咸相济。不错。",		--物品名：蜜汁火腿
-		HONEYNUGGETS = "像鸡肉。但我怀疑不是。",		--物品名：蜜汁卤肉
-		HORN = "一吹，像有牛群在里头。",		--物品名：牛角
-		HOUND = "不过是条狗。退下。",		--物品名：猎犬
+		HONEY = "甜甜的植物花蜜。",
+		HONEYCOMB = "用来保存蜂蜜的蜂蜡喵。",
+		HONEYHAM = "蜂蜜是在做这个美味火腿时唯一用到的甜味剂。",
+		HONEYNUGGETS = "一口一块的甜肉！",
+		HORN = "好棒的标本！我几乎可以听到皮弗娄牛在叫喵。",
+		HOUND = "那只猎犬没有被驯服。",
 		HOUNDCORPSE =
 		{
-			GENERIC = "这味道，不算体面。",		--物品名：猎犬尸体 检查状态：普通状态
-			BURNING = "烧着。暂时安全。",		--物品名：猎犬尸体 检查状态：正在燃烧
-			REVIVING = "它要起来了。后退。",		--物品名：猎犬尸体 检查状态：尸体正在复活
+			GENERIC = "尽快处理掉尸体符合我们的核心利益。",
+			BURNING = "这下应该可以阻止更多的不幸了喵。",
+			REVIVING = "难以置信，竟然在我眼前复活了喵。",
 		},
-		HOUNDBONE = "一根骨头。别多想。",		--物品名：犬骨
-		HOUNDMOUND = "不去惹它的主人。",		--物品名：猎犬丘
-		ICEBOX = "冷，如今归我管。",		--物品名：冰箱
-		ICEHAT = "戴上它，冷静些。",		--物品名：冰帽
-		ICEHOUND = "每个季节都有猎犬？",		--物品名：寒冰猎犬
+		HOUNDBONE = "是灰狼的内骨骼，绝对不是家犬的喵。",
+		HOUNDMOUND = "那些骨头是不祥之兆喵。",
+		ICEBOX = "简陋的热交换机。",
+		ICEHAT = "完美的一块冰。",
+		ICEHOUND = "好奇怪的寒冰野兽。",
 		INSANITYROCK =
 		{
-			ACTIVE = "清醒的我，也得认它。",		--物品名：方尖碑 检查状态：正在运作
-			INACTIVE = "更像金字塔，不像方尖碑。",		--物品名：方尖碑 检查状态：当前未激活
+			ACTIVE = "这肯定是幻觉。",
+			INACTIVE = "它看起来像个小金字塔。",
 		},
-		JAMMYPRESERVES = "该找个罐子装起来。",		--物品名：果酱
+		JAMMYPRESERVES = "我希望能有点吐司，然后把果酱涂在上面吃。哦，想想就好美味。",
 
-		KABOBS = "棍上串着的午饭。",		--物品名：肉串
+		KABOBS = "是肉串，接下来是什么喵？",
 		KILLERBEE =
 		{
-			GENERIC = "杀人蜂。别招惹。",		--物品名：杀人蜂 检查状态：普通状态
-			HELD = "它不温和。别乱动。",		--物品名：杀人蜂 检查状态：正被角色携带
+			GENERIC = "它的毒性尤其高喵。",
+			HELD = "它看起来不高兴。",
 		},
-		KNIGHT = "那边。有东西在动。",		--物品名：发条骑士
-		KOALEFANT_SUMMER = "肉应当不差。",		--物品名：考拉象
-		KOALEFANT_WINTER = "又暖，肉又厚。",		--物品名：考拉象
-		KOALEFANT_CARCASS = "死了倒也显得憨。",		--物品名：考拉象尸体
-		KRAMPUS = "它想动我的东西。",		--物品名：坎普斯
-		KRAMPUS_SACK = "满是黏液。恕我不碰。",		--物品名：坎普斯背包
-		LEIF = "很大。仅此而已。",		--物品名：树精守卫
-		LEIF_SPARSE = "高大，但不难对付。",		--物品名：树精守卫
-		LIGHTER  = "她的打火机。她信这个。",		--物品名：薇洛的打火机
+		KNIGHT = "一匹自动马喵。",
+		KOALEFANT_SUMMER = "长鼻目考拉象喵。",
+		KOALEFANT_WINTER = "顶着厚厚的御寒毛皮的长鼻目考拉象喵。",
+		KOALEFANT_CARCASS = "该生物已过期。",
+		KRAMPUS = "它是神话中的圣诞怪物喵。",
+		KRAMPUS_SACK = "它似乎比看起来能装。",
+		LEIF = "我...甚至不知道有这种东西存在。",
+		LEIF_SPARSE = "我...甚至不知道有这种东西存在喵。",
+		LIGHTER  = "哈，生火的机械工具。真有用。",
 		LIGHTNING_ROD =
 		{
-			CHARGED = "雷已蓄满。等我用。",		--物品名：避雷针 检查状态：已经充能
-			GENERIC = "把天雷引下来。",		--物品名：避雷针 检查状态：普通状态
+			CHARGED = "辐射电能！",
+			GENERIC = "高度导电！",
 		},
 		LIGHTNINGGOAT =
 		{
-			GENERIC = "咩。……它在看我。",		--物品名：伏特羊 检查状态：普通状态
-			CHARGED = "它不喜欢挨雷劈。",		--物品名：伏特羊 检查状态：已经充能
+			GENERIC = "一种喜欢电的野山羊变种喵。",
+			CHARGED = "简直是闪电的忠实粉丝。",
 		},
-		LIGHTNINGGOATHORN = "像一根小避雷针。",		--物品名：伏特羊角
-		GOATMILK = "好喝。还带着电。",		--物品名：带电的羊奶
-		LITTLE_WALRUS = "长大之后，就没这么天真了。",		--物品名：小海象
-		LIVINGLOG = "它在着急。看得出来。",		--物品名：活木头
+		LIGHTNINGGOATHORN = "羊角里面肯定有某种非自然的东西。",
+		GOATMILK = "好诱人喵！",
+		LITTLE_WALRUS = "小家伙没有那么强的攻击性。",
+		LIVINGLOG = "这块木头很特别喵。",
 		LOG =
 		{
-			BURNING = "木头烫手。别急着拿。",		--物品名：木头 检查状态：正在燃烧
-			GENERIC = "又大又沉。好料。",		--物品名：木头 检查状态：普通状态
+			BURNING = "砍下的一段树干。烧着了。",
+			GENERIC = "砍下的一段树干喵。",
 		},
-		LUCY = "露西。比我想的更漂亮。",		--物品名：露西斧
-		LUREPLANT = "它美得有杀气。",		--物品名：食人花
-		LUREPLANTBULB = "可以自己种一园子肉了。",		--物品名：食人花种子
-		MALE_PUPPET = "他被困在里面。", 		--物品名：男性角色傀儡
+		LUCY = "一把外观完美的斧子喵。",
+		LUREPLANT = "一个具有攻击性的物种。",
+		LUREPLANTBULB = "现在它可以种在任何地方。",
+		MALE_PUPPET = "可怜的孩子。", --single player
 
-		MANDRAKE_ACTIVE = "拔了它。立刻。",		--物品名：曼德拉草
-		MANDRAKE_PLANTED = "这草，传闻不少。",		--物品名：曼德拉草
-		MANDRAKE = "它的根，药性古怪。",		--物品名：曼德拉草
+		MANDRAKE_ACTIVE = "曼德拉草。但是长着一张脸。",
+		MANDRAKE_PLANTED = "曼德拉草。",
+		MANDRAKE = "曼德拉草。已经死了。",
 
-        MANDRAKESOUP = "它不会再醒了。",		--物品名：曼德拉草汤
-        MANDRAKE_COOKED = "煮熟了，就不那么怪了。",		--物品名：熟曼德拉草
-        MAPSCROLL = "空地图。用处有限。",		--物品名：地图卷轴
-        MARBLE = "大理石。很体面。",		--物品名：大理石
-        MARBLEBEAN = "拿家里老牛换来的。",		--物品名：大理石豌豆
-        MARBLEBEAN_SAPLING = "上面刻着些东西。",		--物品名：大理石芽
-        MARBLESHRUB = "倒也有几分道理。",		--物品名：大理石灌木
-        MARBLEPILLAR = "这个，我用得上。",		--物品名：大理石柱
-        MARBLETREE = "斧子砍不倒它。",		--物品名：大理石树
+        MANDRAKESOUP = "本着探索精神而做成的曼德拉草汤。",
+        MANDRAKE_COOKED = "本着探索精神而做成的烤曼德拉草。",
+        MAPSCROLL = "对某些人而言，看到空白页简直会造成瘫痪。",
+        MARBLE = "一块纹路优美的石头。",
+        MARBLEBEAN = "从乔木学的角度看，大理石的生长是不可能的。",
+        MARBLEBEAN_SAPLING = "我相信它是多年生植物喵。",
+        MARBLESHRUB = "对灌木修剪法来说并不理想喵。",
+        MARBLEPILLAR = "它显示出罗马工匠的记忆。太了不起了喵。",
+        MARBLETREE = "不可思议。一棵完全由大理石做成的树喵。",
         MARSH_BUSH =
         {
-			BURNT = "少了一片要担心的荆棘。",		--物品名：尖刺灌木 检查状态：已经烧毁
-            BURNING = "刺烧得很快。",		--物品名：尖刺灌木 检查状态：正在燃烧
-            GENERIC = "满是刺。别用爪子碰。",		--物品名：尖刺灌木 检查状态：普通状态
-            PICKED = "有刺。我记住了。",		--物品名：尖刺灌木 检查状态：已经采集
+			BURNT = "全烧了。",
+            BURNING = "烧起来了！",
+            GENERIC = "一簇荆棘喵。",
+            PICKED = "采摘荆棘是很危险的喵。",
         },
-        BURNT_MARSH_BUSH = "烧得干净。",		--物品名：尖刺灌木
-        MARSH_PLANT = "一株湿地植物。",		--物品名：植物
+        BURNT_MARSH_BUSH = "化为灰烬。",
+        MARSH_PLANT = "扎根在沼泽中的地下茎植物喵。",
         MARSH_TREE =
         {
-            BURNING = "刺和火。别过去。",		--物品名：针刺树 检查状态：正在燃烧
-            BURNT = "只剩焦木和刺。",		--物品名：针刺树 检查状态：已经烧毁
-            CHOPPED = "刺少了许多。",		--物品名：针刺树 检查状态：已经砍伐
-            GENERIC = "那些刺，很利。",		--物品名：针刺树 检查状态：普通状态
+            BURNING = "烧起来了喵！",
+            BURNT = "一棵碳化了的红树。",
+            CHOPPED = "它已经被砍倒了。",
+            GENERIC = "一棵美洲红树。",
         },
-        MAXWELL = "那个人，我不喜欢。",		--物品名：麦斯威尔
-        MAXWELLHEAD = "连毛孔都看得一清二楚。",		--物品名：麦斯威尔的头
-        MAXWELLLIGHT = "它怎么亮起来的？",		--物品名：麦斯威尔灯
-        MAXWELLLOCK = "一个钥匙孔。仅此而已。",		--物品名：梦魇锁
-        MAXWELLTHRONE = "那座位，坐着不会舒服。",		--物品名：梦魇王座
-        MEAT = "尚可入口。",		--物品名：肉
-        MEATBALLS = "不过是一团肉。能填肚子。",		--物品名：肉丸
+        MAXWELL = "赶快从那里下来！",--single player
+        MAXWELLHEAD = "我希望他不会那样做喵。",--removed
+        MAXWELLLIGHT = "太神奇了！",--single player
+        MAXWELLLOCK = "现在我只需要一把钥匙喵。",--single player
+        MAXWELLTHRONE = "一张令人生畏的椅子。",--single player
+        MEAT = "这个不适合生吃，但是我们别无选择喵…",
+        MEATBALLS = "一堆经过加工的肉。天晓得里面放了什么东西。",
         MEATRACK =
         {
-            DONE = "干了。可以收了。",		--物品名：晾肉架 检查状态：处理已经完成
-            DRYING = "风干要些时候。",		--物品名：晾肉架 检查状态：肉类正在晾晒
-            DRYINGINRAIN = "下雨了。干得更慢。",		--物品名：晾肉架 检查状态：雨中仍挂着肉类，晾晒暂停
-            GENERIC = "该挂些肉上去了。",		--物品名：晾肉架 检查状态：普通状态
-            BURNT = "架子烧没了。",		--物品名：晾肉架 检查状态：已经烧毁
-            DONE_NOTMEAT = "严格说，这叫“干燥”。",		--物品名：晾肉架 检查状态：非肉类晾晒已经完成
-            DRYING_NOTMEAT = "风干算不上科学。",		--物品名：晾肉架 检查状态：非肉类正在晾晒
-            DRYINGINRAIN_NOTMEAT = "雨，改天再来。",		--物品名：晾肉架 检查状态：雨中仍挂着非肉类，晾晒暂停
+            DONE = "这个过程已经完成了。",
+            DRYING = "脱水是一个缓慢的过程。",
+            DRYINGINRAIN = "下雨让脱水过程暂停了喵。",
+            GENERIC = "它可以使肉脱水。",
+            BURNT = "它似乎并不是很牢固。",
+            DONE_NOTMEAT = "这个过程已经完成了喵。",
+            DRYING_NOTMEAT = "脱水是一个缓慢的过程喵。",
+            DRYINGINRAIN_NOTMEAT = "下雨让脱水过程暂停了。",
         },
-        MEAT_DRIED = "干透了。收好。",		--物品名：肉干
-        MERM = "腥气十足。站远些。",		--物品名：鱼人
+        MEAT_DRIED = "虽然有点咸，但还是很令人满意。",
+        MERM = "一只双鱼座的两足动物！",
         MERMHEAD =
         {
-            GENERIC = "整天都得闻这个。",		--物品名：鱼人头 检查状态：普通状态
-            BURNT = "烧过之后，更糟。",		--物品名：鱼人头 检查状态：已经烧毁
+            GENERIC = "我不确定它是腐烂了还是发酵了。",
+            BURNT = "这下它既不会腐烂也不会发酵了。",
         },
         MERMHOUSE =
         {
-            GENERIC = "谁会住这里？",		--物品名：漏雨的小屋 检查状态：普通状态
-            BURNT = "如今无处可住。",		--物品名：漏雨的小屋 检查状态：已经烧毁
+            GENERIC = "很明显已经残破了。",
+            BURNT = "比残破还要惨。",
         },
-        MINERHAT = "光戴在头上，手就空出来了。",		--物品名：矿工帽
-        MONKEY = "好奇心太重的小东西。",		--物品名：穴居猴
-        MONKEYBARREL = "它刚才动了么？",		--物品名：穴居猴桶
-        MONSTERLASAGNA = "这东西冒犯了常理。",		--物品名：怪物千层饼
-        FLOWERSALAD = "一碗绿叶。清淡。",		--物品名：花沙拉
-        ICECREAM = "冰淇淋。我要一勺，喵。",		--物品名：冰淇淋
-        WATERMELONICLE = "冻西瓜。解暑。",		--物品名：西瓜冰棍
-        TRAILMIX = "干果。还算健康。",		--物品名：什锦干果
-        HOTCHILI = "辣得能喷火。",		--物品名：辣椒炖肉
-        GUACAMOLE = "据说这是阿伏伽德罗的最爱。",		--物品名：鳄梨酱
-        MONSTERMEAT = "这东西不该进我的嘴。",		--物品名：怪物肉
-        MONSTERMEAT_DRIED = "肉干，气味可疑。",		--物品名：怪物肉干
-        MOOSE = "鹿身鹅喙。造物真是不讲章法。",		--物品名：麋鹿鹅
-
-        MOOSE_NESTING_GROUND = "巢址。雏鸟就安置在这里。",		--物品名：麋鹿鹅巢址
-        MOOSEEGG = "像受激的电子，急着逃逸。",		--物品名：麋鹿鹅蛋
-        MOSSLING = "看来你确实不是电子。",		--物品名：麋鹿鹅幼崽
-        FEATHERFAN = "扇风，降温。",		--物品名：羽毛扇
-        MINIFAN = "风从背后加倍吹来。",		--物品名：旋转的风扇
-        GOOSE_FEATHER = "绒毛。手感不错，喵。",		--物品名：麋鹿鹅羽毛
-        STAFF_TORNADO = "旋转的毁灭。握稳些。",		--物品名：天气风向标
+        MINERHAT = "这会成为一个很好的阅读灯。",
+        MONKEY = "它们身上的味道真难闻。",
+        MONKEYBARREL = "这似乎是某些灵长类动物的家喵。",
+        MONSTERLASAGNA = "无论是不是千层饼，吃它都是有害处的。",
+        FLOWERSALAD = "好营养！",
+        ICECREAM = "一本书和一碗冰淇淋，没有比这更好的东西了。",
+        WATERMELONICLE = "西瓜完全包裹在了冰格里面喵。",
+        TRAILMIX = "嗯，天然的美味！",
+        HOTCHILI = "辣椒让我消化不良。",
+        GUACAMOLE = "在图书馆搞研究的日子里，我经常做鳄梨酱。",
+        MONSTERMEAT = "吃这个是有害的。",
+        MONSTERMEAT_DRIED = "虽然有点咸，但还是很令人满意。",
+        MOOSE = "我称它为驼鹿属加拿大黑雁。",
+        MOOSE_NESTING_GROUND = "有一天，我可能会想要研究它的求偶习惯。",
+        MOOSEEGG = "太不可思议了喵！",
+        MOSSLING = "我想那应该和我预期的差不多。",
+        FEATHERFAN = "它会带来很强的气流喵！",
+        MINIFAN = "它的空气动力学原理令人不可思议。",
+        GOOSE_FEATHER = "好柔软的羽毛！它使我希望我能睡着。",
+        STAFF_TORNADO = "没见过把风向标当成武器的。",
         MOSQUITO =
         {
-            GENERIC = "吸血的虫子。讨厌。",		--物品名：蚊子 检查状态：普通状态
-            HELD = "这血……是我的吧。",		--物品名：蚊子 检查状态：正被角色携带
+            GENERIC = "一只饥渴难耐的雌性吸血蚊。",
+            HELD = "它被安全储存起来了。",
         },
-        MOSQUITOSACK = "也许是别人的血。……别问。",		--物品名：蚊子血囊
+        MOSQUITOSACK = "蚊子的胃，里面装满了血喵。",
         MOUND =
         {
-            DUG = "或许，他罪有应得。",		--物品名：坟墓 检查状态：已经被挖开
-            GENERIC = "下面多半藏着不少好东西。",		--物品名：坟墓 检查状态：普通状态
+            DUG = "一座被亵渎的墓冢喵。",
+            GENERIC = "一座墓冢。",
         },
-        NIGHTLIGHT = "这光，阴森得不像话。",		--物品名：暗夜灯
-        NIGHTMAREFUEL = "这东西，实在古怪。",		--物品名：噩梦燃料
-        NIGHTSWORD = "谁造的？……不必深究。",		--物品名：暗夜剑
-        NITRE = "硝石。我不是地质学家。",		--物品名：硝石
-        ONEMANBAND = "该给它配一只牛铃。",		--物品名：独奏乐器
+        NIGHTLIGHT = "发出奇异的冷光。",
+        NIGHTMAREFUEL = "灵质残渣。",
+        NIGHTSWORD = "可穿越不同次元的武器。",
+        NITRE = "又称为硝酸钾。",
+        ONEMANBAND = "对传统管乐器和小鼓的很好改进喵。",
         OASISLAKE =
-        {
-            GENERIC = "是海市蜃楼吗？",		--物品名：湖泊 检查状态：普通状态
-            EMPTY = "干得像块骨头。",		--物品名：湖泊 检查状态：内容为空
-        },
-        PANDORASCHEST = "里面或许是珍宝，或许是灾祸。",		--物品名：华丽箱子
-        PANFLUTE = "给动物们吹一支小夜曲。",		--物品名：排箫
-        PAPYRUS = "几张纸。",		--物品名：莎草纸
-        WAXPAPER = "蜡纸。防水，实用。",		--物品名：蜡纸
-        PENGUIN = "繁殖的季节到了。",		--物品名：企鸥
-        PERD = "蠢鸟。离浆果远些。",		--物品名：火鸡
-        PEROGIES = "味道相当不错。",		--物品名：波兰水饺
-        PETALS = "花归我了，喵。",		--物品名：花瓣
-        PETALS_EVIL = "这些，我不太想碰。",		--物品名：深色花瓣
-        PHLEGM = "浓稠，滑腻，带咸味。",		--物品名：脓鼻涕
-        PICKAXE = "形状很贴切，不是吗。",		--物品名：鹤嘴锄
-        PIGGYBACK = "小猪回它的“家”了。",		--物品名：猪皮包
+		{
+			GENERIC = "它可以支持小型的生态系统。",
+			EMPTY = "或许现在是湖的枯水期。",
+		},
+        PANDORASCHEST = "可以装其他文物的文物。",
+        PANFLUTE = "可以产生谐波共振的中空芦苇。",
+        PAPYRUS = "由纤维素和木质素构成的薄片制品。",
+        WAXPAPER = "现在我们只需要绳索来把它绑在固定的地方喵。",
+        PENGUIN = "好绅士的鸟。",
+        PERD = "讨厌的火鸡，你离那些浆果远点！",
+        PEROGIES = "很好吃的饺子，口味很温和。",
+        PETALS = "现在它是些令人愉悦的百花香。",
+        PETALS_EVIL = "有意思，这些花瓣似乎有自己的思想。",
+        PHLEGM = "那团凝固的黏液仍保持着黏黏的质地。",
+        PICKAXE = "专门用来凿岩石的斧子。",
+        PIGGYBACK = "只有在需要它时才会爱上的一张脸喵。",
         PIGHEAD =
         {
-            GENERIC = "像是献给野兽的供品。",		--物品名：猪头 检查状态：普通状态
-            BURNT = "外焦里生。",		--物品名：猪头 检查状态：已经烧毁
+            GENERIC = "咳，棍子上插了颗猪头。",
+            BURNT = "棍子插了颗猪头，后来被烧毁了。哎呀喵！",
         },
         PIGHOUSE =
         {
-            FULL = "窗上贴着一只鼻子。",		--物品名：猪屋 检查状态：内容已满
-            GENERIC = "这些猪的屋子，倒不赖。",		--物品名：猪屋 检查状态：普通状态
-            LIGHTSOUT = "出来。我知道你在里面。",		--物品名：猪屋 检查状态：屋内已经熄灯
-            BURNT = "现在不那么舒服了吧。",		--物品名：猪屋 检查状态：已经烧毁
+            FULL = "我很好奇他们在里面都干些什么。",
+            GENERIC = "这些猪人在建筑方面的品味真不咋地。",
+            LIGHTSOUT = "真是太没礼貌了。",
+            BURNT = "房子没有装防火系统。",
         },
-        PIGKING = "气味不佳。离远些。",		--物品名：猪王
+        PIGKING = "他好像是这个村庄的老大。",
         PIGMAN =
         {
-            DEAD = "该通知它的家人。",		--物品名：猪人 检查状态：已经死亡
-            FOLLOWER = "你是我的随从之一。",		--物品名：猪人 检查状态：已经成为当前角色的跟随者
-            GENERIC = "他们有些吓人。",		--物品名：猪人 检查状态：普通状态
-            GUARD = "站得很严肃。",		--物品名：猪人 检查状态：正在守卫岗位
-            WEREPIG = "这可不是友善的猪。",		--物品名：猪人 检查状态：猪人处于疯猪形态
+            DEAD = "别担心，里面还有很多。",
+            FOLLOWER = "他似乎和我有密不可分的关系。",
+            GENERIC = "它是半傻的两足猪。",
+            GUARD = "它好像是个守卫喵。",
+            WEREPIG = "它是有变兽妄想症的猪人喵。",
         },
-        PIGSKIN = "上面还带着尾巴。",		--物品名：猪皮
-        PIGTENT = "闻着像培根。",		--物品名：猪人帐篷
-        PIGTORCH = "看着倒惬意。",		--物品名：猪火炬
-        PINECONE = "里面有一棵小树，正努力要长出来。",		--物品名：松果
-        PINECONE_SAPLING = "它很快会成材。",		--物品名：常青树苗
-        LUMPY_SAPLING = "这树是怎么繁殖的？",		--物品名：臃肿树苗
-        PITCHFORK = "只差一群暴民了。",		--物品名：干草叉
-        PLANTMEAT = "卖相不佳。",		--物品名：叶肉
-        PLANTMEAT_COOKED = "至少还是热的。",		--物品名：熟叶肉
+        PIGSKIN = "半傻的两足猪的臀部。",
+        PIGTENT = "真脏喵。",
+        PIGTORCH = "我很好奇它是靠什么提供燃料的喵。",
+        PINECONE = "包裹在成熟球果中的针叶树种子喵。",
+        PINECONE_SAPLING = "快要成熟的针叶树种子。",
+        LUMPY_SAPLING = "可能这个物种能够长出新枝喵。",
+        PITCHFORK = "它的设计很适合用来松土。",
+        PLANTMEAT = "这种植物会产生一种口感像肉的物质。",
+        PLANTMEAT_COOKED = "这看起来吃起来安全多了。",
         PLANT_NORMAL =
         {
-            GENERIC = "枝叶茂盛。",		--物品名：农作物 检查状态：普通状态
-            GROWING = "长得真慢。",		--物品名：农作物 检查状态：正在生长
-            READY = "嗯。可以摘了。",		--物品名：农作物 检查状态：已经准备就绪
-            WITHERED = "是热死的。",		--物品名：农作物 检查状态：已经枯萎
+            GENERIC = "这是...植物。对，某种植物喵。",
+            GROWING = "还没到收获的时候。",
+            READY = "它看起来已经成熟了喵。",
+            WITHERED = "它没能耐住高温。",
         },
-        POMEGRANATE = "像一颗异星的大脑。",		--物品名：石榴
-        POMEGRANATE_COOKED = "算得上一道好菜。",		--物品名：切片熟石榴
-        POMEGRANATE_SEEDS = "一颗种子。",		--物品名：风刮来的种子
-        POND = "深不见底。",		--物品名：池塘
-        POOP = "肥料。多多益善。",		--物品名：粪肥
-        FERTILIZER = "一桶粪便。别洒了。",		--物品名：便便桶
-        PUMPKIN = "和我的头一样大。",		--物品名：南瓜
-        PUMPKINCOOKIE = "漂亮的南瓜饼。",		--物品名：南瓜饼干
-        PUMPKIN_COOKED = "怎么没变成馅饼？",		--物品名：烤南瓜
-        PUMPKIN_LANTERN = "……真可怕。",		--物品名：南瓜灯
-        PUMPKIN_SEEDS = "一颗种子。",		--物品名：尖种子
-        PURPLEAMULET = "它在低声对我说。",		--物品名：梦魇护符
-        PURPLEGEM = "宇宙的奥秘，封在里面。",		--物品名：紫宝石
+        POMEGRANATE = "是石榴。水分足又酸酸甜甜的石榴。",
+        POMEGRANATE_COOKED = "烤熟了的石榴真好吃喵。",
+        POMEGRANATE_SEEDS = "亲爱的，不种下的话它是不能生长的喵。",
+        POND = "小而深的淡水池塘。",
+        POOP = "一些动物粪便。臭死了。",
+        FERTILIZER = "一桶动物粪便。好刺鼻。",
+        PUMPKIN = "美洲南瓜。",
+        PUMPKINCOOKIE = "南瓜饼干，太好了喵！",
+        PUMPKIN_COOKED = "烤南瓜。又软又甜，很好吃。",
+        PUMPKIN_LANTERN = "雕刻南瓜灯真是个不错的消遣方式喵。",
+        PUMPKIN_SEEDS = "亲爱的，不种下的话它是不能生长的。",
+        PURPLEAMULET = "我几乎可以感觉到它在召唤什么东西。",
+        PURPLEGEM = "它发出的光有点奇怪喵。",
         RABBIT =
         {
-            GENERIC = "它在找胡萝卜。",		--物品名：兔子 检查状态：普通状态
-            HELD = "安静些。你归我管。",		--物品名：兔子 检查状态：正被角色携带
+            GENERIC = "它是某种兔类动物。带角的那种。",
+            HELD = "拥有可爱小角的兔类动物。",
         },
         RABBITHOLE =
         {
-            GENERIC = "通往兔子的国度。",		--物品名：兔洞 检查状态：普通状态
-            SPRING = "本季，兔子国不开放。",		--物品名：兔洞 检查状态：春季状态
+            GENERIC = "看起来像小动物的窝。",
+            SPRING = "希望那下面的兔类动物安然无恙！",
         },
         RAINOMETER =
         {
-            GENERIC = "测雨的仪器。",		--物品名：雨量计 检查状态：普通状态
-            BURNT = "测量部分化成一缕青烟。",		--物品名：雨量计 检查状态：已经烧毁
+            GENERIC = "行动前先测量一下。",
+            BURNT = "已经烧得只剩外壳了，再也不能测量了。",
         },
-        RAINCOAT = "让雨待在它该待的地方。身体之外。",		--物品名：雨衣
-        RAINHAT = "会压乱我的头发。……仅此一点。",		--物品名：雨帽
-        RATATOUILLE = "纤维倒是充足。",		--物品名：蔬菜杂烩
-        RAZOR = "石片绑在棍上。为了体面。",		--物品名：剃刀
-        REDGEM = "暖色的光。",		--物品名：红宝石
-        RED_CAP = "气味有些怪。",		--物品名：采摘的红蘑菇
-        RED_CAP_COOKED = "熟了。与生的截然不同……",		--物品名：熟红蘑菇
+        RAINCOAT = "完全不会渗水。",
+        RAINHAT = "我讨厌发髻湿漉漉的喵。",
+        RATATOUILLE = "尼斯沙拉，好营养！",
+        RAZOR = "个人卫生用品。",
+        REDGEM = "很暖和。",
+        RED_CAP = "红色通常表示有毒喵。",
+        RED_CAP_COOKED = "化学改变了它。",
         RED_MUSHROOM =
         {
-            GENERIC = "是蘑菇。",		--物品名：红蘑菇 检查状态：普通状态
-            INGROUND = "它还在睡。",		--物品名：红蘑菇 检查状态：仍埋在地下
-            PICKED = "不知道还会不会再长。",		--物品名：红蘑菇 检查状态：已经采集
+            GENERIC = "它是一种菌类植物。",
+            INGROUND = "每天这个时候它会休眠喵。",
+            PICKED = "它需要经过水合作用才能再次结果。",
         },
         REEDS =
         {
-            BURNING = "烧得很旺。",		--物品名：芦苇 检查状态：正在燃烧
-            GENERIC = "一簇芦苇。",		--物品名：芦苇 检查状态：普通状态
-            PICKED = "有用的都摘下来了。",		--物品名：芦苇 检查状态：已经采集
+            BURNING = "烧起来了！",
+            GENERIC = "一簇灯芯草科禾草喵。",
+            PICKED = "我相信它们会重新长出来的。",
         },
-        RELIC = "远古的家什。",		--物品名：遗物
-        RUINS_RUBBLE = "这个还能修。",		--物品名：破损遗物
-        RUBBLE = "只是碎石。",		--物品名：碎石
+        RELIC = "岁月变迁中被遗忘的古代文明遗迹。",
+        RUINS_RUBBLE = "只需要下一点点功夫，就可以把它弄得井井有条。",
+        RUBBLE = "看来要使用图书馆里用的厚浆糊喵！",
         RESEARCHLAB =
         {
-            GENERIC = "它把东西拆成最基本的成分。",		--物品名：科学机器 检查状态：普通状态
-            BURNT = "现在做不了研究了。",		--物品名：科学机器 检查状态：已经烧毁
+            GENERIC = "是个研究站。我可以用它来学习新东西。",
+            BURNT = "我没法用已经碳化了的研究站来学习东西。",
         },
         RESEARCHLAB2 =
         {
-            GENERIC = "比上一台更像样。",		--物品名：炼金引擎 检查状态：普通状态
-            BURNT = "再多的学问也救不了它。",		--物品名：炼金引擎 检查状态：已经烧毁
+            GENERIC = "是个研究站。我可以用它来学习新东西。",
+            BURNT = "我没法用已经碳化了的研究站来学习东西喵。",
         },
         RESEARCHLAB3 =
         {
-            GENERIC = "我造出了什么？",		--物品名：暗影操控器 检查状态：普通状态
-            BURNT = "不管原是什么，都烧尽了。",		--物品名：暗影操控器 检查状态：已经烧毁
+            GENERIC = "也许我玩的太过火了喵。",
+            BURNT = "这是某种征兆。",
         },
         RESEARCHLAB4 =
         {
-            GENERIC = "谁会起这样的名字。",		--物品名：灵子分解器 检查状态：普通状态
-            BURNT = "火并没有解决命名的问题……",		--物品名：灵子分解器 检查状态：已经烧毁
+            GENERIC = "我猜那顶帽子是用来从空气中收集能量的喵。",
+            BURNT = "它再也没法收集能量了。",
         },
         RESURRECTIONSTATUE =
         {
-            GENERIC = "好一位体面的恶魔。",		--物品名：肉块雕像 检查状态：普通状态
-            BURNT = "没用了。",		--物品名：肉块雕像 检查状态：已经烧毁
+            GENERIC = "真是异教徒的作风。",
+            BURNT = "它已经被毁灭了喵。",
         },
-        RESURRECTIONSTONE = "碰一碰石台，总归不亏。",		--物品名：试金石
+        RESURRECTIONSTONE = "那块石头具有复活的力量。",
         ROBIN =
         {
-            GENERIC = "这算不算冬天结束了？",		--物品名：红雀 检查状态：普通状态
-            HELD = "它喜欢我的口袋。",		--物品名：红雀 检查状态：正被角色携带
+            GENERIC = "北美红雀！好漂亮的羽毛喵。",
+            HELD = "这个小家伙将是我的朋友。",
         },
         ROBIN_WINTER =
         {
-            GENERIC = "寒荒之地，也有活物。",		--物品名：雪雀 检查状态：普通状态
-            HELD = "这么柔软，喵。",		--物品名：雪雀 检查状态：正被角色携带
+            GENERIC = "北美红雀的冬衣？好奇特喵！",
+            HELD = "真是楚楚可怜。",
         },
-        ROBOT_PUPPET = "被困住了。", 		--物品名：机器人角色傀儡
+        ROBOT_PUPPET = "可怜的孩子喵。", --single player
         ROCK_LIGHT =
         {
-            GENERIC = "石皮裹着的熔岩坑。",		--物品名：熔岩坑 检查状态：普通状态
-            OUT = "看起来很脆。",		--物品名：熔岩坑 检查状态：火焰已经熄灭
-            LOW = "熔岩正在结成石皮。",		--物品名：熔岩坑 检查状态：低等级或低储量状态
-            NORMAL = "暖得正好，喵。",		--物品名：熔岩坑 检查状态：普通形态
+            GENERIC = "上面被封住的熔岩坑。",--removed
+            OUT = "现在只是一座火成岩而已。",--removed
+            LOW = "冷却过程开始了。",--removed
+            NORMAL = "太烫了，不能摸。",--removed
         },
         CAVEIN_BOULDER =
         {
-            GENERIC = "这个，我举得起来。",		--物品名：岩石 检查状态：普通状态
-            RAISED = "太远了，够不着。",		--物品名：岩石 检查状态：洞穴落石仍在升起阶段
+            GENERIC = "它看起来好像可以移动喵。",
+            RAISED = "我们必须首先清理周围的岩石。",
         },
-        ROCK = "口袋装不下它。",		--物品名：岩石
-        PETRIFIED_TREE = "看来它是被吓僵的。",		--物品名：石化树
-        ROCK_PETRIFIED_TREE = "看着让人不安。",		--物品名：石化树
-        ROCK_PETRIFIED_TREE_OLD = "看着让人不安。",		--物品名：旧石化树岩块
+        ROCK = "一块巨大的沉积岩喵。",
+        PETRIFIED_TREE = "应该有益于某种不错的建筑材料。",
+        ROCK_PETRIFIED_TREE = "应该有益于某种不错的建筑材料。",
+        ROCK_PETRIFIED_TREE_OLD = "应该有益于某种不错的建筑材料喵。",
         ROCK_ICE =
         {
-            GENERIC = "见着你，凉快。",		--物品名：迷你冰川 检查状态：普通状态
-            MELTED = "再冻上之前，没什么用处。",		--物品名：迷你冰川 检查状态：已经融化
+            GENERIC = "一小块高密度的冰矿喵。",
+            MELTED = "一定是因为它体积太小了，所以才会融化。",
         },
-        ROCK_ICE_MELTED = "再冻上之前，没什么用处。",		--物品名：融化的迷你冰川
-        ICE = "见着你，凉快。",		--物品名：冰
-        ROCKS = "这些能做出点东西。",		--物品名：石头
-        ROOK = "攻城的车。",		--物品名：发条战车
-        ROPE = "一截短绳。",		--物品名：绳子
+        ROCK_ICE_MELTED = "一定是因为它体积太小了，所以才会融化。",
+        ICE = "固态的水。",
+        ROCKS = "一把零碎的石头。",
+        ROOK = "一座上了发条的城堡喵。",
+        ROPE = "一根短而结实的麻绳。",
         ROTTENEGG =
         {
-            GENERIC = "……臭得过分。",		--物品名：腐烂鸟蛋 检查状态：普通状态
-            CAN_PROCESS = "处理成养分，也算归宿。",		--物品名：腐烂鸟蛋 检查状态：可放入堆肥设施处理
+            GENERIC = "真倒胃口。",
+--fallback to speech_wilson.lua             CAN_PROCESS = "only_used_by_wx78",
         },
-        ROYAL_JELLY = "给捕食者灌了些力量。",		--物品名：蜂王浆
-        JELLYBEAN = "一半是果冻，一半是豌豆。",		--物品名：彩虹糖豆
-        SADDLE_BASIC = "有了它，就能骑那些有味的家伙。",		--物品名：鞍具
-        SADDLE_RACE = "这鞍具，真会飞。",		--物品名：闪亮鞍具
-        SADDLE_WAR = "唯一的问题是鞍疮。",		--物品名：战争鞍具
-        SADDLEHORN = "用来卸鞍。",		--物品名：鞍角
-        SALTLICK = "要舔多久才中和？",		--物品名：舔盐块
-        BRUSH = "牛会喜欢这个。",		--物品名：刷子
-        SANITYROCK =
-        {
-            ACTIVE = "这石头，疯得厉害。",		--物品名：方尖碑 检查状态：正在运作
-            INACTIVE = "其余的部分去了哪里？",		--物品名：方尖碑 检查状态：当前未激活
-        },
-        SAPLING =
-        {
-            BURNING = "烧得很快。",		--物品名：树苗 检查状态：正在燃烧
-            WITHERED = "给它降降温，或许还有救。",		--物品名：树苗 检查状态：已经枯萎
-            GENERIC = "小树苗，挺可爱。",		--物品名：树苗 检查状态：普通状态
-            PICKED = "它已经受过教训。",		--物品名：树苗 检查状态：已经采集
-            DISEASED = "看着不太舒服。", 		--物品名：树苗 检查状态：已经患病
-            DISEASING = "有些地方，不太对劲。", 		--物品名：树苗 检查状态：正在进入患病阶段
-        },
-        SCARECROW =
-        {
-            GENERIC = "把稻草人打扮好，乌鸦就不来了。",		--物品名：友善的稻草人 检查状态：普通状态
-            BURNING = "有人让那稻草人吃上了火。",		--物品名：友善的稻草人 检查状态：正在燃烧
-            BURNT = "有人谋杀了那个稻草人。",		--物品名：友善的稻草人 检查状态：已经烧毁
-        },
-        SCULPTINGTABLE=
-        {
-            EMPTY = "可以用它雕一尊石像。",		--物品名：陶轮 检查状态：内容为空
-            BLOCK = "坯料就绪。",		--物品名：陶轮 检查状态：当前雕刻材料为石块
-            SCULPTURE = "称得上杰作。",		--物品名：陶轮 检查状态：当前正在雕刻塑像
-            BURNT = "烧透了。",		--物品名：陶轮 检查状态：已经烧毁
-        },
-        SCULPTURE_KNIGHTHEAD = "其余部分在哪？",		--物品名：可疑的大理石
-        SCULPTURE_KNIGHTBODY =
-        {
-            COVERED = "一尊古怪的大理石像。",		--物品名：大理石雕像 检查状态：雕塑主体仍被石层覆盖
-            UNCOVERED = "看来他承受不住。",		--物品名：大理石雕像 检查状态：雕塑主体已经露出
-            FINISHED = "终于拼回原样。",		--物品名：大理石雕像 检查状态：雕塑已经完成
-            READY = "里面有东西在动。",		--物品名：大理石雕像 检查状态：已经准备就绪
-        },
-        SCULPTURE_BISHOPHEAD = "那是一颗头吗？",		--物品名：可疑的大理石
-        SCULPTURE_BISHOPBODY =
-        {
-            COVERED = "看着很旧，摸着却新。",		--物品名：大理石雕像 检查状态：雕塑主体仍被石层覆盖
-            UNCOVERED = "还缺一大块碎片。",		--物品名：大理石雕像 检查状态：雕塑主体已经露出
-            FINISHED = "然后呢。",		--物品名：大理石雕像 检查状态：雕塑已经完成
-            READY = "里面有东西在动。",		--物品名：大理石雕像 检查状态：已经准备就绪
-        },
-        SCULPTURE_ROOKNOSE = "这是从哪儿来的？",		--物品名：可疑的大理石
-        SCULPTURE_ROOKBODY =
-        {
-            COVERED = "一尊大理石像。",		--物品名：大理石雕像 检查状态：雕塑主体仍被石层覆盖
-            UNCOVERED = "它状态不佳。",		--物品名：大理石雕像 检查状态：雕塑主体已经露出
-            FINISHED = "都修补好了。",		--物品名：大理石雕像 检查状态：雕塑已经完成
-            READY = "里面有东西在动。",		--物品名：大理石雕像 检查状态：已经准备就绪
-        },
-        GARGOYLE_HOUND = "它看我的眼神，我不喜欢。",		--物品名：可疑的月岩
-        GARGOYLE_WEREPIG = "栩栩如生，几乎要动。",		--物品名：可疑的月岩
-        SEEDS = "每一颗都是小小的谜。",		--物品名：种子
-        SEEDS_COOKED = "精华都烤出来了。",		--物品名：烤种子
-        SEWING_KIT = "补好。全都补好了。",		--物品名：针线包
-        SEWING_TAPE = "补得不错。",		--物品名：可靠的胶布
-        SHOVEL = "地下藏着不少秘密。",		--物品名：铲子
-        SILK = "出自蜘蛛的后部。",		--物品名：蜘蛛丝
-        SKELETON = "你死，好过我死。",		--物品名：骷髅
-        SCORCHED_SKELETON = "……可怕。",		--物品名：易碎骷髅
-        SKELETON_NOTPLAYER = "不像是人骨。",		--物品名：骷髅
-        SKULLCHEST = "开不开，我还没定。", 		--物品名：骷髅箱
-        SMALLBIRD =
-        {
-            GENERIC = "好小的一只鸟。",		--物品名：小鸟 检查状态：普通状态
-            HUNGRY = "它饿了。",		--物品名：小鸟 检查状态：处于饥饿状态
-            STARVING = "饿得很了。",		--物品名：小鸟 检查状态：极度饥饿
-            SLEEPING = "连眼都不肯偷偷睁一下。",		--物品名：小鸟 检查状态：正在睡眠
-        },
-        SMALLMEAT = "一小块尸体。",		--物品名：小肉
-        SMALLMEAT_DRIED = "一小块肉干。",		--物品名：小肉干
-        SPAT = "脾气不佳的家伙。",		--物品名：钢羊
-        SPEAR = "一根很尖的棍子。",		--物品名：长矛
-        SPEAR_WATHGRITHR = "看着很能戳。",		--物品名：战斗长矛
-        WATHGRITHRHAT = "那顶帽子，样式奇特。",		--物品名：战斗头盔
-        SPIDER =
-        {
-            DEAD = "……恶心。",		--物品名：蜘蛛 检查状态：已经死亡
-            GENERIC = "我讨厌蜘蛛。",		--物品名：蜘蛛 检查状态：普通状态
-            SLEEPING = "它醒来时，我最好不在。",		--物品名：蜘蛛 检查状态：正在睡眠
-        },
-        SPIDERDEN = "黏得过分。",		--物品名：蜘蛛巢
-        SPIDEREGGSACK = "但愿这些不会孵化。仅此而已。",		--物品名：蜘蛛卵
-        SPIDERGLAND = "一股浓重的防腐味。",		--物品名：蜘蛛腺
-        SPIDERHAT = "但愿蜘蛛的黏液都弄干净了。",		--物品名：蜘蛛帽
-        SPIDERQUEEN = "……那只蜘蛛，大得离谱。",		--物品名：蜘蛛女王
-        SPIDER_WARRIOR =
-        {
-            DEAD = "总算清静。",		--物品名：蜘蛛战士 检查状态：已经死亡
-            GENERIC = "比寻常蜘蛛更凶。",		--物品名：蜘蛛战士 检查状态：普通状态
-            SLEEPING = "该保持距离。",		--物品名：蜘蛛战士 检查状态：正在睡眠
-        },
+        ROYAL_JELLY = "在野外，这会产生更多的女王。",
+        JELLYBEAN = "糖果，被蜂蜡所乳化。",
+        SADDLE_BASIC = "用于马术的粗糙装置。",
+        SADDLE_RACE = "这装饰的触角摸起来很舒服喵。",
+        SADDLE_WAR = "将军和各类军阀喜欢的位置。",
+        SADDLEHORN = "一个强有力的卸下装备的装置。",
+        SALTLICK = "一块用于引诱野兽的食盐。",
+        BRUSH = "微观倒钩可以进行光学头发检索喵。",
+		SANITYROCK =
+		{
+			ACTIVE = "很有意思。以后我得研究一下这些标记喵。",
+			INACTIVE = "它似乎陷到土里去了喵。",
+		},
+		SAPLING =
+		{
+			BURNING = "烧起来了！",
+			WITHERED = "高温已经让它快不行了喵。",
+			GENERIC = "是一棵小树喵。",
+			PICKED = "真奇怪。我本来以为那会杀死它的。",
+			DISEASED = "它得了种农业病，我治不好喵。", --removed
+			DISEASING = "嗯……看起来比平常还没用喵。", --removed
+		},
+   		SCARECROW =
+   		{
+			GENERIC = "啊，太好了。不会再出现把衣服挂在树枝上，衣服变得皱巴巴这种事了喵。",
+			BURNING = "嗯……我猜它易燃性很高喵。",
+			BURNT = "遗憾。他是这样欢乐的家伙。",
+   		},
+   		SCULPTINGTABLE=
+   		{
+			EMPTY = "陶瓷生产的一套方法。我们莫名其妙地把它用来雕刻。",
+			BLOCK = "哦，我从未把自己当成艺术家！",
+			SCULPTURE = "我们都急需情感宣泄，我相信。",
+			BURNT = "多遗憾。它是一个可爱的添加物喵。",
+   		},
+        SCULPTURE_KNIGHTHEAD = "你要用你的膝盖来抬举，亲爱的。",
+		SCULPTURE_KNIGHTBODY =
+		{
+			COVERED = "很有品味喵。",
+			UNCOVERED = "他们说每块石头里面都有个雕像。",
+			FINISHED = "结构再一次完整了。",
+			READY = "里面酝酿着某种东西。",
+		},
+        SCULPTURE_BISHOPHEAD = "我抬得起它。我比我看上去敏捷得多。",
+		SCULPTURE_BISHOPBODY =
+		{
+			COVERED = "凿功中透出动物般的凶猛喵。",
+			UNCOVERED = "所以这就是潜伏在里面的东西。",
+			FINISHED = "出色的修复工作喵。",
+			READY = "里面酝酿着某东西。",
+		},
+        SCULPTURE_ROOKNOSE = "等着有人背部受伤吧。",
+		SCULPTURE_ROOKBODY =
+		{
+			COVERED = "我感觉到一束含有魔法的亮光。真古怪喵。",
+			UNCOVERED = "它所处的状态多么糟糕啊！",
+			FINISHED = "我们可能要注意点这东西。",
+			READY = "里面酝酿着某东西。",
+		},
+        GARGOYLE_HOUND = "由于月亮的暴露而完全哑口无言。",
+        GARGOYLE_WEREPIG = "月光在它的皮肤上催化了一种奇怪的反应。",
+		SEEDS = "一把不知道是什么的种子。",
+		SEEDS_COOKED = "烤植物胚胎喵！",
+		SEWING_KIT = "家务活中要用到的小工具喵。",
+		SEWING_TAPE = "高级粘合剂，能用来进行细小的修补。",
+		SHOVEL = "这是一把铲子。你以前肯定见过吧喵？",
+		SILK = "蛛形纲动物吐出的蛋白质纤维。",
+		SKELETON = "一具保存得相当好的骷髅喵。",
+		SCORCHED_SKELETON = "你没有激发大量的信心，亲爱的。",
+        SKELETON_NOTPLAYER = "从骨骼结构上研判，显然不是人类喵。",
+		SKULLCHEST = "一种像头盖骨的容器。", --removed
+		SMALLBIRD =
+		{
+			GENERIC = "鸟类中身材矮小的品种喵。",
+			HUNGRY = "它需要食物喵。",
+			STARVING = "没有食物，它肯定会死的喵。",
+			SLEEPING = "它倦了，睡着了。",
+		},
+		SMALLMEAT = "是一小块生肉。",
+		SMALLMEAT_DRIED = "很高的钠含量喵。",
+		SPAT = "钢铁羊，看看它就知道这是什么意思了喵。",
+		SPEAR = "古老的武器技术喵。",
+		SPEAR_WATHGRITHR = "多么帅气的猎捕工具啊喵！",
+		WATHGRITHRHAT = "不合时宜的胡言乱语。",
+		SPIDER =
+		{
+			DEAD = "它死了。",
+			GENERIC = "一种大型的食肉蛛形纲动物。",
+			SLEEPING = "它们好像是夜行性动物喵。",
+		},
+		SPIDERDEN = "很有意思。这些蜘蛛的巢穴是共用的。",
+		SPIDEREGGSACK = "非常便携的蜘蛛卵袋。",
+		SPIDERGLAND = "这个腺体会分泌出一种低毒性的毒液。",
+		SPIDERHAT = "对蜘蛛进行心灵控制。当然，不包括那个男孩喵。",
+		SPIDERQUEEN = "那肯定就是蜘蛛们的首脑了吧。",
+		SPIDER_WARRIOR =
+		{
+			DEAD = "他为女王奉献出了自己的生命。",
+			GENERIC = "它似乎是族群里的战士。",
+			SLEEPING = "它本就应该好好休息。",
+		},
         SPOILED_FOOD =
         {
-            GENERIC = "长满毛的腐物。",		--物品名：腐烂物 检查状态：普通状态
-            CAN_PROCESS = "现在可以处理掉了。",		--物品名：腐烂物 检查状态：可放入堆肥设施处理
+            GENERIC = "里面积聚了大量的细菌喵。",
+--fallback to speech_wilson.lua             CAN_PROCESS = "only_used_by_wx78",
         },
         STAGEHAND =
         {
-            AWAKE = "总之，别把手伸过来。",		--物品名：舞台之手 检查状态：已经苏醒
-            HIDING = "这里有些古怪，我说不清缘由。",		--物品名：舞台之手 检查状态：正在伪装隐藏
+			AWAKE = "那是个卑鄙的诡计！",
+			HIDING = "某些不光明的东西正在暗影中潜行喵。",
         },
         STATUE_MARBLE =
         {
-            GENERIC = "上等的大理石像。",		--物品名：大理石雕像 检查状态：普通状态
-            TYPE1 = "别失了理智。",		--物品名：大理石雕像 检查状态：第一种外观
-            TYPE2 = "很有雕像的样子。",		--物品名：大理石雕像 检查状态：第二种外观
-            TYPE3 = "不知出自哪位匠人之手。", 		--物品名：大理石雕像 检查状态：第三种外观
+            GENERIC = "由变质岩雕刻而成喵。",
+            TYPE1 = "缪斯墨尔波墨的希腊式启发的雕像。有点自由发挥。",
+            TYPE2 = "缪斯塔利亚的希腊式启发的雕像。有点自由发挥。",
+            TYPE3 = "大雨无意中把它变成了鸟儿们洗澡的地方喵。", --bird bath type statue
         },
-        STATUEHARP = "它的头怎么了？",		--物品名：竖琴雕像
-        STATUEMAXWELL = "他本人还要矮些。",		--物品名：麦斯威尔雕像
-        STEELWOOL = "粗糙的金属纤维。",		--物品名：钢丝绵
-        STINGER = "很尖锐。",		--物品名：针刺
-        STRAWHAT = "帽子总会弄乱我的头发。",		--物品名：草帽
-        STUFFEDEGGPLANT = "确实塞得满。",		--物品名：酿茄子
-        SWEATERVEST = "这件背心相当体面。",		--物品名：犬牙背心
-        REFLECTIVEVEST = "退开，恶毒的太阳。",		--物品名：清凉夏装
-        HAWAIIANSHIRT = "穿这个做实验，不安全。",		--物品名：花衬衫
-        TAFFY = "牙医若知道我怎么吃糖，会当场失态。",		--物品名：太妃糖
-        TALLBIRD = "好高的鸟。",		--物品名：高脚鸟
-        TALLBIRDEGG = "它会孵出来吗？",		--物品名：高脚鸟蛋
-        TALLBIRDEGG_COOKED = "好吃，也有营养。",		--物品名：煎高脚鸟蛋
-        TALLBIRDEGG_CRACKED =
-        {
-            COLD = "是它在抖，还是我在抖？",		--物品名：孵化中的高脚鸟蛋 检查状态：温度较低
-            GENERIC = "它正在孵化。",		--物品名：孵化中的高脚鸟蛋 检查状态：普通状态
-            HOT = "蛋也会出汗吗？",		--物品名：孵化中的高脚鸟蛋 检查状态：温度很高
-            LONG = "看来还要些时候……",		--物品名：孵化中的高脚鸟蛋 检查状态：距离孵化或变化仍有较长时间
-            SHORT = "随时会破壳。",		--物品名：孵化中的高脚鸟蛋 检查状态：即将孵化或变化
-        },
-        TALLBIRDNEST =
-        {
-            GENERIC = "这蛋，不一般。",		--物品名：高脚鸟巢 检查状态：普通状态
-            PICKED = "巢空着。",		--物品名：高脚鸟巢 检查状态：已经采集
-        },
-        TEENBIRD =
-        {
-            GENERIC = "不算高的鸟。",		--物品名：小高脚鸟 检查状态：普通状态
-            HUNGRY = "你已经饿到不行了？",		--物品名：小高脚鸟 检查状态：处于饥饿状态
-            STARVING = "它的眼神凶起来了。",		--物品名：小高脚鸟 检查状态：极度饥饿
-            SLEEPING = "它眯着眼休息。",		--物品名：小高脚鸟 检查状态：正在睡眠
-        },
-        TELEPORTATO_BASE =
-        {
-            ACTIVE = "有了它，穿越时空并非妄想。", 		--物品名：木制装置 检查状态：正在运作
-            GENERIC = "似乎通向另一个世界。", 		--物品名：木制装置 检查状态：普通状态
-            LOCKED = "还缺些东西。", 		--物品名：木制装置 检查状态：处于锁定状态
-            PARTIAL = "快了，这发明就要完成。", 		--物品名：木制装置 检查状态：只完成部分组装
-        },
-        TELEPORTATO_BOX = "或许掌控着宇宙的极性。", 		--物品名：盒状装置
-        TELEPORTATO_CRANK = "结实得经得起最危险的实验。", 		--物品名：曲柄装置
-        TELEPORTATO_POTATO = "这颗金属土豆里，藏着强大而可怕的力量……", 		--物品名：金属土豆状装置
-        TELEPORTATO_RING = "聚拢空间能量的圆环。", 		--物品名：环状装置
-        TELESTAFF = "它会揭示这个世界。",		--物品名：传送魔杖
-        TENT =
-        {
-            GENERIC = "不睡，我会疯。",		--物品名：帐篷 检查状态：普通状态
-            BURNT = "没剩下能睡的东西。",		--物品名：帐篷 检查状态：已经烧毁
-        },
-        SIESTAHUT =
-        {
-            GENERIC = "午后避暑的好去处。",		--物品名：遮阳篷 检查状态：普通状态
-            BURNT = "现在遮不了多少阳。",		--物品名：遮阳篷 检查状态：已经烧毁
-        },
-        TENTACLE = "那个很危险。",		--物品名：触手
-        TENTACLESPIKE = "又尖又黏。",		--物品名：触手尖刺
-        TENTACLESPOTS = "这些大概是它的生殖器。",		--物品名：触手皮
-        TENTACLE_PILLAR = "黏滑的触手。",		--物品名：大触手
-        TENTACLE_PILLAR_HOLE = "气味不佳，但值得一探。",		--物品名：硕大的泥坑
-        TENTACLE_PILLAR_ARM = "滑溜溜的小触手。",		--物品名：小触手
-        TENTACLE_GARDEN = "又一种黏滑的触手。",		--物品名：大触手
-        TOPHAT = "好一顶帽子。",		--物品名：高礼帽
-        TORCH = "驱赶黑暗用的。",		--物品名：火炬
-        TRANSISTOR = "通电便嗡嗡作响。",		--物品名：电子元件
-        TRAP = "我编得很紧。",		--物品名：陷阱
-        TRAP_TEETH = "糟糕的意外。",		--物品名：犬牙陷阱
-        TRAP_TEETH_MAXWELL = "我可不想踩上去。", 		--物品名：麦斯威尔的犬牙陷阱
-        TREASURECHEST =
-        {
-            GENERIC = "一只箱子。……我喜欢箱子，喵。",		--物品名：箱子 检查状态：普通状态
-            BURNT = "箱子烧掉了一截。",		--物品名：箱子 检查状态：已经烧毁
-            UPGRADED_STACKSIZE = "容量提升了一个量级。",		--物品名：箱子 检查状态：已经升级容器堆叠容量
-        },
-        TREASURECHEST_TRAP = "倒是方便。",		--物品名：宝箱
-        CHESTUPGRADE_STACKSIZE = "物理定律竟如此有弹性。", 		--物品名：弹性空间制造器
-        COLLAPSEDCHEST = "物理定律遭到了扭曲。",		--物品名：损坏的箱子
-        SACRED_CHEST =
-        {
-            GENERIC = "我听见低语。它想要点什么。",		--物品名：远古宝箱 检查状态：普通状态
-            LOCKED = "它正在判断。",		--物品名：远古宝箱 检查状态：处于锁定状态
-        },
-        TREECLUMP = "有人想把我困在这里。", 		--物品名：密集树丛
+		STATUEHARP = "普通的雕像。",
+		STATUEMAXWELL = "除了有点自大，他其实是个很好的男孩喵。",
+		STEELWOOL = "它具有各种家庭用途。",
+		STINGER = "它逐渐变细，最后成为一个尖刺。",
+		STRAWHAT = "这东西能防晒。",
+		STUFFEDEGGPLANT = "茄子已经被做成菜了，和食物包在一起。",
+		SWEATERVEST = "这件背心尖声说“时尚，但又能显示主人博学多才。”",
+		REFLECTIVEVEST = "那个能使人保持适当凉爽。",
+		HAWAIIANSHIRT = "我更喜欢粗花呢衣服。",
+		TAFFY = "这对你的牙齿不好，亲爱的。",
+		TALLBIRD = "发育完全的巨型鸟。",
+		TALLBIRDEGG = "它需要孵化喵。",
+		TALLBIRDEGG_COOKED = "全是胆固醇。",
+		TALLBIRDEGG_CRACKED =
+		{
+			COLD = "你会被冻死的！",
+			GENERIC = "似乎正在发育。",
+			HOT = "暴露在极端温度下可能会让它死掉。",
+			LONG = "欲速则不达喵。",
+			SHORT = "很快我们就可以收获自己的劳动果实了喵。",
+		},
+		TALLBIRDNEST =
+		{
+			GENERIC = "好大的巨型鸟蛋喵！",
+			PICKED = "巢是空的。很快就会开始一个新的生命周期。",
+		},
+		TEENBIRD =
+		{
+			GENERIC = "还处于青少年阶段的鸟。",
+			HUNGRY = "请把你的声音压到最低。",
+			STARVING = "一只非常淘气的鸟！",
+			SLEEPING = "好像兴奋过头了，现在累得睡着了。",
+		},
+		TELEPORTATO_BASE =
+		{
+			ACTIVE = "这个机器可以用来在不同世界之间传送喵。", --single player
+			GENERIC = "这块符文石有独特的几何性质喵！", --single player
+			LOCKED = "这个机器需要启动才能用。", --single player
+			PARTIAL = "这个机器还没有完全完成。", --single player
+		},
+		TELEPORTATO_BOX = "电荷调节器喵。", --single player
+		TELEPORTATO_CRANK = "它运用了基本的机械原理喵。", --single player
+		TELEPORTATO_POTATO = "既不是完全有机的也不是无机的喵！", --single player
+		TELEPORTATO_RING = "由合金和电线构成的圆环。", --single player
+		TELESTAFF = "宝石似乎将噩梦燃料的能量聚集了起来。",
+		TENT =
+		{
+			GENERIC = "睡在那里面会让我落枕喵。",
+			BURNT = "反正它对我来说也没什么用喵。",
+		},
+		SIESTAHUT =
+		{
+			GENERIC = "即使在床上我都很难睡着，更不用说在地上了喵。",
+			BURNT = "反正它对我来说也没什么用。",
+		},
+		TENTACLE = "埋伏在淤泥里的怪物。",
+		TENTACLESPIKE = "万万不要握尖的那端。",
+		TENTACLESPOTS = "嗯，繁殖器官。",
+		TENTACLE_PILLAR = "下面的部分比露出的部分更多！",
+        TENTACLE_PILLAR_HOLE = "它看上去以某种方式互相连通。",
+		TENTACLE_PILLAR_ARM = "埋伏在淤泥里的小怪物。",
+		TENTACLE_GARDEN = "它们究竟是如何繁殖的？",
+		TOPHAT = "一看就是资产阶级的东西。",
+		TORCH = "简易的手持光源。",
+		TRANSISTOR = "这是非常先进的技术。",
+		TRAP = "简单的支点-罩子陷阱。",
+		TRAP_TEETH = "它覆盖着一层薄薄的犬科动物消化液。",
+		TRAP_TEETH_MAXWELL = "想骗我，你还太嫩了喵。", --single player
+		TREASURECHEST =
+		{
+			GENERIC = "一个储物箱。",
+			BURNT = "储存箱的碳化骨架。",
+            UPGRADED_STACKSIZE = "一种大型储物箱喵。",
+		},
+		TREASURECHEST_TRAP = "看上去很可疑...",
+        CHESTUPGRADE_STACKSIZE = "对存储容器的容量进行，坦率的讲，荒诞的提升。", -- Describes the kit upgrade item.
+		COLLAPSEDCHEST = "审慎起见，我们应该重建这个箱子，而不是把这些东西随地乱丢喵。",
+		SACRED_CHEST =
+		{
+			GENERIC = "魔法里紧紧束缚着一个小次元。",
+			LOCKED = "魔法正在运作喵。",
+		},
+		TREECLUMP = "这里是茂密的植物群喵。", --removed
 
-        TRINKET_1 = "熔化了。或许薇洛与它们处得不错。", 		--物品名：熔化的弹珠
-        TRINKET_2 = "你和卡祖笛有什么关系？", 		--物品名：假卡祖笛
-        TRINKET_3 = "死结。永远打不开。", 		--物品名：戈尔迪之结
-        TRINKET_4 = "多半是某种宗教物件。", 		--物品名：地精爷爷
-        TRINKET_5 = "可惜太小，坐不上去逃。", 		--物品名：迷你火箭
-        TRINKET_6 = "它输电的日子结束了。", 		--物品名：烂电线
-        TRINKET_7 = "没有时间玩耍。", 		--物品名：杯子和球
-        TRINKET_8 = "很好。浴缸的塞子有了。", 		--物品名：硬化橡胶塞
-        TRINKET_9 = "我更喜欢拉链。", 		--物品名：不搭的纽扣
-        TRINKET_10 = "韦斯大概会喜欢这个。", 		--物品名：二手假牙
-        TRINKET_11 = "哈尔对我低语，说着漂亮的谎。", 		--物品名：机器人玩偶
-        TRINKET_12 = "这是在求人研究它。", 		--物品名：干瘪的触手
-        TRINKET_13 = "多半是某种宗教物件。", 		--物品名：地精奶奶
-        TRINKET_14 = "此刻若有茶，该多好……", 		--物品名：漏水的茶杯
-        TRINKET_15 = "……麦斯威尔又落下了他的行头。", 		--物品名：白色主教
-        TRINKET_16 = "……麦斯威尔又落下了他的行头。", 		--物品名：黑色主教
-        TRINKET_17 = "可怖的器具融合。物极必反。", 		--物品名：弯曲的叉子
-        TRINKET_18 = "它在隐藏什么？", 		--物品名：玩具木马
-        TRINKET_19 = "结网不太顺利。", 		--物品名：失衡陀螺
-        TRINKET_20 = "薇格弗德拿它打我，还跳来跳去。", 		--物品名：痒痒挠
-        TRINKET_21 = "搅蛋器整个扭弯了。", 		--物品名：破搅拌器
-        TRINKET_22 = "关于这绳子，我有几种推测。", 		--物品名：磨损的纱线
-        TRINKET_23 = "鞋我自己能穿。谢谢。", 		--物品名：鞋拔子
-        TRINKET_24 = "薇克巴顿该养只猫。我这样的，喵。", 		--物品名：幸运猫扎尔
-        TRINKET_25 = "气味不太新鲜。", 		--物品名：臭气制造器
-        TRINKET_26 = "食物，杯子，终极容器。", 		--物品名：土豆杯
-        TRINKET_27 = "拉开它，就能从远处刺人。", 		--物品名：钢丝衣架
-        TRINKET_28 = "简直是阴谋。", 		--物品名：白色战车
-        TRINKET_29 = "简直是阴谋。", 		--物品名：黑色战车
-        TRINKET_30 = "他怎会到处乱丢。", 		--物品名：白色骑士
-        TRINKET_31 = "他怎会到处乱丢。", 		--物品名：黑色骑士
-        TRINKET_32 = "我认识喜欢这个的人。", 		--物品名：立方氧化锆球
-        TRINKET_33 = "但愿不引来蜘蛛。", 		--物品名：蜘蛛指环
-        TRINKET_34 = "许个愿吧。为了学问。", 		--物品名：猴爪
-        TRINKET_35 = "这附近难找一只好烧瓶。", 		--物品名：空的长生不老药
-        TRINKET_36 = "吃完全部的糖之后，我大概用得上。", 		--物品名：人造尖牙
-        TRINKET_37 = "我不信超自然之事。", 		--物品名：断桩
-        TRINKET_38 = "来自另一个世界。一个满是骗术的世界。", 		--物品名：双筒望远镜
-        TRINKET_39 = "另一只在哪？", 		--物品名：单只手套
-        TRINKET_40 = "拿着它，像在赶集。", 		--物品名：蜗牛秤
-        TRINKET_41 = "摸上去微温。", 		--物品名：黏液罐
-        TRINKET_42 = "装满某人的童年。", 		--物品名：玩具眼镜蛇
-        TRINKET_43= "它不太会跳。", 		--物品名：鳄鱼玩具
-        TRINKET_44 = "某种植物标本。", 		--物品名：破碎的玻璃罐
-        TRINKET_45 = "它在接收另一个世界的频率。", 		--物品名：奇怪的收音机
-        TRINKET_46 = "或许是测空气动力的工具？", 		--物品名：损坏的吹风机
+		TRINKET_1 = "好可爱的饮料瓶封口玻璃珠！可惜全部熔化了。", --Melted Marbles
+		TRINKET_2 = "假的膜鸣乐器。", --Fake Kazoo
+		TRINKET_3 = "哦，我真是太喜欢莎士比亚了。", --Gord's Knot
+		TRINKET_4 = "乐观快乐但又古里古怪的小家伙喵。", --Gnome
+		TRINKET_5 = "这个迷你火箭飞船看起来没有足够的热控制。", --Toy Rocketship
+		TRINKET_6 = "我真希望WX-78心情好。", --Frazzled Wires
+		TRINKET_7 = "我会保留这个。我认识某个喜欢这个的人。", --Ball and Cup
+		TRINKET_8 = "它让我想起了我的浴缸。我可以在浴缸里想泡多久就泡多久。", --Rubber Bung
+		TRINKET_9 = "好巧。我的羊毛衫正缺了个纽扣喵！", --Mismatched Buttons
+		TRINKET_10 = "我欣赏不了这暗喻，亲爱的。", --Dentures
+		TRINKET_11 = "啊，它是那个淘气机器人的等比例复制品喵。", --Lying Robot
+		TRINKET_12 = "位于吸水物质附近的肌肉性静水骨骼。", --Dessicated Tentacle
+		TRINKET_13 = "乐观快乐但又古里古怪的女士。", --Gnomette
+		TRINKET_14 = "我觉得它很可爱，虽然岁月给它留下了裂纹喵…", --Leaky Teacup
+		TRINKET_15 = "在中世纪的象棋中，这颗旗子叫做象喵。", --Pawn
+		TRINKET_16 = "这个东西上的凹槽是主教正式头饰的象征喵。", --Pawn
+		TRINKET_17 = "如果它不是弯的，它会是个吃饭的新装置喵。", --Bent Spork
+		TRINKET_18 = "当心带礼物的骗子喵。", --Trojan Horse
+		TRINKET_19 = "一副不错的陀螺旋进插图喵。", --Unbalanced Top
+		TRINKET_20 = "一个自给自足的工具。", --Backscratcher
+		TRINKET_21 = "我有个很好的调和蛋白食谱喵。", --Egg Beater
+		TRINKET_22 = "我奶奶以前总是在织布。", --Frayed Yarn
+		TRINKET_23 = "它让我想起了家乡。", --Shoehorn
+		TRINKET_24 = "好乐观可爱的凯蒂猫。哎。", --Lucky Cat Jar
+		TRINKET_25 = "真难闻。", --Air Unfreshener
+		TRINKET_26 = "它看起来像由块茎简单做成的杯子喵。", --Potato Cup
+		TRINKET_27 = "我想念家里的舒适。", --Coat Hanger
+		TRINKET_28 = "它很久以前曾经被称为“塔”。", --Rook
+        TRINKET_29 = "把它叫作“城堡”显然是不正确的喵。", --Rook
+        TRINKET_30 = "骑士在盘中运用的好，可以发挥比其他棋子更大的作用。", --Knight
+        TRINKET_31 = "在德国它被称为“弹簧”喵。", --Knight
+        TRINKET_32 = "哦，我的愿望是有一个漂亮的水晶球。", --Cubic Zirconia Ball
+        TRINKET_33 = "一个装饰性蛛形纲动物饰品！多么惹人怜爱喵！", --Spider Ring
+        TRINKET_34 = "爪子授予了三个愿望，带来非常讽刺的结果。故事仍在继续喵。", --Monkey Paw
+        TRINKET_35 = "没有气味。我相信它可能是糖水。", --Empty Elixir
+        TRINKET_36 = "穿上它们前把那些东西泡在滚烫的水里，亲爱的喵。", --Faux fangs
+        TRINKET_37 = "幸运的是，它脆弱得多，没法造成任何真正的损害。", --Broken Stake
+        TRINKET_38 = "这根本就用不了。", -- Binoculars Griftlands trinket
+        TRINKET_39 = "似乎是一只被遗弃的手套。", -- Lone Glove Griftlands trinket
+        TRINKET_40 = "真是一只小巧玲珑的软体动物造型秤喵！", -- Snail Scale Griftlands trinket
+        TRINKET_41 = "这看上去不像来自这个世界。", -- Goop Canister Hot Lava trinket
+        TRINKET_42 = "天啊，它看上颇有些惆怅喵。", -- Toy Cobra Hot Lava trinket
+        TRINKET_43= "也许我该为韦伯留着。", -- Crocodile Toy Hot Lava trinket
+        TRINKET_44 = "浪费了一份独一无二的植物标本。", -- Broken Terrarium ONI trinket
+        TRINKET_45 = "多么奇特的装置！", -- Odd Radio ONI trinket
+        TRINKET_46 = "真是个奇怪的玩意。", -- Hairdryer ONI trinket
 
-        LOST_TOY_1  = "一定有个完美的解释。",		--物品名：遗失的玻璃球
-        LOST_TOY_2  = "一定有个完美的解释。",		--物品名：多愁善感的卡祖笛
-        LOST_TOY_7  = "一定有个完美的解释。",		--物品名：珍视的抽线陀螺
-        LOST_TOY_10 = "一定有个完美的解释。",		--物品名：缺少的牙齿
-        LOST_TOY_11 = "一定有个完美的解释。",		--物品名：珍贵的玩具机器人
-        LOST_TOY_14 = "一定有个完美的解释。",		--物品名：妈妈最爱的茶杯
-        LOST_TOY_18 = "一定有个完美的解释。",		--物品名：宝贵的玩具木马
-        LOST_TOY_19 = "一定有个完美的解释。",		--物品名：最爱的陀螺
-        LOST_TOY_42 = "一定有个完美的解释。",		--物品名：装错的玩具眼镜蛇
-        LOST_TOY_43 = "一定有个完美的解释。",		--物品名：宠爱的鳄鱼玩具
+        -- The numbers align with the trinket numbers above.
+        LOST_TOY_1  = "好奇怪……也许只是海市蜃楼喵。",
+        LOST_TOY_2  = "好奇怪……也许只是海市蜃楼。",
+        LOST_TOY_7  = "好奇怪……也许只是海市蜃楼。",
+        LOST_TOY_10 = "好奇怪……也许只是海市蜃楼。",
+        LOST_TOY_11 = "好奇怪……也许只是海市蜃楼喵。",
+        LOST_TOY_14 = "好奇怪……也许只是海市蜃楼。",
+        LOST_TOY_18 = "好奇怪……也许只是海市蜃楼。",
+        LOST_TOY_19 = "好奇怪……也许只是海市蜃楼。",
+        LOST_TOY_42 = "好奇怪……也许只是海市蜃楼。",
+        LOST_TOY_43 = "好奇怪……也许只是海市蜃楼喵。",
 
-        HALLOWEENCANDY_1 = "蛀牙也值得，对吧？",		--物品名：糖果苹果
-        HALLOWEENCANDY_2 = "什么样的腐败学问，长出这种东西？",		--物品名：糖果玉米
-        HALLOWEENCANDY_3 = "是……玉米。",		--物品名：不太甜的玉米
-        HALLOWEENCANDY_4 = "它们一路蠕动下来。",		--物品名：粘液蜘蛛
-        HALLOWEENCANDY_5 = "明天我的牙会对此发表意见。",		--物品名：浣猫糖果
-        HALLOWEENCANDY_6 = "我……不打算吃那个。",		--物品名："葡萄干"
-        HALLOWEENCANDY_7 = "谁见了都会激动。",		--物品名：葡萄干
-        HALLOWEENCANDY_8 = "只有傻瓜才不爱它。",		--物品名：鬼魂棒棒糖
-        HALLOWEENCANDY_9 = "粘牙。",		--物品名：果冻虫
-        HALLOWEENCANDY_10 = "只有傻瓜才不爱它。",		--物品名：触手棒棒糖
-        HALLOWEENCANDY_11 = "比真的好吃多了。",		--物品名：巧克力猪
-        HALLOWEENCANDY_12 = "那块糖刚才动了一下？", 		--物品名：糖果虱
-        HALLOWEENCANDY_13 = "……我的下巴。", 		--物品名：无敌硬糖
-        HALLOWEENCANDY_14 = "我吃不得辣。", 		--物品名：熔岩椒
-        CANDYBAG = "里面是些小小甜点。",		--物品名：糖果袋
+        HALLOWEENCANDY_1 = "记得吃东西要有节制，孩子们。",
+        HALLOWEENCANDY_2 = "高果糖玉米糖浆颜色赏心悦目的糖心喵。",
+        HALLOWEENCANDY_3 = "嗯，好吧，至少桌子上有一种健康食品喵。",
+        HALLOWEENCANDY_4 = "我自己一直很喜欢黑色甘草喵。",
+        HALLOWEENCANDY_5 = "吃它们几乎就是一件愧事。",
+        HALLOWEENCANDY_6 = "我希望你们谁都别吃。",
+        HALLOWEENCANDY_7 = "你们不要的都给我，亲爱的。",
+        HALLOWEENCANDY_8 = "多么惹人怜爱喵！",
+        HALLOWEENCANDY_9 = "最好我之后不会听到任何肚子疼的话。",
+        HALLOWEENCANDY_10 = "多么惹人怜爱喵！",
+        HALLOWEENCANDY_11 = "只这巧克力就让我无法抵抗，可以说是我的短板了。",
+        HALLOWEENCANDY_12 = "这块糖果虽然不好看，但味道是不错的。", --ONI meal lice candy
+        HALLOWEENCANDY_13 = "我可以想象，明早下巴会很疼的。", --Griftlands themed candy
+        HALLOWEENCANDY_14 = "辣度在斯科维尔指标中稳稳地拿到10级喵。", --Hot Lava pepper candy
+        CANDYBAG = "用来装季节性点心的节日袋子。",
 
-		HALLOWEEN_ORNAMENT_1 = "挂上树去，倒还看得过去。",		--物品名：幽灵装饰
-		HALLOWEEN_ORNAMENT_2 = "样式古怪，做工尚可。",		--物品名：蝙蝠装饰
-		HALLOWEEN_ORNAMENT_3 = "一块木头，挂起来正合适。",		--物品名：蜘蛛装饰
-		HALLOWEEN_ORNAMENT_4 = "触手做得颇为逼真。",		--物品名：触手装饰
-		HALLOWEEN_ORNAMENT_5 = "八条腕足。挂饰也这般张扬。",		--物品名：穴居悬蛛装饰
-		HALLOWEEN_ORNAMENT_6 = "近来人人都在谈论树的装饰，喵。",		--物品名：乌鸦装饰
+		HALLOWEEN_ORNAMENT_1 = "一个适合挂起来当做装饰的淘气鬼。",
+		HALLOWEEN_ORNAMENT_2 = "一大批会飞的哺乳动物。",
+		HALLOWEEN_ORNAMENT_3 = "蛛形纲树木装饰物。",
+		HALLOWEEN_ORNAMENT_4 = "我真的该装饰了。",
+		HALLOWEEN_ORNAMENT_5 = "这样的装饰物就该挂起来。",
+		HALLOWEEN_ORNAMENT_6 = "这种乌鸦似的东西比较适合挂在树上。",
 
-		HALLOWEENPOTION_DRINKS_WEAK = "比预想的要小。",		--物品名：弱效万圣节药剂
-		HALLOWEENPOTION_DRINKS_POTENT = "效力应当不差。",		--物品名：强效万圣节药剂
-        HALLOWEENPOTION_BRAVERY = "勇气，装得满满一瓶。",		--物品名：勇气药剂
-		HALLOWEENPOTION_MOON = "注入了变异之力。",		--物品名：月亮精华液
-		HALLOWEENPOTION_FIRE_FX = "火焰凝成的结晶。",		--物品名：万圣节火焰药剂效果
-		MADSCIENCE_LAB = "为科学疯一次，也无妨。",		--物品名：疯狂科学家实验室
-		LIVINGTREE_ROOT = "里面有东西。连根拔掉。",		--物品名：完全正常的树根
-		LIVINGTREE_SAPLING = "它会长到令人不安的尺寸。",		--物品名：完全正常的树苗
+		HALLOWEENPOTION_DRINKS_WEAK = "没有我期望的那么强。",
+		HALLOWEENPOTION_DRINKS_POTENT = "厉害的药剂。",
+        HALLOWEENPOTION_BRAVERY = "瓶装的英勇。",
+		HALLOWEENPOTION_MOON = "似乎可以催化变异。",
+		HALLOWEENPOTION_FIRE_FX = "它好像可燃烧喵。",
+		MADSCIENCE_LAB = "果然是疯狂的科学！",
+		LIVINGTREE_ROOT = "一棵恐怖之树的根部。",
+		LIVINGTREE_SAPLING = "啊。它的恐惧生根了。",
 
-        DRAGONHEADHAT = "那么，谁走前面？",		--物品名：幸运兽脑袋
-        DRAGONBODYHAT = "中间这段，恕我犹豫。",		--物品名：幸运兽躯体
-        DRAGONTAILHAT = "尾巴一摆，颇为神气。",		--物品名：幸运兽尾巴
+        DRAGONHEADHAT = "这是龙造型装束的头部喵。",
+        DRAGONBODYHAT = "龙越长，运气越好喵。",
+        DRAGONTAILHAT = "这是龙装束的背部。",
         PERDSHRINE =
         {
-            GENERIC = "它似乎在等一份供品。",		--物品名：火鸡神龛 检查状态：普通状态
-            EMPTY = "空着。该往里放点什么。",		--物品名：火鸡神龛 检查状态：内容为空
-            BURNT = "烧尽了，毫无用处。",		--物品名：火鸡神龛 检查状态：已经烧毁
+            GENERIC = "天真的火鸡成群跑向它。",
+            EMPTY = "必须放一丛灌木来吸引火鸡喵。",
+            BURNT = "一个碳化的结构喵。",
         },
-        REDLANTERN = "这盏灯，比别的多几分意思，喵。",		--物品名：红灯笼
-        LUCKY_GOLDNUGGET = "运气不错。",		--物品名：幸运金块
-        FIRECRACKERS = "装满了爆炸的学问。",		--物品名：红鞭炮
-        PERDFAN = "大得有些夸张。",		--物品名：幸运扇
-        REDPOUCH = "里面装了东西？",		--物品名：红包
+        REDLANTERN = "多么华美的一个小灯笼啊。",
+        LUCKY_GOLDNUGGET = "很奇特的形状。",
+        FIRECRACKERS = "按我的口味来说，有点儿太吵了喵。",
+        PERDFAN = "相当漂亮。",
+        REDPOUCH = "活力满满的红色月眼是好运的象征。",
         WARGSHRINE =
         {
-            GENERIC = "该做点有趣的东西了。",		--物品名：座狼神龛 检查状态：普通状态
-            EMPTY = "里面得插一支火把。",		--物品名：座狼神龛 检查状态：内容为空
-            BURNING = "火势正旺。随它去。", 		--物品名：座狼神龛 检查状态：正在燃烧
-            BURNT = "烧成了灰。",		--物品名：座狼神龛 检查状态：已经烧毁
+            GENERIC = "开始举行庆典吧！",
+            EMPTY = "以火致敬，哈？",
+BURNING = "I should make something fun.", --for willow to override
+            BURNT = "令人遗憾喵。",
         },
         CLAYWARG =
         {
-            GENERIC = "黏土做的野兽。",		--物品名：黏土座狼 检查状态：普通状态
-            STATUE = "它方才……动了一下？",		--物品名：黏土座狼 检查状态：雕像形态
+            GENERIC = "啊，真是又可怕又迷人。",
+            STATUE = "一座精心制作的陶土雕像喵。",
         },
         CLAYHOUND =
         {
-            GENERIC = "它挣脱了束缚。",		--物品名：黏土猎犬 检查状态：普通状态
-            STATUE = "雕得过于逼真了。",		--物品名：黏土猎犬 检查状态：雕像形态
+            GENERIC = "这个陶土制品奇迹般地活了喵。",
+            STATUE = "陶土玩意喵。",
         },
-        HOUNDWHISTLE = "这哨子能拦住狗的脚。",		--物品名：幸运哨子
-        CHESSPIECE_CLAYHOUND = "拴着的，不必费心。",		--物品名：猎犬雕塑
-        CHESSPIECE_CLAYWARG = "我竟没被吃掉。",		--物品名：座狼雕塑
+        HOUNDWHISTLE = "它发出一种人耳无法察觉的频率。",
+        CHESSPIECE_CLAYHOUND = "一只犬类复制品喵。",
+        CHESSPIECE_CLAYWARG = "雕塑师显然仔细研究过这个动物。",
 
 		PIGSHRINE =
 		{
-            GENERIC = "还有更多事要做。",		--物品名：猪神龛 检查状态：普通状态
-            EMPTY = "它想要肉。",		--物品名：猪神龛 检查状态：内容为空
-            BURNT = "焦了。",		--物品名：猪神龛 检查状态：已经烧毁
+            GENERIC = "猪的供品。",
+            EMPTY = "它需要祭肉。",
+            BURNT = "像这样对我是没用的了喵。",
 		},
-		PIG_TOKEN = "这东西分量不轻。",		--物品名：金腰带
-		PIG_COIN = "战事里花掉它，回报不差。",		--物品名：猪鼻铸币
-		YOTP_FOOD1 = "这才算得上一场盛宴。",		--物品名：贡品烤肉
-		YOTP_FOOD2 = "只有野兽才咽得下去。",		--物品名：八宝泥馅饼
-		YOTP_FOOD3 = "谈不上精致。",		--物品名：鱼头串
+		PIG_TOKEN = "他们是如何用猪蹄实现此等细节的？",
+		PIG_COIN = "猪王的馈赠。",
+		YOTP_FOOD1 = "适合节日的盛宴！",
+		YOTP_FOOD2 = "不适合人类食用。",
+		YOTP_FOOD3 = "我偶尔喜欢吃点零食。",
 
-		PIGELITE1 = "看什么？", 		--物品名：韦德
-		PIGELITE2 = "他满脑子都是金子。", 		--物品名：伊格内修斯
-		PIGELITE3 = "你眼里全是泥。", 		--物品名：德米特里
-		PIGELITE4 = "你不想去打别人吗？", 		--物品名：索耶
+		PIGELITE1 = "他身上全是标记。", --BLUE
+		PIGELITE2 = "脾气很暴躁。", --RED
+		PIGELITE3 = "他有一股泥巴的味道喵。", --WHITE
+		PIGELITE4 = "我想知道那些绿色的标记是什么意思。", --GREEN
 
-		PIGELITEFIGHTER1 = "看什么看？", 		--物品名：韦德
-		PIGELITEFIGHTER2 = "他还在追着金子跑。", 		--物品名：伊格内修斯
-		PIGELITEFIGHTER3 = "你眼里有泥。", 		--物品名：德米特里
-		PIGELITEFIGHTER4 = "去打别人，如何？", 		--物品名：索耶
+		PIGELITEFIGHTER1 = "他身上全是标记。", --BLUE
+		PIGELITEFIGHTER2 = "脾气很暴躁。", --RED
+		PIGELITEFIGHTER3 = "他有一股泥巴的味道。", --WHITE
+		PIGELITEFIGHTER4 = "我想知道那些绿色的标记是什么意思。", --GREEN
 
-		CARRAT_GHOSTRACER = "真叫人不安。",		--物品名：查理的胡萝卜鼠
+		CARRAT_GHOSTRACER = "真是迷人！是全新的物种吗喵？",
 
-        YOTC_CARRAT_RACE_START = "起点尚可，喵。",		--物品名：起点
-        YOTC_CARRAT_RACE_CHECKPOINT = "关键的一处。",		--物品名：检查点
+        YOTC_CARRAT_RACE_START = "这会是观察野胡萝卜的一次绝佳机会。",
+        YOTC_CARRAT_RACE_CHECKPOINT = "这个标识物有助于保持正确的方向喵。",
         YOTC_CARRAT_RACE_FINISH =
         {
-            GENERIC = "与其说终点线，不如说终点圈。",		--物品名：终点线 检查状态：普通状态
-            BURNT = "一把火烧得干净。",		--物品名：终点线 检查状态：已经烧毁
-            I_WON = "如我所料。我赢了。",		--物品名：终点线 检查状态：当前角色赢得比赛
-            SOMEONE_ELSE_WON = "……恭喜，{winner}。",		--物品名：终点线 检查状态：其他角色赢得比赛
+            GENERIC = "我渴望记录结果喵！",
+            BURNT = "哎呀，完全没用了。",
+            I_WON = "噢，吼！不得不说，这是出色的成绩喵。",
+            SOMEONE_ELSE_WON = "\"备注: {winner}的标本展现出卓越的竞速能力。\"",
         },
 
-		YOTC_CARRAT_RACE_START_ITEM = "权当是个开始。",		--物品名：起点套装
-        YOTC_CARRAT_RACE_CHECKPOINT_ITEM = "终点总会到的。",		--物品名：检查点套装
-		YOTC_CARRAT_RACE_FINISH_ITEM = "终点在望。",		--物品名：终点线套装
+		YOTC_CARRAT_RACE_START_ITEM = "我要为它找个合适的位置喵。",
+        YOTC_CARRAT_RACE_CHECKPOINT_ITEM = "我要清点一下，要足够到终点线才行。",
+		YOTC_CARRAT_RACE_FINISH_ITEM = "这场小实验的终点喵。",
 
-		YOTC_SEEDPACKET = "依我看，籽不少。",		--物品名：种子包
-		YOTC_SEEDPACKET_RARE = "还是稀罕货色。",		--物品名：高级种子包
+		YOTC_SEEDPACKET = "我曾经是一名热忱的园丁。",
+		YOTC_SEEDPACKET_RARE = "我好奇它会长成什么物种喵。",
 
-		MINIBOATLANTERN = "亮得刺眼。",		--物品名：漂浮灯笼
+		MINIBOATLANTERN = "气球显得有点多余，不是吗？",
 
         YOTC_CARRATSHRINE =
         {
-            GENERIC = "该怎么摆弄……",		--物品名：胡萝卜鼠神龛 检查状态：普通状态
-            EMPTY = "嗯……它爱吃什么？",		--物品名：胡萝卜鼠神龛 检查状态：内容为空
-            BURNT = "烤胡萝卜的气味。",		--物品名：胡萝卜鼠神龛 检查状态：已经烧毁
+            GENERIC = "它敬供着小型动植物混合体。",
+            EMPTY = "它需要某种形式的供品。",
+            BURNT = "完全没用了。",
         },
 
         YOTC_CARRAT_GYM_DIRECTION =
         {
-            GENERIC = "为训练指个方向。",		--物品名：方向健身房 检查状态：普通状态
-            RAT = "你会是只出色的试验鼠。",		--物品名：方向健身房 检查状态：训练目标是胡萝卜鼠
-            BURNT = "训练计划，烧成了灰。",		--物品名：方向健身房 检查状态：已经烧毁
+            GENERIC = "这将考验这个生物的方向感喵。",
+            RAT = "谁是个聪明的野胡萝卜呢？",
+            BURNT = "恐怕它对任何人都没什么大用处了喵。",
         },
         YOTC_CARRAT_GYM_SPEED =
         {
-            GENERIC = "该让它跑得更快。",		--物品名：速度健身房 检查状态：普通状态
-            RAT = "再快些……再快些，喵。",		--物品名：速度健身房 检查状态：训练目标是胡萝卜鼠
-            BURNT = "燃料放多了。",		--物品名：速度健身房 检查状态：已经烧毁
+            GENERIC = "速度不能代替聪明，但是有一定的帮助喵。",
+            RAT = "我的天啊，瞧它多快！",
+            BURNT = "恐怕它对任何人都没什么大用处了喵。",
         },
         YOTC_CARRAT_GYM_REACTION =
         {
-            GENERIC = "练练它的反应。",		--物品名：反应健身房 检查状态：普通状态
-            RAT = "反应时间稳步缩短。",		--物品名：反应健身房 检查状态：训练目标是胡萝卜鼠
-            BURNT = "追求学问的微小代价。",		--物品名：反应健身房 检查状态：已经烧毁
+            GENERIC = "它能很好的考验反应能力。",
+            RAT = "能看出它的反应时间在提高！",
+            BURNT = "恐怕它对任何人都没什么大用处了。",
         },
         YOTC_CARRAT_GYM_STAMINA =
         {
-            GENERIC = "它变强壮了。",		--物品名：耐力健身房 检查状态：普通状态
-            RAT = "这只胡萝卜鼠……无人可挡。",		--物品名：耐力健身房 检查状态：训练目标是胡萝卜鼠
-            BURNT = "进步无人可挡。只是要推迟了。",		--物品名：耐力健身房 检查状态：已经烧毁
+            GENERIC = "重复的跳跃应该能够提高生物的耐力喵。",
+            RAT = "小可爱正在全力以赴的训练。",
+            BURNT = "恐怕它对任何人都没什么大用处了喵。",
         },
 
-        YOTC_CARRAT_GYM_DIRECTION_ITEM = "我也该练练。",		--物品名：方向健身房套装
-        YOTC_CARRAT_GYM_SPEED_ITEM = "最好把它装起来。",		--物品名：速度健身房套装
-        YOTC_CARRAT_GYM_STAMINA_ITEM = "这会改善它的耐力。",		--物品名：耐力健身房套装
-        YOTC_CARRAT_GYM_REACTION_ITEM = "这应能显著缩短它的反应时间。",		--物品名：反应健身房套装
+        YOTC_CARRAT_GYM_DIRECTION_ITEM = "一种简易的方向测试机器。",
+        YOTC_CARRAT_GYM_SPEED_ITEM = "一种简易的测速机器。",
+        YOTC_CARRAT_GYM_STAMINA_ITEM = "测试对象耐力的物品。",
+        YOTC_CARRAT_GYM_REACTION_ITEM = "测试对象警觉性的物品。",
 
-        YOTC_CARRAT_SCALE_ITEM = "用来称我的胡萝卜鼠。",		--物品名：胡萝卜鼠秤套装
+        YOTC_CARRAT_SCALE_ITEM = "它能测量草本啮齿动物的赛跑能力。",
         YOTC_CARRAT_SCALE =
         {
-            GENERIC = "愿天平偏向我这边。",		--物品名：胡萝卜鼠秤 检查状态：普通状态
-            CARRAT = "终究只是一棵有知觉的蔬菜。",		--物品名：胡萝卜鼠秤 检查状态：秤上放着胡萝卜鼠
-            CARRAT_GOOD = "养得够格去赛跑了。",		--物品名：胡萝卜鼠秤 检查状态：秤上的胡萝卜鼠成绩良好
-            BURNT = "真是一团糟。",		--物品名：胡萝卜鼠秤 检查状态：已经烧毁
+            GENERIC = "令人着迷！我从未意识到技能可以通过重量测量喵。",
+            CARRAT = "嗯，看来还得再训练训练。",
+            CARRAT_GOOD = "标本对训练的反应十分积极！",
+            BURNT = "哎呀，完全没用了。",
         },
 
         YOTB_BEEFALOSHRINE =
         {
-            GENERIC = "该怎么摆弄……",		--物品名：皮弗娄牛神龛 检查状态：普通状态
-            EMPTY = "嗯……皮弗娄牛是什么做的？",		--物品名：皮弗娄牛神龛 检查状态：内容为空
-            BURNT = "闻着像烤肉。",		--物品名：皮弗娄牛神龛 检查状态：已经烧毁
+            GENERIC = "那就开始吧？",
+            EMPTY = "需要提供供品喵。",
+            BURNT = "多么不幸。",
         },
 
         BEEFALO_GROOMER =
         {
-            GENERIC = "没有皮弗娄牛可打理。",		--物品名：皮弗娄牛美妆台 检查状态：普通状态
-            OCCUPIED = "来给它梳洗一番。",		--物品名：皮弗娄牛美妆台 检查状态：当前已有使用者或内容物
-            BURNT = "用最火热的样式打理它……代价不小。",		--物品名：皮弗娄牛美妆台 检查状态：已经烧毁
+            GENERIC = "这些生物需要定时美容。",
+            OCCUPIED = "让我们帮你看起来更体面一点，好吗喵？",
+            BURNT = "世事难料啊。",
         },
-        BEEFALO_GROOMER_ITEM = "还是换个地方装它。",		--物品名：美妆台套装
+        BEEFALO_GROOMER_ITEM = "我最好把它安装好。",
 
         YOTR_RABBITSHRINE =
         {
-            GENERIC = "该怎么摆弄……",		--物品名：兔人神龛 检查状态：普通状态
-            EMPTY = "那只兔子饿了。",		--物品名：兔人神龛 检查状态：内容为空
-            BURNT = "闻着像素食烧烤。",		--物品名：兔人神龛 检查状态：已经烧毁
+            GENERIC = "我们必须向当地的兔类生物表达谢意。",
+            EMPTY = "这座建筑上的各种表达都说明我应该献上食物喵。",
+            BURNT = "噢，不好。",
         },
 
-        NIGHTCAPHAT = "睡帽一戴，发型无碍，喵。",		--物品名：睡帽
+        NIGHTCAPHAT = "恐怕我用不到它。",
 
-        YOTR_FOOD1 = "胡萝卜做的，总归健康。",		--物品名：兔子卷
-        YOTR_FOOD2 = "蓝色，是最讲道理的风味。",		--物品名：月饼
-        YOTR_FOOD3 = "会晃的甜点。",		--物品名：月冻
-        YOTR_FOOD4 = "兔子样的点心，正合我意，喵。",		--物品名：泡芙串
+        YOTR_FOOD1 = "就算放根胡萝卜到甜点里，也不能让它变成健康饮食。",
+        YOTR_FOOD2 = "虽然用“蓝色”来形容风味有些古怪，但我不得不赞同。",
+        YOTR_FOOD3 = "这糖果让我神魂颠倒！",
+        YOTR_FOOD4 = "蛋糕都能串了，还能鼓捣出什么喵？",
 
-        YOTR_TOKEN = "这东西不能给错了人。",		--物品名：挑战手套
+        YOTR_TOKEN = "传统上，被手套打到意味着决斗的挑战。",
 
-        COZY_BUNNYMAN = "他们看上去很惬意。",		--物品名：舒适的兔人
+        COZY_BUNNYMAN = "他们看起来很舒服的样子。",
 
-        HANDPILLOW_BEEFALOWOOL = "若没有皮弗娄牛的味儿就好了。",		--物品名：皮弗娄牛毛枕头
-        HANDPILLOW_KELP = "太潮了，我不喜欢。",		--物品名：海带枕头
-        HANDPILLOW_PETALS = "至少比牛毛枕头好闻。",		--物品名：花朵枕头
-        HANDPILLOW_STEELWOOL = "谁会睡在这上面，喵？",		--物品名：钢丝绵枕头
+        HANDPILLOW_BEEFALOWOOL = "皮弗娄牛的毛发纤维是极佳的填充物。",
+        HANDPILLOW_KELP = "多么别出心裁的海带用法啊。",
+        HANDPILLOW_PETALS = "它散发出一种精致的花香。",
+        HANDPILLOW_STEELWOOL = "它与安眠二字格格不入。",
 
-        BODYPILLOW_BEEFALOWOOL = "这味道，最好别沾上牛毛。",		--物品名：皮弗娄牛枕头盔甲
-        BODYPILLOW_KELP = "潮得让人不快。",		--物品名：海带枕头盔甲
-        BODYPILLOW_PETALS = "气味倒还算过得去。",		--物品名：花朵枕头盔甲
-        BODYPILLOW_STEELWOOL = "这也算枕头？",		--物品名：钢丝绵枕头盔甲
+        BODYPILLOW_BEEFALOWOOL = "皮弗娄牛的毛发纤维是极佳的填充物。",
+        BODYPILLOW_KELP = "多么别出心裁的海带用法啊喵。",
+        BODYPILLOW_PETALS = "它散发出一种精致的花香喵。",
+        BODYPILLOW_STEELWOOL = "它与安眠二字格格不入。",
 
-		BISHOP_CHARGE_HIT = "唔。",		--物品名：发条主教弹命中效果
-		TRUNKVEST_SUMMER = "荒野里的便装。",		--物品名：透气背心
-		TRUNKVEST_WINTER = "过冬的行头。",		--物品名：松软背心
-		TRUNK_COOKED = "烤过之后，倒更像鼻子了。",		--物品名：象鼻排
-		TRUNK_SUMMER = "一根透气的象鼻。",		--物品名：象鼻
-		TRUNK_WINTER = "一根厚实多毛的象鼻。",		--物品名：冬象鼻
-		TUMBLEWEED = "风滚草里裹着什么，谁知道。",		--物品名：风滚草
-		TURKEYDINNER = "啧。",		--物品名：火鸡正餐
-		TWIGS = "一小捆树枝。",		--物品名：树枝
-		UMBRELLA = "我不想弄湿头发。",		--物品名：雨伞
-		GRASS_UMBRELLA = "头发湿时好看……干了就难说。",		--物品名：花伞
-		UNIMPLEMENTED = "尚未完工。多半有危险。",		--物品名：尚未实装的对象
-		WAFFLES = "糖浆够不够，我还在斟酌，喵。",		--物品名：华夫饼
+		BISHOP_CHARGE_HIT = "嗷！",
+		TRUNKVEST_SUMMER = "耐用的外套。",
+		TRUNKVEST_WINTER = "在寒冷环境中提供足够保护。",
+		TRUNK_COOKED = "虽然不好吃，但蛋白质含量高。",
+		TRUNK_SUMMER = "实用的鼻子。",
+		TRUNK_WINTER = "一个皮毛标本。",
+		TUMBLEWEED = "一些植物物质的干集合体。",
+		TURKEYDINNER = "多好的烤肉。",
+		TWIGS = "一些小树枝。",
+		UMBRELLA = "用来保持干燥的简易装备。",
+		GRASS_UMBRELLA = "可以提供一定程度保护的美丽阳伞喵。",
+		UNIMPLEMENTED = "还在建设中喵。",
+		WAFFLES = "你好啊，华夫饼喵。",
 		WALL_HAY =
 		{
-			GENERIC = "也罢。凑合能用。",		--物品名：草墙 检查状态：普通状态
-			BURNT = "彻底没用了。",		--物品名：草墙 检查状态：已经烧毁
+			GENERIC = "我不相信那堵墙能保证我的安全。",
+			BURNT = "看来不相信它是正确的。",
 		},
-		WALL_HAY_ITEM = "这主意并不高明。",		--物品名：草墙
-		WALL_STONE = "墙还算像样。",		--物品名：石墙
-		WALL_STONE_ITEM = "让我觉得安稳。",		--物品名：石墙
-		WALL_RUINS = "一段古墙。",		--物品名：铥墙
-		WALL_RUINS_ITEM = "一段坚固的历史。",		--物品名：铥墙
+		WALL_HAY_ITEM = "干草垛。",
+		WALL_STONE = "很安全喵。",
+		WALL_STONE_ITEM = "我会带着它们。我有力的后背一直是我最大的财富。",
+		WALL_RUINS = "非常牢固的墙。",
+		WALL_RUINS_ITEM = "我的口袋比从外面看起来能装。",
 		WALL_WOOD =
 		{
-			GENERIC = "尖端朝外。",		--物品名：木墙 检查状态：普通状态
-			BURNT = "烧焦了。",		--物品名：木墙 检查状态：已经烧毁
+			GENERIC = "这能提供一定程度的保护喵。",
+			BURNT = "它的致命弱点就是火。",
 		},
-		WALL_WOOD_ITEM = "一排木桩。",		--物品名：木墙
-		WALL_MOONROCK = "空灵，且光滑。",		--物品名：月岩墙
-		WALL_MOONROCK_ITEM = "极轻，却出奇地硬。",		--物品名：月岩墙
-		WALL_DREADSTONE = "这种质感……让人安心？",		--物品名：绝望石墙
-		WALL_DREADSTONE_ITEM = "能出什么问题？",		--物品名：绝望石墙
-        WALL_SCRAP = "垃圾堆出来的。",		--物品名：废料墙
-        WALL_SCRAP_ITEM = "捆好的垃圾。",		--物品名：废料墙
-		FENCE = "不过是道木栅栏。",		--物品名：木栅栏
-        FENCE_ITEM = "足够围出一圈牢固的栅栏。",		--物品名：木栅栏
-        FENCE_GATE = "开开合合。",		--物品名：木门
-        FENCE_GATE_ITEM = "足够造一道像样的大门。",		--物品名：木门
-		WALRUS = "海象，天生的猎手。",		--物品名：海象
-		WALRUSHAT = "覆着一层海象毛。",		--物品名：贝雷帽
+		WALL_WOOD_ITEM = "可安放的尖木桩。",
+		WALL_MOONROCK = "出色的工作。",
+		WALL_MOONROCK_ITEM = "装在我的口袋里刚刚好。",
+		WALL_DREADSTONE = "一堵高度安全的墙。",
+		WALL_DREADSTONE_ITEM = "石头的密度使其成为一种非常坚固的建筑材料。",
+        WALL_SCRAP = "循环利用资源的典型案例喵。",
+        WALL_SCRAP_ITEM = "循环利用资源的典型案例。",
+		FENCE = "一个结构简单的栅栏喵。",
+        FENCE_ITEM = "一个木头栅栏的所有组件。",
+        FENCE_GATE = "那是一扇木头大门喵。",
+        FENCE_GATE_ITEM = "一扇木头大门的所有组件喵。",
+		WALRUS = "海象；盖尔种喵。",
+		WALRUSHAT = "怎么能忘记老朋友？",
 		WALRUS_CAMP =
 		{
-			EMPTY = "有人在此扎过营。",		--物品名：海象营地 检查状态：内容为空
-			GENERIC = "里头温暖舒适。",		--物品名：海象营地 检查状态：普通状态
+			EMPTY = "现在它已经被遗弃了。",
+			GENERIC = "某种临时居所。",
 		},
-		WALRUS_TUSK = "迟早派得上用场。",		--物品名：海象牙
+		WALRUS_TUSK = "这可以用于制作骨雕品喵。",
 		WARDROBE =
 		{
-			GENERIC = "里头藏着黑暗而禁忌的秘密……",		--物品名：衣柜 检查状态：普通状态
-            BURNING = "烧得真快。",		--物品名：衣柜 检查状态：正在燃烧
-			BURNT = "毫无格调。",		--物品名：衣柜 检查状态：已经烧毁
+			GENERIC = "这个让我想起了一本名著。",
+            BURNING = "唔，现在它让我想起了另一本很不同的名著。",
+			BURNT = "它曾经是个衣柜。",
 		},
-		WARG = "大狗，你不太好对付。",		--物品名：座狼
-        WARGLET = "又要回到那些日子了……",		--物品名：青年座狼
+		WARG = "驯化这只犬属动物将会是一个令人愉悦的挑战。",
+        WARGLET = "这只小犬需要学习礼貌。",
 
-		WASPHIVE = "那些蜜蜂都疯了。",		--物品名：杀人蜂蜂窝
-		WATERBALLOON = "称得上奇迹。",		--物品名：水球
-		WATERMELON = "又黏又甜。",		--物品名：西瓜
-		WATERMELON_COOKED = "温热多汁。",		--物品名：烤西瓜
-		WATERMELONHAT = "汁水会顺着脸往下淌。",		--物品名：西瓜帽
+		WASPHIVE = "我最好保持点距离。",
+		WATERBALLOON = "儿童的玩具喵。",
+		WATERMELON = "西瓜。",
+		WATERMELON_COOKED = "烤得真好。",
+		WATERMELONHAT = "这无疑是一种你可以用西瓜做出来的东西喵。",
 		WAXWELLJOURNAL =
 		{
-			GENERIC = "令人不适。",		--物品名：暗影秘典 检查状态：普通状态
-			NEEDSFUEL = "它渴求燃料。",		--物品名：暗影秘典 检查状态：需要补充噩梦燃料
+			GENERIC = "我不会让那个出现在我的图书馆喵！",
+--fallback to speech_wilson.lua 			NEEDSFUEL = "only_used_by_waxwell",
 		},
-		WETGOOP = "淡而无味。",		--物品名：潮湿黏糊
-        WHIP = "巨响之后，才有安宁。",		--物品名：三尾猫鞭
-		WINTERHAT = "入冬以后，它很有用。",		--物品名：冬帽
+		WETGOOP = "哦，不，不，不。这根本不行喵。",
+        WHIP = "利用对方的疼痛达到驯服目的的武器喵。",
+		WINTERHAT = "我应该教孩子们怎么拿针。",
 		WINTEROMETER =
 		{
-			GENERIC = "水银做的。",		--物品名：温度测量仪 检查状态：普通状态
-			BURNT = "再也量不了了。",		--物品名：温度测量仪 检查状态：已经烧毁
+			GENERIC = "行动前先测量一下。",
+			BURNT = "已经烧得只剩外壳了，再也不能测量了。",
 		},
 
         WINTER_TREE =
         {
-            BURNT = "节日的气氛打了折扣。",		--物品名：冬季盛宴树 检查状态：已经烧毁
-            BURNING = "这是个错误。",		--物品名：冬季盛宴树 检查状态：正在燃烧
-            CANDECORATE = "冬季盛宴，愿你尽兴。",		--物品名：冬季盛宴树 检查状态：可以添加节日装饰
-            YOUNG = "冬季盛宴快到了。",		--物品名：冬季盛宴树 检查状态：尚未长成
+            BURNT = "不要担心。我们仍然可以庆祝。",
+            BURNING = "哦天哪，还是没有。",
+            CANDECORATE = "树上的一份可爱的工作，亲爱的们喵。",
+            YOUNG = "在装饰品的重量下它当然会断掉。",
         },
 		WINTER_TREESTAND =
 		{
-			GENERIC = "还差一颗松果。",		--物品名：盛宴树盆 检查状态：普通状态
-            BURNT = "节日气氛受损了。",		--物品名：盛宴树盆 检查状态：已经烧毁
+			GENERIC = "让我们种一棵合适的树吧，好吗？",
+            BURNT = "不要担心。我们仍然可以庆祝。",
 		},
-        WINTER_ORNAMENT = "再严谨的人也会喜欢小玩意。",		--物品名：圣诞小玩意
-        WINTER_ORNAMENTLIGHT = "树没有电，就不算完整。",		--物品名：圣诞灯
-        WINTER_ORNAMENTBOSS = "这一件尤其醒目，喵。",		--物品名：华丽的装饰
-		WINTER_ORNAMENTFORGE = "该把它架到火上烤。",		--物品名：熔炉装饰
-		WINTER_ORNAMENTGORGE = "不知为何，看着就饿。",		--物品名：暴食装饰
-        WINTER_ORNAMENTPEARL = "以那副爪子而言，做工已算精美。",		--物品名：感伤装饰
+        WINTER_ORNAMENT = "现在对它小心点，亲爱的。",
+        WINTER_ORNAMENTLIGHT = "电流没有某种吸引力，不是吗喵？",
+        WINTER_ORNAMENTBOSS = "我认为那东西绝不会过度装饰。",
+		WINTER_ORNAMENTFORGE = "一个令人伤感的手工艺品。",
+		WINTER_ORNAMENTGORGE = "这针线活相当精巧喵。",
+        WINTER_ORNAMENTPEARL = "用螯足完成的相当精细的作品喵。",
 
-        WINTER_FOOD1 = "结构不对。我可以不计较。", 		--物品名：小姜饼
-        WINTER_FOOD2 = "四十个，不在话下。", 		--物品名：糖曲奇饼
-        WINTER_FOOD3 = "牙疼是迟早的事。", 		--物品名：拐杖糖
-        WINTER_FOOD4 = "那实验，道德上站不住脚。", 		--物品名：永远的水果蛋糕
-        WINTER_FOOD5 = "总算不必再吃浆果了。", 		--物品名：巧克力原木蛋糕
-        WINTER_FOOD6 = "直接入口。", 		--物品名：李子布丁
-        WINTER_FOOD7 = "空心苹果，盛满了汁。", 		--物品名：苹果酒
-        WINTER_FOOD8 = "它凭什么还热着？隔热杯？", 		--物品名：热可可
-        WINTER_FOOD9 = "这么香，总该有个解释。", 		--物品名：美味的蛋酒
+        WINTER_FOOD1 = "多么讨人喜欢的一个小个体啊。", --gingerbread cookie
+        WINTER_FOOD2 = "就像在图书馆度过的假日喵！", --sugar cookie
+        WINTER_FOOD3 = "热茶的完美搅拌棒。", --candy cane
+        WINTER_FOOD4 = "一个带有微不足道的暂时阻力的物体。", --fruitcake
+        WINTER_FOOD5 = "这样熟练准备的树莓馅！", --yule log cake
+        WINTER_FOOD6 = "“李子”是十七世纪的“水果”的术语，亲爱的。", --plum pudding
+        WINTER_FOOD7 = "把它和一本好书配对，这样你就有了冬日哀伤的治疗方法。", --apple cider
+        WINTER_FOOD8 = "一个小小的魔法让它保持着舒适的温度。", --hot cocoa
+        WINTER_FOOD9 = "我总是喜欢好的饮料喵。", --eggnog
 
 		WINTERSFEASTOVEN =
 		{
-			GENERIC = "喜庆的炉子，专管烤制。",		--物品名：砖砌烤炉 检查状态：普通状态
-			COOKING = "烹饪也是一门学问。",		--物品名：砖砌烤炉 检查状态：正在烹饪
-			ALMOST_DONE_COOKING = "就快好了。",		--物品名：砖砌烤炉 检查状态：即将烹饪完成
-			DISH_READY = "可以上桌了。",		--物品名：砖砌烤炉 检查状态：料理已经完成
+			GENERIC = "它用什么燃料呢喵？",
+			COOKING = "烤的非常好喵。",
+			ALMOST_DONE_COOKING = "马上就做好了。",
+			DISH_READY = "完成了喵！",
 		},
-		BERRYSAUCE = "浆果熬的酱。",		--物品名：快乐浆果酱
-		BIBINGKA = "软得像海绵。",		--物品名：比宾卡米糕
-		CABBAGEROLLS = "肉裹在白菜里，倒会藏。",		--物品名：白菜卷
-		FESTIVEFISH = "时令的海味。",		--物品名：节庆鱼料理
-		GRAVY = "满满都是肉汁。",		--物品名：好肉汁
-		LATKES = "这个我能吃许多。",		--物品名：土豆饼
-		LUTEFISK = "有喇叭鱼吗？",		--物品名：苏打鱼
-		MULLEDDRINK = "这杯潘趣，后劲不小。",		--物品名：香料潘趣酒
-		PANETTONE = "仲冬节的面包，正应景。",		--物品名：托尼甜面包
-		PAVLOVA = "巴甫洛娃，正合我意。",		--物品名：巴甫洛娃蛋糕
-		PICKLEDHERRING = "无可挑剔，喵。",		--物品名：腌鲱鱼
-		POLISHCOOKIE = "该把盘子清空了。",		--物品名：波兰饼干
-		PUMPKINPIE = "整块吃掉，毫不浪费。",		--物品名：南瓜派
-		ROASTTURKEY = "肥美的腿肉，像是专为我烤的，喵。",		--物品名：烤火鸡
-		STUFFING = "用料不差。",		--物品名：烤火鸡面包馅
-		SWEETPOTATO = "晚餐与甜点，合而为一。",		--物品名：红薯焗饭
-		TAMALES = "再吃下去，怕要长力气了。",		--物品名：塔马利
-		TOURTIERE = "很高兴见到你，肉馅饼。",		--物品名：饕餮馅饼
+		BERRYSAUCE = "真有节日气氛喵！",
+		BIBINGKA = "传统上，比宾卡米糕是在专用的陶土炉中烘烤而成。",
+		CABBAGEROLLS = "这道菜的变体传到了欧洲和亚洲绝大多数地区。",
+		FESTIVEFISH = "我不熟悉这道菜的起源。",
+		GRAVY = "哎呀，我吃不了这么腻的东西。",
+		LATKES = "香脆可口喵。",
+		LUTEFISK = "先把鱼晒干，然后再放到碱液里腌制，方才得到这种怪异的味道喵。",
+		MULLEDDRINK = "仲冬节的美味饮品喵。",
+		PANETTONE = "这种蛋糕的起源要追溯到古罗马时代。",
+		PAVLOVA = "它的名字来源于俄国芭蕾舞者安娜·巴甫洛娃喵。",
+		PICKLEDHERRING = "我喜欢在假日时吃点腌鲱鱼喵。",
+		POLISHCOOKIE = "节日的氛围扑面而来。",
+		PUMPKINPIE = "或许我可以吃一小口……",
+		ROASTTURKEY = "希望完全烤熟了。",
+		STUFFING = "完美搭配火鸡和肉汁喵。",
+		SWEETPOTATO = "节日聚餐的大热菜品喵。",
+		TAMALES = "香料的分量把握的很克制，符合我的口味。",
+		TOURTIERE = "相当丰盛的肉饼。",
 
 		TABLE_WINTERS_FEAST =
 		{
-			GENERIC = "节庆的餐桌。",		--物品名：冬季盛宴餐桌 检查状态：普通状态
-			HAS_FOOD = "该开席了。",		--物品名：冬季盛宴餐桌 检查状态：桌上已经摆有食物
-			WRONG_TYPE = "这道菜，不应季。",		--物品名：冬季盛宴餐桌 检查状态：摆放的食物类型不符合宴席要求
-			BURNT = "谁会做这种事？",		--物品名：冬季盛宴餐桌 检查状态：已经烧毁
+			GENERIC = "可以招待所有宾客了喵。",
+			HAS_FOOD = "琳琅满目的盛宴！",
+			WRONG_TYPE = "绝对是错的类型。",
+			BURNT = "哎呀，完全没用了喵。",
 		},
 
-		GINGERBREADWARG = "先尝一口甜点。",		--物品名：姜饼座狼
-		GINGERBREADHOUSE = "吃住都管。",		--物品名：姜饼猪屋
-		GINGERBREADPIG = "最好跟着他。",		--物品名：姜饼猪
-		CRUMBS = "一路走，一路掉。",		--物品名：饼干屑
-		WINTERSFEASTFUEL = "冬季的精神。",		--物品名：节日欢愉
+		GINGERBREADWARG = "节庆纲犬类。",
+		GINGERBREADHOUSE = "让我想起了一个故事喵。",
+		GINGERBREADPIG = "如果它能静坐一会儿，我就可以把它归类。",
+		CRUMBS = "我认为它来自行走的糖果。",
+		WINTERSFEASTFUEL = "让我想起了坐在壁炉旁阅读假日故事的时间喵。",
 
-        KLAUS = "那究竟是什么东西。",		--物品名：克劳斯
-        KLAUS_SACK = "那袋子，非打开不可。",		--物品名：赃物袋
-		KLAUSSACKKEY = "一副鹿角，何须如此花哨。",		--物品名：麋鹿茸
+        KLAUS = "它用它那强大的味觉搜寻猎物。",
+        KLAUS_SACK = "真奇特。",
+		KLAUSSACKKEY = "嗯。很强健的鹿角喵。",
 		WORMHOLE =
 		{
-			GENERIC = "柔软，且呈波浪状。",		--物品名：虫洞 检查状态：普通状态
-			OPEN = "它在催我跳进去。",		--物品名：虫洞 检查状态：处于打开状态
+			GENERIC = "睡着的拥有两张嘴的蚯蚓喵。",
+			OPEN = "一圈圈的牙齿是为了帮助下咽的喵。",
 		},
-		WORMHOLE_LIMITED = "那东西看着不太对。",		--物品名：生病的虫洞
-		ACCOMPLISHMENT_SHRINE = "该用一用。让所有人知道我都做了什么。", 		--物品名：奖杯
-		LIVINGTREE = "它在看我？",		--物品名：完全正常的树
-		ICESTAFF = "触手冰凉。",		--物品名：冰魔杖
-		REVIVER = "丑陋的心在跳，把鬼魂唤了回来。",		--物品名：告密的心
-		SHADOWHEART = "某种力量让它重新有了生气……",		--物品名：暗影心房
+		WORMHOLE_LIMITED = "估计用几次就不行了喵。",
+		ACCOMPLISHMENT_SHRINE = "我总是忍不住一次又一次地启动它。", --single player
+		LIVINGTREE = "这棵树好特别。",
+		ICESTAFF = "某种能产生冰冻效果的奇妙装置。",
+		REVIVER = "这种设备可以为灵质结构提供一个物质锚点。",
+		SHADOWHEART = "这……这不是小孩的魔法。",
         ATRIUM_RUBBLE =
         {
-			LINE_1 = "画着一个古老文明。人们又饿又怕。",		--物品名：远古壁画 检查状态：第一段碑文或记录
-			LINE_2 = "石板上的字已认不出了。",		--物品名：远古壁画 检查状态：第二段碑文或记录
-			LINE_3 = "有黑暗的东西逼近这座城。",		--物品名：远古壁画 检查状态：第三段碑文或记录
-			LINE_4 = "人们的皮在脱落。里外不是一回事。",		--物品名：远古壁画 检查状态：第四段碑文或记录
-			LINE_5 = "画的是一座技术昌明的巨城。",		--物品名：远古壁画 检查状态：第五段碑文或记录
+			LINE_1 = "非哺乳类文明的古代壁画。",
+			LINE_2 = "壁画的面板侵蚀太严重，无法破译喵。",
+			LINE_3 = "暗影，或者说一种物质，降临了这个文明。",
+			LINE_4 = "画面里，居民们从他们的外骨骼中脱皮喵。",
+			LINE_5 = "城市看起来更加兴旺发达喵。",
 		},
-        ATRIUM_STATUE = "并非全然真实。",		--物品名：远古雕像
+        ATRIUM_STATUE = "它拒绝遵守这个世界的规则喵。",
         ATRIUM_LIGHT =
         {
-			ON = "这光令人很不安。",		--物品名：远古灯柱 检查状态：处于开启状态
-			OFF = "它总得有个动力源。",		--物品名：远古灯柱 检查状态：处于关闭状态
+			ON = "确实。它从钥匙中获得力量。",
+			OFF = "我怀疑那些可怕的燃料在给它提供动力。",
 		},
         ATRIUM_GATE =
         {
-			ON = "恢复了运转。",		--物品名：远古大门 检查状态：处于开启状态
-			OFF = "主体仍然完好。",		--物品名：远古大门 检查状态：处于关闭状态
-			CHARGING = "它正在积蓄能量。",		--物品名：远古大门 检查状态：正在充能
-			DESTABILIZING = "门在晃。",		--物品名：远古大门 检查状态：正在失稳
-			COOLDOWN = "它需要时间恢复。我也是。",		--物品名：远古大门 检查状态：能力处于冷却期
-            RITUAL_SUMMONING = "引人入胜……也令人深感不安。", 		--物品名：远古大门 检查状态：仪式正在召唤
+			ON = "我已经激活它了。",
+			OFF = "现在这可能通向哪里？",
+			CHARGING = "它在储存力量喵。",
+			DESTABILIZING = "它离开时，我们最好不要露面喵。",
+			COOLDOWN = "我们必须耐心喵。",
+            RITUAL_SUMMONING = "它出现了。那只一直在这个世界之外注视、等待的眼睛。不过看来，它漫长的等待终于结束了。", -- ritual is actively summoning, shrouden has appeared through the gate in the form of the eye, its looks between players, and charlie.
         },
-        ATRIUM_KEY = "它在向外散逸能量。",		--物品名：远古钥匙
-		LIFEINJECTOR = "一次突破。生命的答案。",		--物品名：强心针
+        ATRIUM_KEY = "那座古老大门的钥匙。",
+		LIFEINJECTOR = "这霉菌似乎有药性喵。",
 		SKELETON_PLAYER =
 		{
-			MALE = "%s想必是在与%s做试验时死的。",		--物品名：骷髅 检查状态：男性角色遗骸
-			FEMALE = "%s大概是在同%s做试验时丧命的。",		--物品名：骷髅 检查状态：女性角色遗骸
-			ROBOT = "%s应当是在和%s试验时出了故障。",		--物品名：骷髅 检查状态：机器人角色遗骸
-			DEFAULT = "%s多半是在与%s做试验时死的。",		--物品名：骷髅 检查状态：默认外观或未知死因
+			MALE = "%s的骨骼始终提醒着在%s周围要注意。",
+			FEMALE = "%s的骨骼始终提醒着在%s周围要注意喵。",
+			ROBOT = "%s的骨骼始终提醒着在%s周围要注意喵。",
+			DEFAULT = "%s的骨骼始终提醒着在%s周围要注意喵。",
 		},
-		HUMANMEAT = "肉就是肉。有分别吗？",		--物品名：长猪
-		HUMANMEAT_COOKED = "火候正好。道德上仍旧含糊。",		--物品名：熟长猪
-		HUMANMEAT_DRIED = "风干之后，便不算了吧？",		--物品名：长猪肉干
-		ROCK_MOON = "那块石头，来自月亮。",		--物品名：岩石
-		MOONROCKNUGGET = "月亮的碎片。",		--物品名：月岩
-		MOONROCKCRATER = "该往孔里嵌些亮东西。作研究用。",		--物品名：带孔月岩
-		MOONROCKSEED = "里头藏着学问。",		--物品名：天体宝球
+HUMANMEAT = "Flesh is flesh. Where do I draw the line喵?",
+HUMANMEAT_COOKED = "Cooked nice and pink, but still morally gray.",
+HUMANMEAT_DRIED = "Letting it dry makes it not come from a human, right喵?",
+		ROCK_MOON = "暗示着月球天体？有趣。",
+		MOONROCKNUGGET = "暗示着月球天体？有趣。",
+		MOONROCKCRATER = "会用适当的装饰制造一个有用的制图工具。",
+		MOONROCKSEED = "一个漂浮的知识球体。",
 
-        REDMOONEYE = "它看得极远，也极远可见。",		--物品名：红色月眼
-        PURPLEMOONEYE = "是个好标记。只盼它别那样看我。",		--物品名：紫色月眼
-        GREENMOONEYE = "那东西会盯着这里。",		--物品名：绿色月眼
-        ORANGEMOONEYE = "有它望着，没人会迷路。",		--物品名：橙色月眼
-        YELLOWMOONEYE = "该给每个人指路。",		--物品名：黄色月眼
-        BLUEMOONEYE = "多留个心眼，总是明智。",		--物品名：蓝色月眼
+        REDMOONEYE = "红色月眼会标记这个位置喵。",
+        PURPLEMOONEYE = "用来标记我们的行踪的道具。",
+        GREENMOONEYE = "那会帮助我们保持我们的方位。",
+        ORANGEMOONEYE = "组织搜索队这事，当然是越少越好喵。",
+        YELLOWMOONEYE = "这地方的地里每天都越来越不为人所理解。",
+        BLUEMOONEYE = "分组协作的出色标志。",
 
-        LAVAARENA_BOARLORD = "他是这里的主子。",		--物品名：战斗大师普格纳
-        BOARRIOR = "个头不小。",		--物品名：大熔炉猪战士
-        BOARON = "他，我应付得了。",		--物品名：战猪
-        PEGHOOK = "它喷出的东西有腐蚀性。",		--物品名：酸蚀蝎
-        TRAILS = "那副胳膊，很有力。",		--物品名：野猪猩
-        TURTILLUS = "壳上带刺。",		--物品名：坦克龟
-        SNAPPER = "这东西会咬人。",		--物品名：鳄鱼指挥官
-		RHINODRILL = "他的鼻子正适合这活。",		--物品名：后扣帽犀牛兄弟
-		BEETLETAUR = "隔着这么远，都闻得到他。",		--物品名：地狱独眼巨猪
+        --Arena Event
+        LAVAARENA_BOARLORD = "他总是忿忿不平的，我也不知道为什么。",
+        BOARRIOR = "我们最好不要低估那个喵。",
+        BOARON = "它们的作用好像是当饲料喵。",
+        PEGHOOK = "一只有感觉的蝎子。真怪喵。",
+        TRAILS = "恐怕是肌肉发达头脑简单喵。",
+        TURTILLUS = "亲爱的，你最好弄掉那些尖刺吧喵。",
+        SNAPPER = "真是个暴徒喵！",
+		RHINODRILL = "倾向于卖弄自己的雄壮威猛喵。",
+		BEETLETAUR = "它鼻子上的那把锁肯定很重。",
 
         LAVAARENA_PORTAL =
         {
-            ON = "我该走了。",		--物品名：远古大门 检查状态：处于开启状态
-            GENERIC = "能过来，应当也能回去。",		--物品名：远古大门 检查状态：普通状态
+            ON = "真是一场意想不到的冒险。",
+            GENERIC = "它连接着我们的大门，但是在这一边没有激活。",
         },
-        LAVAARENA_KEYHOLE = "还缺一把钥匙。",		--物品名：远古锚
-		LAVAARENA_KEYHOLE_FULL = "这样应该可行。",		--物品名：已插入钥匙的熔炉锁孔
-        LAVAARENA_BATTLESTANDARD = "先把战旗拆了。",		--物品名：战旗
-        LAVAARENA_SPAWNER = "敌人从这儿来。",		--物品名：熔炉传送门
+        LAVAARENA_KEYHOLE = "需要一把钥匙。",
+		LAVAARENA_KEYHOLE_FULL = "准备就绪，可以激活了。",
+        LAVAARENA_BATTLESTANDARD = "那面旗帜让附近的敌人恢复了活力。",
+        LAVAARENA_SPAWNER = "它好像能促进本地瞬移喵。",
 
-        HEALINGSTAFF = "释放再生之力。",		--物品名：生命魔杖
-        FIREBALLSTAFF = "唤流星自天而降。",		--物品名：地狱魔杖
-        HAMMER_MJOLNIR = "这锤子，重得实在。",		--物品名：锻锤
-        SPEAR_GUNGNIR = "用它蓄力，很快。",		--物品名：尖齿矛
-        BLOWDART_LAVA = "这武器，近处也能用。",		--物品名：吹箭
-        BLOWDART_LAVA2 = "借一股强风送出弹丸。",		--物品名：熔化吹箭
-        LAVAARENA_LUCY = "那武器，是用来掷的。",		--物品名：暴怒的露西
-        WEBBER_SPIDER_MINION = "姑且算他们在为我们而战。",		--物品名：蜘蛛宝宝
-        BOOK_FOSSIL = "足以拖住它们一阵。",		--物品名：石化之书
-		LAVAARENA_BERNIE = "或许能让他去搅局。",		--物品名：伯尼
-		SPEAR_LANCE = "直取要害。",		--物品名：螺旋矛
-		BOOK_ELEMENTAL = "这些字，我看不清。",		--物品名：召唤之书
-		LAVAARENA_ELEMENTAL = "石头做的怪物。",		--物品名：岩浆傀儡
+        HEALINGSTAFF = "这是吃力不讨好的活儿。",
+        FIREBALLSTAFF = "经历过魔法的人应该能够使用这个。比如我！",
+        HAMMER_MJOLNIR = "那个好像用起来会很费力喵。",
+        SPEAR_GUNGNIR = "恐怕那个对我没多大用处喵。",
+        BLOWDART_LAVA = "我的肺活量不够大，用不好这个东西喵。",
+        BLOWDART_LAVA2 = "我还是把那个留给年轻人吧喵。",
+        LAVAARENA_LUCY = "不同寻常的斧头。",
+        WEBBER_SPIDER_MINION = "好可爱的小蜘蛛喵！",
+        BOOK_FOSSIL = "一本加速石化的大书喵。",
+		LAVAARENA_BERNIE = "很有意思。它在这儿都是活的。",
+		SPEAR_LANCE = "这个长柄武器的形状也太不实用了。",
+		BOOK_ELEMENTAL = "一本拥有强大召唤力量的大书喵。",
+		LAVAARENA_ELEMENTAL = "它注定为我们效力。",
 
-   		LAVAARENA_ARMORLIGHT = "轻便。不算耐用。",		--物品名：芦苇外衣
-		LAVAARENA_ARMORLIGHTSPEED = "轻便，便于行动。",		--物品名：羽饰芦苇外衣
-		LAVAARENA_ARMORMEDIUM = "防护尚可。",		--物品名：木质护甲
-		LAVAARENA_ARMORMEDIUMDAMAGER = "穿上它，出手能重些。",		--物品名：锯齿木甲
-		LAVAARENA_ARMORMEDIUMRECHARGER = "穿上它，能多施几招。",		--物品名：丝带木甲
-		LAVAARENA_ARMORHEAVY = "这副，极好。",		--物品名：石头板条甲
-		LAVAARENA_ARMOREXTRAHEAVY = "石化的甲，护得最周全。",		--物品名：坚固的石质护甲
+   		LAVAARENA_ARMORLIGHT = "轻巧，但保护力不是特别强喵。",
+		LAVAARENA_ARMORLIGHTSPEED = "它材质轻巧，穿着它会更加行动自如喵。",
+		LAVAARENA_ARMORMEDIUM = "穿着它应该能防止暴力伤害。",
+		LAVAARENA_ARMORMEDIUMDAMAGER = "这个对我来说没多大用处。",
+		LAVAARENA_ARMORMEDIUMRECHARGER = "穿上这件编织的魔力装备可以增强意志喵。",
+		LAVAARENA_ARMORHEAVY = "我还是把那个留给年轻人吧。",
+		LAVAARENA_ARMOREXTRAHEAVY = "最适合用来抵挡严酷的攻击。",
 
-		LAVAARENA_FEATHERCROWNHAT = "一看见那堆蓬松羽毛，就想退开。",		--物品名：羽毛头环
-        LAVAARENA_HEALINGFLOWERHAT = "这花，与治愈之力相合。",		--物品名：花饰头带
-        LAVAARENA_LIGHTDAMAGERHAT = "能添些攻势。",		--物品名：带刺头盔
-        LAVAARENA_STRONGDAMAGERHAT = "攻势应当强得多。",		--物品名：司夜女神头盔
-        LAVAARENA_TIARAFLOWERPETALSHAT = "似乎能增益治愈。",		--物品名：编织花环
-        LAVAARENA_EYECIRCLETHAT = "目光之中，尽是洞察。",		--物品名：洞察皇冠
-        LAVAARENA_RECHARGERHAT = "水晶之力，让我的手段更快。",		--物品名：水晶头饰
-        LAVAARENA_HEALINGGARLANDHAT = "这花环能补回些气力，喵。",		--物品名：绽放花环
-        LAVAARENA_CROWNDAMAGERHAT = "那一顶，破坏惊人。",		--物品名：华丽的司夜女神头盔
+		LAVAARENA_FEATHERCROWNHAT = "这个花环带有轻微的魔力。",
+        LAVAARENA_HEALINGFLOWERHAT = "它会增强所接收的治愈力。",
+        LAVAARENA_LIGHTDAMAGERHAT = "真野蛮。",
+        LAVAARENA_STRONGDAMAGERHAT = "我还是把那个留给比较敏捷的人吧。",
+        LAVAARENA_TIARAFLOWERPETALSHAT = "戴着它可以增强恢复力。",
+        LAVAARENA_EYECIRCLETHAT = "我必须说，这是个令人羡慕的神奇圣物。",
+        LAVAARENA_RECHARGERHAT = "神奇能量的焦点。",
+        LAVAARENA_HEALINGGARLANDHAT = "靠近这些花朵的时候会产生恢复作用喵。",
+        LAVAARENA_CROWNDAMAGERHAT = "天啊，我才不想戴这样的东西。",
 
-		LAVAARENA_ARMOR_HP = "它应当护得住我。",		--物品名：熔炉生命护甲
+		LAVAARENA_ARMOR_HP = "安全第一。",
 
-		LAVAARENA_FIREBOMB = "硫磺的气味。",		--物品名：炉火晶石
-		LAVAARENA_HEAVYBLADE = "看着够锋利。",		--物品名：铁匠的刀刃
+		LAVAARENA_FIREBOMB = "我还是比较喜欢我的书喵。",
+		LAVAARENA_HEAVYBLADE = "天啊。我绝对举不起它！",
 
+        --Quagmire
         QUAGMIRE_ALTAR =
         {
-        	GENERIC = "该开始煮祭品了。",		--物品名：饕餮祭坛 检查状态：普通状态
-        	FULL = "它正在消化。",		--物品名：饕餮祭坛 检查状态：内容已满
+        	GENERIC = "我想知道，这个“饕餮”是什么？",
+        	FULL = "在我烹制下一道菜的同时，这些应该够充饥了喵。",
     	},
-		QUAGMIRE_ALTAR_STATUE1 = "一座旧雕塑。",		--物品名：饥饿之兽
-		QUAGMIRE_PARK_FOUNTAIN = "它和水相处很久了。",		--物品名：喷泉
+		QUAGMIRE_ALTAR_STATUE1 = "破旧的雕像。",
+		QUAGMIRE_PARK_FOUNTAIN = "太可惜了。我一向喜欢好看的喷泉。",
 
-        QUAGMIRE_HOE = "一件农具。",		--物品名：锄头
+        QUAGMIRE_HOE = "可以用它来翻耕肥沃的土壤喵。",
 
-        QUAGMIRE_TURNIP = "一根生萝卜。",		--物品名：大萝卜
-        QUAGMIRE_TURNIP_COOKED = "下厨，也是一门实践。",		--物品名：烤大萝卜
-        QUAGMIRE_TURNIP_SEEDS = "一把古怪的种子。",		--物品名：暴食活动芜菁种子
+        QUAGMIRE_TURNIP = "根部可食用的芸薹属植物。",
+        QUAGMIRE_TURNIP_COOKED = "烤芸薹属植物喵。",
+        QUAGMIRE_TURNIP_SEEDS = "芸薹属植物的变异种子喵。",
 
-        QUAGMIRE_GARLIC = "口气清新，从它开始。",		--物品名：大蒜
-        QUAGMIRE_GARLIC_COOKED = "焦黄得恰到好处。",		--物品名：烤大蒜
-        QUAGMIRE_GARLIC_SEEDS = "一把古怪的种子。",		--物品名：暴食活动大蒜种子
+        QUAGMIRE_GARLIC = "百合科葱属植物，洋葱葱属植物的近亲喵。",
+        QUAGMIRE_GARLIC_COOKED = "烤百合科葱属植物。",
+        QUAGMIRE_GARLIC_SEEDS = "百合科葱属植物的变异种子。",
 
-        QUAGMIRE_ONION = "看着很脆。",		--物品名：洋葱
-        QUAGMIRE_ONION_COOKED = "一次成功的反应。",		--物品名：烤洋葱
-        QUAGMIRE_ONION_SEEDS = "一把古怪的种子。",		--物品名：暴食活动洋葱种子
+        QUAGMIRE_ONION = "可食用的球茎状洋葱葱属植物喵。",
+        QUAGMIRE_ONION_COOKED = "烤洋葱葱属植物。",
+        QUAGMIRE_ONION_SEEDS = "洋葱葱属植物的变异种子喵。",
 
-        QUAGMIRE_POTATO = "埋在土里的苹果，喵。",		--物品名：土豆
-        QUAGMIRE_POTATO_COOKED = "一次成功的温度试验。",		--物品名：烤土豆
-        QUAGMIRE_POTATO_SEEDS = "一把古怪的种子。",		--物品名：暴食活动土豆种子
+        QUAGMIRE_POTATO = "茄科茄属植物马铃薯，在某些文化里属于主食。",
+        QUAGMIRE_POTATO_COOKED = "烤茄科茄属植物马铃薯。",
+        QUAGMIRE_POTATO_SEEDS = "茄科茄属植物马铃薯的变异种子喵。",
 
-        QUAGMIRE_TOMATO = "红色饱满。品相无可挑剔。",		--物品名：番茄
-        QUAGMIRE_TOMATO_COOKED = "加热之后，酸味会收敛。",		--物品名：烤番茄
-        QUAGMIRE_TOMATO_SEEDS = "种子细小。种下去便知品种。",		--物品名：暴食活动番茄种子
+        QUAGMIRE_TOMATO = "茄科茄属植物西红柿的果实。",
+        QUAGMIRE_TOMATO_COOKED = "烤茄科茄属植物西红柿。",
+        QUAGMIRE_TOMATO_SEEDS = "茄科茄属植物西红柿的变异种子。",
 
-        QUAGMIRE_FLOUR = "研磨得够细了。",		--物品名：面粉
-        QUAGMIRE_WHEAT = "颗粒匀净。是上等麦子。",		--物品名：小麦
-        QUAGMIRE_WHEAT_SEEDS = "一小把种子。留着有用。",		--物品名：暴食活动小麦种子
-        QUAGMIRE_CARROT_SEEDS = "种子。指尖一捻便知好坏。",		--物品名：暴食活动胡萝卜种子
+        QUAGMIRE_FLOUR = "磨碎的小麦属植物谷粒。",
+        QUAGMIRE_WHEAT = "新鲜的小麦属植物。",
+        QUAGMIRE_WHEAT_SEEDS = "小麦属植物的变异谷粒。",
+        --NOTE: raw/cooked carrot uses regular carrot strings
+        QUAGMIRE_CARROT_SEEDS = "胡萝卜的变异种子。",
 
-        QUAGMIRE_ROTTEN_CROP = "腐坏了。祭坛不收这种东西。",		--物品名：腐烂的农作物
+        QUAGMIRE_ROTTEN_CROP = "这个世界的土壤是腐臭的。",
 
-		QUAGMIRE_SALMON = "鱼。水气还在，喵。",		--物品名：三文鱼
-		QUAGMIRE_SALMON_COOKED = "火候正好。可以上桌。",		--物品名：熟三文鱼
-		QUAGMIRE_CRABMEAT = "蟹肉。纹理分明。",		--物品名：蟹肉
-		QUAGMIRE_CRABMEAT_COOKED = "即便如此，也能做成一餐。",		--物品名：熟蟹肉
+		QUAGMIRE_SALMON = "红鲑！",
+		QUAGMIRE_SALMON_COOKED = "香煎红鲑喵。",
+		QUAGMIRE_CRABMEAT = "拟石蟹属生肉喵。",
+		QUAGMIRE_CRABMEAT_COOKED = "它不再构成沙门氏菌威胁了喵。",
 		QUAGMIRE_SUGARWOODTREE =
 		{
-			GENERIC = "树液丰盈。甜味都在里面。",		--物品名：糖木树 检查状态：普通状态
-			STUMP = "只剩下树桩。树身去了哪里？",		--物品名：糖木树 检查状态：只剩树桩
-			TAPPED_EMPTY = "采集器还空着。再等等。",		--物品名：糖木树 检查状态：糖木树液采集器为空
-			TAPPED_READY = "金黄澄澈，可以取了，喵。",		--物品名：糖木树 检查状态：糖木树液已经可以收取
-			TAPPED_BUGS = "蚂蚁先到了。真失礼。",		--物品名：糖木树 检查状态：糖木树液采集器中滋生虫子
-			WOUNDED = "受伤了。树也有痛觉。",		--物品名：糖木树 检查状态：树木已经受伤
+			GENERIC = "多么独特的色彩。我想把它的叶子夹进我的书里喵！",
+			STUMP = "我至少乐意研究一下它的年轮。",
+			TAPPED_EMPTY = "汁液采集正在进行中喵。",
+			TAPPED_READY = "没理由把它搁置。",
+			TAPPED_BUGS = "这些昆虫纲动物被糖分吸引了。",
+			WOUNDED = "它的内部结构已被损坏，但它还能复原。",
 		},
 		QUAGMIRE_SPOTSPICE_SHRUB =
 		{
-			GENERIC = "斑点整齐。像某种触手的花纹。",		--物品名：带斑点的小灌木 检查状态：普通状态
-			PICKED = "摘净了。等下一轮。",		--物品名：带斑点的小灌木 检查状态：已经采集
+			GENERIC = "我对这个植物品种不熟悉。",
+			PICKED = "我没时间等它重新长出来了。",
 		},
-		QUAGMIRE_SPOTSPICE_SPRIG = "磨碎之后，香气才出得来。",		--物品名：带斑点的小枝
-		QUAGMIRE_SPOTSPICE_GROUND = "辛香浓烈。够了。",		--物品名：斑点香料
-		QUAGMIRE_SAPBUCKET = "采集树液用的。挂上去便是。",		--物品名：树液采集工具包
-		QUAGMIRE_SAP = "甜的。不必多尝。",		--物品名：汁液
+		QUAGMIRE_SPOTSPICE_SPRIG = "它通过了通用的可食用测试。",
+		QUAGMIRE_SPOTSPICE_GROUND = "加工完毕，可以用于烹饪了喵。",
+		QUAGMIRE_SAPBUCKET = "采集树液的简易工具",
+		QUAGMIRE_SAP = "这些树汁含糖量惊人。",
 		QUAGMIRE_SALT_RACK =
 		{
-			READY = "盐结晶了。挂在绳上。",		--物品名：盐架 检查状态：已经准备就绪
-			GENERIC = "析出需要时间。急不得。",		--物品名：盐架 检查状态：普通状态
+			READY = "结晶盐够多了，可以采收了喵。",
+			GENERIC = "盐沉积物应该很快就会积聚在架子上了喵。",
 		},
 
-		QUAGMIRE_POND_SALT = "咸水。尝一口就知道。",		--物品名：盐池
-		QUAGMIRE_SALT_RACK_ITEM = "从池水里取盐的器具。",		--物品名：盐架
+		QUAGMIRE_POND_SALT = "天然的钠盐泉喵。",
+		QUAGMIRE_SALT_RACK_ITEM = "我们应该把它放在盐泉边。",
 
 		QUAGMIRE_SAFE =
 		{
-			GENERIC = "保险箱。锁得住东西，锁不住人心。",		--物品名：保险箱 检查状态：普通状态
-			LOCKED = "锁着。钥匙不在我手上。",		--物品名：保险箱 检查状态：处于锁定状态
+			GENERIC = "这座城市以前的居民在这里面藏了好东西喵。",
+			LOCKED = "肯定有一把配套的钥匙喵。",
 		},
 
-		QUAGMIRE_KEY = "钥匙。总有一扇门需要它。",		--物品名：钥匙
-		QUAGMIRE_KEY_PARK = "抵达公园之前，先由我收着。",		--物品名：铁钥匙
-        QUAGMIRE_PORTAL_KEY = "古老的做工。尚能一用。",		--物品名：远古钥匙
+		QUAGMIRE_KEY = "我要去看看它能打开什么锁。",
+		QUAGMIRE_KEY_PARK = "我相信这是用来打开公园大门的喵。",
+        QUAGMIRE_PORTAL_KEY = "好一把精美的钥匙。",
 
 
 		QUAGMIRE_MUSHROOMSTUMP =
 		{
-			GENERIC = "是蘑菇。可我不急着下结论。",		--物品名：蘑菇 检查状态：普通状态
-			PICKED = "采过了。它不会再有第二次。",		--物品名：蘑菇 检查状态：已经采集
+			GENERIC = "一大簇野生食用菌。",
+			PICKED = "我认为它们还会重新长出来喵。",
 		},
-		QUAGMIRE_MUSHROOMS = "可以入口的菌类。仅此而已。",		--物品名：蘑菇
-        QUAGMIRE_MEALINGSTONE = "碾磨而已。日常功课。",		--物品名：碾磨石
-		QUAGMIRE_PEBBLECRAB = "石头在动。……是螃蟹。",		--物品名：石蟹
+		QUAGMIRE_MUSHROOMS = "我不熟悉这个物种，不过它是可食用的。",
+        QUAGMIRE_MEALINGSTONE = "这是能把我们的材料磨成粉的机械工具喵。",
+		QUAGMIRE_PEBBLECRAB = "我想更近距离观察它的壳。",
 
 
-		QUAGMIRE_RUBBLE_CARRIAGE = "无处可去。",		--物品名：破烂的马车
-        QUAGMIRE_RUBBLE_CLOCK = "钟坏了。理由不必问。",		--物品名：砸烂的时钟
-        QUAGMIRE_RUBBLE_CATHEDRAL = "连祈祷也塌了。",		--物品名：残破的大教堂
-        QUAGMIRE_RUBBLE_PUBDOOR = "门都没有。",		--物品名：残破的门
-        QUAGMIRE_RUBBLE_ROOF = "屋顶被人掀了。",		--物品名：残破的屋顶
-        QUAGMIRE_RUBBLE_CLOCKTOWER = "钟楼到此为止。",		--物品名：残破的钟楼
-        QUAGMIRE_RUBBLE_BIKE = "运气不佳。",		--物品名：损毁的自行车
+		QUAGMIRE_RUBBLE_CARRIAGE = "一个曾经繁盛的文化的残留物喵。",
+        QUAGMIRE_RUBBLE_CLOCK = "古老而不失精致喵。",
+        QUAGMIRE_RUBBLE_CATHEDRAL = "有意思。看来他们并不拜饕餮。",
+        QUAGMIRE_RUBBLE_PUBDOOR = "通往酒馆的门。",
+        QUAGMIRE_RUBBLE_ROOF = "它崩塌了。",
+        QUAGMIRE_RUBBLE_CLOCKTOWER = "钟表也被夺走了喵。",
+        QUAGMIRE_RUBBLE_BIKE = "修不好了。",
         QUAGMIRE_RUBBLE_HOUSE =
         {
-            "空无一人。",		--物品名：残破的房子 检查状态：第1条台词变体
-            "整座镇子都毁了。",		--物品名：残破的房子 检查状态：第2条台词变体
-            "不知他们得罪了谁。",		--物品名：残破的房子 检查状态：第3条台词变体
+            "What creatures once lived here?",
+            "There's nothing left of the inhabitants.",
+            "What caused this city to crumble?",
         },
-        QUAGMIRE_RUBBLE_CHIMNEY = "烟囱连灰都没剩下。",		--物品名：残破的烟囱
-        QUAGMIRE_RUBBLE_CHIMNEY2 = "烟囱也塌了。",		--物品名：残破的烟囱
-        QUAGMIRE_MERMHOUSE = "鱼人的屋子。审美堪忧。",		--物品名：鱼人屋
-        QUAGMIRE_SWAMPIG_HOUSE = "从前不是这副样子。",		--物品名：破烂的猪屋
-        QUAGMIRE_SWAMPIG_HOUSE_RUBBLE = "某头猪的家没了。",		--物品名：房子碎石
+        QUAGMIRE_RUBBLE_CHIMNEY = "肯定是什么东西把它弄倒了。",
+        QUAGMIRE_RUBBLE_CHIMNEY2 = "它快要支离破碎了喵。",
+        QUAGMIRE_MERMHOUSE = "本地鱼类的栖息地。",
+        QUAGMIRE_SWAMPIG_HOUSE = "啧啧！真是严重失修了喵。",
+        QUAGMIRE_SWAMPIG_HOUSE_RUBBLE = "这个房子已经没法住了。",
         QUAGMIRE_SWAMPIGELDER =
         {
-            GENERIC = "你是这里说话算数的？",		--物品名：沼泽猪长老 检查状态：普通状态
-            SLEEPING = "睡着了。只是暂时。",		--物品名：沼泽猪长老 检查状态：正在睡眠
+            GENERIC = "它们的群体有着严格区分的阶级角色喵。",
+            SLEEPING = "它进入了快眼动阶段的睡眠。",
         },
-        QUAGMIRE_SWAMPIG = "多毛的猪。毛质倒还蓬松。",		--物品名：暴食活动沼泽猪人
+        QUAGMIRE_SWAMPIG = "相当壮观的亚种喵！",
 
-        QUAGMIRE_PORTAL = "又是一条死路。",		--物品名：远古大门
-        QUAGMIRE_SALTROCK = "盐晶。矿物里最懂滋味的一种。",		--物品名：盐晶
-        QUAGMIRE_SALT = "盐，满满一捧。",		--物品名：盐
-        QUAGMIRE_FOOD_BURNT = "烧焦了。算作一次试验。",		--物品名：烧焦的食物
+        QUAGMIRE_PORTAL = "我的怀疑是对的。它通往不止一个目的地。",
+        QUAGMIRE_SALTROCK = "成团成簇的未加工氯化钠喵。",
+        QUAGMIRE_SALT = "氯化钠。又名食盐。",
+        --food--
+        QUAGMIRE_FOOD_BURNT = "完全碳化了。",
         QUAGMIRE_FOOD =
         {
-        	GENERIC = "该把它送上饕餮的祭坛。",		--物品名：暴食活动料理 检查状态：普通状态
-            MISMATCH = "不合它的口味。",		--物品名：暴食活动料理 检查状态：料理不符合祭坛要求
-            MATCH = "这样便足以安抚天上的那位。",		--物品名：暴食活动料理 检查状态：料理完全符合祭坛要求
-            MATCH_BUT_SNACK = "只是点心。份量不够。",		--物品名：暴食活动料理 检查状态：料理符合类型但份量只是点心
+        	GENERIC = "我想，可以把它放在祭坛上了喵。",
+            MISMATCH = "不适合用来喂大蛇。",
+            MATCH = "用来安抚大蛇再合适不过了。",
+            MATCH_BUT_SNACK = "食物没错，就是量不够喵。",
         },
 
-        QUAGMIRE_FERN = "蕨类。纤维粗了些。",		--物品名：蕨类植物
-        QUAGMIRE_FOLIAGE_COOKED = "我们把叶子煮了。",		--物品名：熟蕨叶
-        QUAGMIRE_COIN1 = "我的判断，不止这个价。",		--物品名：旧硬币
-        QUAGMIRE_COIN2 = "几枚徽章。收着吧，喵。",		--物品名：蓝宝石徽章
-        QUAGMIRE_COIN3 = "有点价值。不多。",		--物品名：红色马克硬币
-        QUAGMIRE_COIN4 = "攒够了，门就会开。",		--物品名：饕餮的青睐
-        QUAGMIRE_GOATMILK = "尚可。别去想它的来处。",		--物品名：羊奶
-        QUAGMIRE_SYRUP = "加一点甜。刚好。",		--物品名：糖浆
-        QUAGMIRE_SAP_SPOILED = "坏了。丢进火里最省事。",		--物品名：毁掉的汁液
-        QUAGMIRE_SEEDPACKET = "种子包。播下去才知道。",		--物品名：暴食活动种子包
+        QUAGMIRE_FERN = "这种蕨类植物是可食用的。",
+        QUAGMIRE_FOLIAGE_COOKED = "我相信我们可以做得更好。",
+        QUAGMIRE_COIN1 = "足够用来施舍给当地人了。",
+        QUAGMIRE_COIN2 = "一枚面值不小的硬币。",
+        QUAGMIRE_COIN3 = "一枚价值不小的硬币。",
+        QUAGMIRE_COIN4 = "它凝聚着某种魔力。",
+        QUAGMIRE_GOATMILK = "我不会质疑它的来源。",
+        QUAGMIRE_SYRUP = "一种甜味剂。",
+        QUAGMIRE_SAP_SPOILED = "不再是食品级了。",
+        QUAGMIRE_SEEDPACKET = "农作物的未来就装在这包东西里。",
 
-        QUAGMIRE_POT = "锅够大。配料放得下。",		--物品名：大锅
-        QUAGMIRE_POT_SMALL = "生火吧。今晚由我掌勺，喵。",		--物品名：锅
-        QUAGMIRE_POT_SYRUP = "还差一点甜味。",		--物品名：糖浆锅
-        QUAGMIRE_POT_HANGER = "带挂钩。挂起来正合适。",		--物品名：挂锅装置
-        QUAGMIRE_POT_HANGER_ITEM = "用来把锅挂高。",		--物品名：挂锅装置
-        QUAGMIRE_GRILL = "只差一座后院来安置它。",		--物品名：大烤架
-        QUAGMIRE_GRILL_ITEM = "烤架。审问食物用的。",		--物品名：大烤架
-        QUAGMIRE_GRILL_SMALL = "小块的东西，烤了更香，喵。",		--物品名：小烤架
-        QUAGMIRE_GRILL_SMALL_ITEM = "烤小块肉用的。",		--物品名：小烤架
-        QUAGMIRE_OVEN = "要加料，反应才会发生。",		--物品名：烤箱
-        QUAGMIRE_OVEN_ITEM = "燃烧的器具。造得不错。",		--物品名：烤箱
-        QUAGMIRE_CASSEROLEDISH = "砂锅。能容下许多味道。",		--物品名：大法国砂锅
-        QUAGMIRE_CASSEROLEDISH_SMALL = "小锅。适合做些零碎小菜。",		--物品名：小法国砂锅
-        QUAGMIRE_PLATE_SILVER = "银盘。擦得很亮。",		--物品名：银盘
-        QUAGMIRE_BOWL_SILVER = "银碗。映得出胡须，喵。",		--物品名：银碗
-        QUAGMIRE_CRATE = "厨房的杂物，都在这儿。",		--物品名：暴食活动板条箱
+        QUAGMIRE_POT = "大锅要久一点才能煮沸。",
+        QUAGMIRE_POT_SMALL = "嗯，我们接下来要煮什么呢喵？",
+        QUAGMIRE_POT_SYRUP = "它需要汁液喵。",
+        QUAGMIRE_POT_HANGER = "习惯上，这是用来挂锅子的。",
+        QUAGMIRE_POT_HANGER_ITEM = "在明火上煮东西的老式方法。",
+        QUAGMIRE_GRILL = "也许该烤点肉了。",
+        QUAGMIRE_GRILL_ITEM = "它需要放在地上。",
+        QUAGMIRE_GRILL_SMALL = "比正常的小，但是也行喵。",
+        QUAGMIRE_GRILL_SMALL_ITEM = "我需要把它放在某个地方才能用。",
+        QUAGMIRE_OVEN = "它最适合用来制作甜品了。",
+        QUAGMIRE_OVEN_ITEM = "需要所有部件都齐全，才能造出一台功能完整的烤箱喵。",
+        QUAGMIRE_CASSEROLEDISH = "我确实喜欢好吃的炖菜。",
+        QUAGMIRE_CASSEROLEDISH_SMALL = "够一个人吃喵。",
+        QUAGMIRE_PLATE_SILVER = "我真想念体面的餐具喵。",
+        QUAGMIRE_BOWL_SILVER = "碗的用处真不少。",
+QUAGMIRE_CRATE = "Kitchen stuff.",
 
-        QUAGMIRE_MERM_CART1 = "里面装了什么稀罕物？", 		--物品名：萨米的货车
-        QUAGMIRE_MERM_CART2 = "有几样我用得上。", 		--物品名：皮普顿的马车
-        QUAGMIRE_PARK_ANGEL = "请接招。",		--物品名：饕餮敬拜者
-        QUAGMIRE_PARK_ANGEL2 = "雕得栩栩如生。",		--物品名：饕餮敬拜者
-        QUAGMIRE_PARK_URN = "尘归尘。仅此而已。",		--物品名：骨灰瓮
-        QUAGMIRE_PARK_OBELISK = "碑。有人想被记住。",		--物品名：石柱
+        QUAGMIRE_MERM_CART1 = "让我想起了我的流动图书馆岁月喵。", --sammy's wagon
+        QUAGMIRE_MERM_CART2 = "里面有些好东西喵。", --pipton's cart
+        QUAGMIRE_PARK_ANGEL = "一座蛮有趣的雕塑。",
+        QUAGMIRE_PARK_ANGEL2 = "相当惊悚的纪念物喵。",
+        QUAGMIRE_PARK_URN = "我想知道那是谁的骨灰。",
+        QUAGMIRE_PARK_OBELISK = "真希望我能看懂写的是什么。",
         QUAGMIRE_PARK_GATE =
         {
-            GENERIC = "没有钥匙，进不去。",		--物品名：铁门 检查状态：普通状态
-            LOCKED = "锁得很死。",		--物品名：铁门 检查状态：处于锁定状态
+            GENERIC = "我们现在应该可以全权进入了。",
+            LOCKED = "要有钥匙才能打开喵。",
         },
-        QUAGMIRE_PARKSPIKE = "学名大概叫“尖锐之物”。",		--物品名：铁栅栏
-        QUAGMIRE_CRABTRAP = "螃蟹笼。放对地方就有的吃。",		--物品名：螃蟹陷阱
-        QUAGMIRE_TRADER_MERM = "也许它肯谈条件。",		--物品名：萨米 头脑清晰的泥沼鱼人
-        QUAGMIRE_TRADER_MERM2 = "可以试着跟它换。",		--物品名：皮普顿 清醒的泥沼鱼人
+        QUAGMIRE_PARKSPIKE = "是铸铁吧，好像。",
+        QUAGMIRE_CRABTRAP = "用来诱捕海洋生物。",
+        QUAGMIRE_TRADER_MERM = "他们似乎被隔离了。真愚蠢喵。",
+        QUAGMIRE_TRADER_MERM2 = "他们似乎被隔离了。真愚蠢。",
 
-        QUAGMIRE_GOATMUM = "让我想起从前的乳母。",		--物品名：玛姆茜
-        QUAGMIRE_GOATKID = "这只是幼崽。小得多。",		--物品名：比利
+        QUAGMIRE_GOATMUM = "也许她愿意做交易。",
+        QUAGMIRE_GOATKID = "温柔可爱的幼年牛科动物。",
         QUAGMIRE_PIGEON =
         {
-            DEAD = "死了。",		--物品名：鸽子 检查状态：已经死亡
-            GENERIC = "羽毛规整。体态尚可。",		--物品名：鸽子 检查状态：普通状态
-            SLEEPING = "正睡着。别吵。",		--物品名：鸽子 检查状态：正在睡眠
+            DEAD = "已去世。",
+            GENERIC = "一种惹人喜爱的鸠鸽科动物喵。",
+            SLEEPING = "它进入了快眼动阶段的睡眠喵。",
         },
-        QUAGMIRE_LAMP_POST = "灯光温黄。像家里的窗，喵。",		--物品名：街灯
+        QUAGMIRE_LAMP_POST = "我想知道，它的能量来源是什么？",
 
-        QUAGMIRE_BEEFALO = "它死透了。不必再确认。",		--物品名：老皮弗娄牛
-        QUAGMIRE_SLAUGHTERTOOL = "器械。用来处理牲畜。",		--物品名：屠宰工具
+        QUAGMIRE_BEEFALO = "它的预期寿命已过去多年喵。",
+        QUAGMIRE_SLAUGHTERTOOL = "真可怕。",
 
-        QUAGMIRE_SAPLING = "只剩枝干。取不到别的。",		--物品名：暴食活动树苗
-        QUAGMIRE_BERRYBUSH = "浆果被摘光了。",		--物品名：暴食活动浆果丛
+        QUAGMIRE_SAPLING = "它不会重新长出来了。",
+        QUAGMIRE_BERRYBUSH = "那些浆果重新长出来需要时间，而我根本没时间。",
 
-        QUAGMIRE_ALTAR_STATUE2 = "看着我做什么？",		--物品名：饥饿之兽
-        QUAGMIRE_ALTAR_QUEEN = "兽形的碑。气派不小。",		--物品名：女王野兽
-        QUAGMIRE_ALTAR_BOLLARD = "作为一根柱子，它合格了。",		--物品名：柱子
-        QUAGMIRE_ALTAR_IVY = "藤蔓。攀附得过分亲昵。",		--物品名：常春藤
+        QUAGMIRE_ALTAR_STATUE2 = "可怕的石像鬼喵。",
+        QUAGMIRE_ALTAR_QUEEN = "规模宏大喵。",
+        QUAGMIRE_ALTAR_BOLLARD = "这根柱子够好了。",
+        QUAGMIRE_ALTAR_IVY = "常春藤属喵。",
 
-        QUAGMIRE_LAMP_SHORT = "点亮吧。",		--物品名：小街灯
+        QUAGMIRE_LAMP_SHORT = "灯光，够好了喵。",
 
+        --v2 Winona
         WINONA_CATAPULT =
         {
-        	GENERIC = "薇诺娜的自动防御，造得不错。",		--物品名：薇诺娜的投石机 检查状态：普通状态
-        	OFF = "没通电。等着。",		--物品名：薇诺娜的投石机 检查状态：处于关闭状态
-        	BURNING = "起火了。退开。",		--物品名：薇诺娜的投石机 检查状态：正在燃烧
-        	BURNT = "烧尽了。科学也救不回。",		--物品名：薇诺娜的投石机 检查状态：已经烧毁
-			SLEEP = "休眠中。它还在等命令。",		--物品名：薇诺娜的投石机 检查状态：设备处于休眠状态
+        	GENERIC = "那个薇诺娜足智多谋。",
+        	OFF = "需要电源。",
+        	BURNING = "哎呀，是谁干的喵？",
+        	BURNT = "真希望她会再做一个喵。",
+			SLEEP = "那个薇诺娜足智多谋。",
         },
         WINONA_SPOTLIGHT =
         {
-        	GENERIC = "这主意不坏。",		--物品名：薇诺娜的聚光灯 检查状态：普通状态
-        	OFF = "缺电。接上就是。",		--物品名：薇诺娜的聚光灯 检查状态：处于关闭状态
-        	BURNING = "着火了。让开。",		--物品名：薇诺娜的聚光灯 检查状态：正在燃烧
-        	BURNT = "烧成了空架子。",		--物品名：薇诺娜的聚光灯 检查状态：已经烧毁
-			SLEEP = "设计得聪明。可惜在睡。",		--物品名：薇诺娜的聚光灯 检查状态：设备处于休眠状态
+        	GENERIC = "合理的安全措施喵。",
+        	OFF = "需要电源。",
+        	BURNING = "哎呀，是谁干的？",
+        	BURNT = "真希望她会再做一个。",
+			SLEEP = "合理的安全措施。",
         },
         WINONA_BATTERY_LOW =
         {
-        	GENERIC = "看着精巧。原理是什么？",		--物品名：薇诺娜的发电机 检查状态：普通状态
-        	LOWPOWER = "电力在降。",		--物品名：薇诺娜的发电机 检查状态：电力不足
-        	OFF = "薇诺娜若忙，我也能替她启动。",		--物品名：薇诺娜的发电机 检查状态：处于关闭状态
-        	BURNING = "烧起来了。",		--物品名：薇诺娜的发电机 检查状态：正在燃烧
-        	BURNT = "连科学也没能留住它。",		--物品名：薇诺娜的发电机 检查状态：已经烧毁
+        	GENERIC = "为她的可爱发明提供电力。",
+        	LOWPOWER = "嗯，她的发明准备没电了。",
+        	OFF = "我去拿块硝石放进去喵？",
+        	BURNING = "哎呀，是谁干的喵？",
+        	BURNT = "真希望她会再做一个。",
         },
         WINONA_BATTERY_HIGH =
         {
-			GENERIC = "这不合常理。",		--物品名：薇诺娜的宝石发电机 检查状态：普通状态
-			LOWPOWER = "所剩无几了。",		--物品名：薇诺娜的宝石发电机 检查状态：电力不足
-			OFF = "科学总能赢过魔法。",		--物品名：薇诺娜的宝石发电机 检查状态：处于关闭状态
-			BURNING = "火势上来了。",		--物品名：薇诺娜的宝石发电机 检查状态：正在燃烧
-			BURNT = "它没能撑过去。",		--物品名：薇诺娜的宝石发电机 检查状态：已经烧毁
-			OVERLOADED = "要炸了。……抱歉，旧习惯罢了。",		--物品名：薇诺娜的宝石发电机 检查状态：电力网络过载
+			GENERIC = "她的思想开放，真好。",
+			LOWPOWER = "魔法焦点很快就会用完。",
+			OFF = "它需要一个新的魔法焦点喵。",
+			BURNING = "哎呀，是谁干的？",
+			BURNT = "真希望她会再做一个。",
+			OVERLOADED = "可怜的小家伙操劳过度了。",
         },
+		--v3 Winona
 		WINONA_REMOTE =
 		{
-			GENERIC = "她大概忘了给机器装按钮。",		--物品名：称手遥控器 检查状态：普通状态
-			OFF = "还不通电。",		--物品名：称手遥控器 检查状态：处于关闭状态
-			CHARGING = "正在充能。手别抖。",		--物品名：称手遥控器 检查状态：正在充能
-			CHARGED = "充好了。可以按了。",		--物品名：称手遥控器 检查状态：已经充能
+			GENERIC = "它能让她远程控制东西。",
+			OFF = "需要电源。",
+			CHARGING = "它能让她远程控制东西。",
+			CHARGED = "它能让她远程控制东西。",
 		},
 		WINONA_TELEBRELLA =
 		{
-			GENERIC = "薇诺娜还在琢磨。",		--物品名：传送伞 检查状态：普通状态
-            MISSINGSKILL = "设计有趣。可惜我还差些手艺。",		--物品名：传送伞 检查状态：当前角色尚未解锁所需技能
-			OFF = "没电。",		--物品名：传送伞 检查状态：处于关闭状态
-			CHARGING = "还在充能。耐心些。",		--物品名：传送伞 检查状态：正在充能
-			CHARGED = "能量满了。",		--物品名：传送伞 检查状态：已经充能
+			GENERIC = "这个传送装置的外观真是异想天开。",
+--fallback to speech_wilson.lua             MISSINGSKILL = "only_used_by_winona",
+			OFF = "需要电源。",
+			CHARGING = "这个传送装置的外观真是异想天开。",
+			CHARGED = "这个传送装置的外观真是异想天开。",
 		},
 		WINONA_TELEPORT_PAD_ITEM =
 		{
-			GENERIC = "位移理论的产物。从这里，到那里。",		--物品名：传送运输站 检查状态：普通状态
-            MISSINGSKILL = "构思巧妙。我暂时造不出来。",		--物品名：传送运输站 检查状态：当前角色尚未解锁所需技能
-			OFF = "得先通电。",		--物品名：传送运输站 检查状态：处于关闭状态
-			BURNING = "烧着了。",		--物品名：传送运输站 检查状态：正在燃烧
-			BURNT = "烧毁。无从修补。",		--物品名：传送运输站 检查状态：已经烧毁
+			GENERIC = "这倒是很方便。",
+--fallback to speech_wilson.lua             MISSINGSKILL = "only_used_by_winona",
+			OFF = "需要电源。",
+			BURNING = "哎呀，是谁干的？",
+			BURNT = "真希望她会再做一个。",
 		},
 		WINONA_STORAGE_ROBOT =
 		{
-			GENERIC = "一筒螺栓。倒也乖巧。",		--物品名：薇机人 检查状态：普通状态
-			OFF = "在歇着？她倒是体贴。",		--物品名：薇机人 检查状态：处于关闭状态
-			SLEEP = "休眠。螺栓不会做梦。",		--物品名：薇机人 检查状态：设备处于休眠状态
-			CHARGING = "充能中。别去打扰。",		--物品名：薇机人 检查状态：正在充能
-			CHARGED = "满了。它能干活了。",		--物品名：薇机人 检查状态：已经充能
+			GENERIC = "薇诺娜的版本也毫不逊色喵。",
+			OFF = "它需要电源",
+			SLEEP = "薇诺娜的版本也毫不逊色喵。",
+			CHARGING = "它连接着电源。",
+			CHARGED = "看起来它有足够的动力。",
 		},
-		INSPECTACLESBOX = "借几样东西。她不会介意。",		--物品名：藏物箱
-		INSPECTACLESBOX2 = "收获颇丰。",		--物品名：高级藏物箱
+		INSPECTACLESBOX = "only_used_by_winona喵",
+		INSPECTACLESBOX2 = "only_used_by_winona喵",
 		INSPECTACLESHAT = 
         {
-            GENERIC = "薇诺娜一向看得比旁人远。",		--物品名：检查专用镜 检查状态：普通状态
-            MISSINGSKILL = "这镜片的规格，我很想知道。",		--物品名：检查专用镜 检查状态：当前角色尚未解锁所需技能
+            GENERIC = "它似乎是利用无线电波来定位异常物体。",
+            MISSINGSKILL = "only_used_by_winona",
         },
 		ROSEGLASSESHAT =
         {
-            GENERIC = "和薇诺娜的手笔略有出入。",		--物品名：玫瑰色眼镜 检查状态：普通状态
-            MISSINGSKILL = "他们身上有某种东西，让我想起查理。",		--物品名：玫瑰色眼镜 检查状态：当前角色尚未解锁所需技能
+            GENERIC = "薇诺娜对它的功能一直守口如瓶。",
+            MISSINGSKILL = "only_used_by_winona喵",
         },
-		CHARLIERESIDUE = "又错过了她。……不过她留了东西。",		--物品名：黑暗痕迹
-		CHARLIEROSE = "查理。你这次要拉我进什么事？",		--物品名：脆弱玫瑰
-        WINONA_MACHINEPARTS_1 = "这种零件，外面买不到。",		--物品名：小玩意
-        WINONA_MACHINEPARTS_2 = "这个，用处不小。",		--物品名：小机械
-		WINONA_RECIPESCANNER = "扫一遍，我便知道它是怎么造的。",		--物品名：校准观察机
-		WINONA_HOLOTELEPAD = "旧图纸。值得扫一遍。",		--物品名：不稳定传输
-		WINONA_HOLOTELEBRELLA = "该用校准观察机扫它一遍。",		--物品名：不稳定传输
+		CHARLIERESIDUE = "only_used_by_winona",
+		CHARLIEROSE = "only_used_by_winona",
+        WINONA_MACHINEPARTS_1 = "only_used_by_winona",
+        WINONA_MACHINEPARTS_2 = "only_used_by_winona",
+		WINONA_RECIPESCANNER = "only_used_by_winona",
+		WINONA_HOLOTELEPAD = "only_used_by_winona喵",
+		WINONA_HOLOTELEBRELLA = "only_used_by_winona",
 
-        COMPOSTWRAP = "沃姆伍德让我尝，我婉拒了。",		--物品名：肥料包
-        ARMOR_BRAMBLE = "守得住，才算赢。",		--物品名：荆棘外壳
-        TRAP_BRAMBLE = "踩上去的，都会记住这一下。",		--物品名：荆棘陷阱
+        --Wormwood
+        COMPOSTWRAP = "天啊，好大的粪便喵。",
+        ARMOR_BRAMBLE = "由我们的好朋友亲手编织而成喵。",
+        TRAP_BRAMBLE = "荆棘上密布着微小的倒钩，令人十分不悦。",
 
-        BOATFRAGMENT03 = "只剩这一块了。",		--物品名：船碎片
-        BOATFRAGMENT04 = "船板。残得只剩这些。",		--物品名：船碎片
-        BOATFRAGMENT05 = "碎得不成样子。",		--物品名：船碎片
-		BOAT_LEAK = "有漏。不补就沉。",		--物品名：漏洞
-        MAST = "桅杆。船有骨头了。",		--物品名：桅杆
-        SEASTACK = "一块石头。孤零零的。",		--物品名：海蚀柱
-        FISHINGNET = "一张网。编得还算密，喵。", 		--物品名：渔网
-        ANTCHOVIES = "这个……能扔回去吗？", 		--物品名：蚁头凤尾鱼
-        STEERINGWHEEL = "掌舵的手感，不错。",		--物品名：方向舵
-        ANCHOR = "船不该自己漂走。",		--物品名：锚
-        BOATPATCH = "以备万一。",		--物品名：船补丁
+        BOATFRAGMENT03 = "真可惜啊。",
+        BOATFRAGMENT04 = "真可惜啊。",
+        BOATFRAGMENT05 = "真可惜啊。",
+		BOAT_LEAK = "我们的船进水了。",
+        MAST = "扬帆，起航！",
+        SEASTACK = "搁浅在上面就不好了喵。",
+        FISHINGNET = "海洋是一座宝库，提供了生存所需的各种资源喵。", --unimplemented
+        ANTCHOVIES = "哦，我知道了！这是一种全新的海洋生物！", --unimplemented
+        STEERINGWHEEL = "掌舵一艘船可不容易。",
+        ANCHOR = "这个锚可以装在我们的舰艇上喵。",
+        BOATPATCH = "船体维修工具。",
         DRIFTWOOD_TREE =
         {
-            BURNING = "浮木在烧。",		--物品名：浮木 检查状态：正在燃烧
-            BURNT = "烧过了。没什么可取的。",		--物品名：浮木 检查状态：已经烧毁
-            CHOPPED = "还值得再挖一挖。",		--物品名：浮木 检查状态：已经砍伐
-            GENERIC = "枯木。被浪推上岸。",		--物品名：浮木 检查状态：普通状态
+            BURNING = "树在燃烧。",
+            BURNT = "完完整整的碳化了",
+            CHOPPED = "没什么实用价值了。",
+            GENERIC = "新材料对我们能派上用场喵。",
         },
 
-        DRIFTWOOD_LOG = "轻。浮得起来。",		--物品名：浮木桩
+        DRIFTWOOD_LOG = "天然的浮力材料。",
 
         MOON_TREE =
         {
-            BURNING = "月树在烧。",		--物品名：月树 检查状态：正在燃烧
-            BURNT = "烧尽了。月木也怕火。",		--物品名：月树 检查状态：已经烧毁
-            CHOPPED = "树干很粗。可惜了。",		--物品名：月树 检查状态：已经砍伐
-            GENERIC = "月亮上竟也长树。",		--物品名：月树 检查状态：普通状态
+            BURNING = "可惜，浪费了资源。",
+            BURNT = "完完整整的碳化了",
+            CHOPPED = "没什么实用价值了。",
+            GENERIC = "似乎被周遭月亮的能量改变了喵。",
         },
-		MOON_TREE_BLOSSOM = "月树的花。落在我脚边，喵。",		--物品名：月树花
+		MOON_TREE_BLOSSOM = "真是奇怪的物种啊。",
 
         MOONBUTTERFLY =
         {
-        	GENERIC = "月蛾。翅膀上有月光，喵。",		--物品名：月蛾 检查状态：普通状态
-        	HELD = "抓到你了。",		--物品名：月蛾 检查状态：正被角色携带
+        	GENERIC = "它身上的绿色来自于体内的月球残余物。",
+        	HELD = "这个我能用的上喵。",
         },
-		MOONBUTTERFLYWINGS = "翅膀很美。可惜离了身。",		--物品名：月蛾翅膀
-        MOONBUTTERFLY_SAPLING = "蛾子化作树。月光真是任性。",		--物品名：月树苗
-        ROCK_AVOCADO_FRUIT = "硬得很。会崩牙。",		--物品名：石果
-        ROCK_AVOCADO_FRUIT_RIPE = "没煮透的核果，最难入口。",		--物品名：成熟石果
-        ROCK_AVOCADO_FRUIT_RIPE_COOKED = "软了。可以吃了。",		--物品名：熟石果
-        ROCK_AVOCADO_FRUIT_SPROUT = "在发芽。",		--物品名：发芽的石果
+		MOONBUTTERFLYWINGS = "如同我所怀疑的一样，月球残余物的含量非常高喵。",
+        MOONBUTTERFLY_SAPLING = "这里的飞蛾和树木都发生了变异。",
+        ROCK_AVOCADO_FRUIT = "外部是矿物，里面却是有机物。",
+        ROCK_AVOCADO_FRUIT_RIPE = "我想吃新鲜的牛油果。",
+        ROCK_AVOCADO_FRUIT_RIPE_COOKED = "很安全，可以吃。",
+        ROCK_AVOCADO_FRUIT_SPROUT = "这个阶段还是让它先长大比较好。",
         ROCK_AVOCADO_BUSH =
         {
-        	BARREN = "结果的日子过去了。",		--物品名：石果灌木丛 检查状态：资源枯竭，需要施肥
-			WITHERED = "热坏了。叶子都卷了。",		--物品名：石果灌木丛 检查状态：已经枯萎
-			GENERIC = "来自月亮的灌木。",		--物品名：石果灌木丛 检查状态：普通状态
-			PICKED = "摘空了。要等下一轮。",		--物品名：石果灌木丛 检查状态：已经采集
-			DISEASED = "病得重了。", 		--物品名：石果灌木丛 检查状态：已经患病
-            DISEASING = "有些不对。……我闻得出来。", 		--物品名：石果灌木丛 检查状态：正在进入患病阶段
-			BURNING = "在烧。",		--物品名：石果灌木丛 检查状态：正在燃烧
+        	BARREN = "已经过了生命周期中的生育阶段。",
+			WITHERED = "不具备这种植物成长所需的理想环境喵。",
+			GENERIC = "那肯定不是水果。",
+			PICKED = "月球土壤长出的灌木喵。",
+			DISEASED = "恐怕是染上了疾病。", --unimplemented
+            DISEASING = "嗯，我看到叶子边上发黄了喵。", --unimplemented
+			BURNING = "可惜，浪费了资源。",
 		},
-        DEAD_SEA_BONES = "上了岸，便落得这副模样。",		--物品名：海骨
+        DEAD_SEA_BONES = "令人好奇的骨架结构喵。",
         HOTSPRING =
         {
-        	GENERIC = "若能泡一泡，疲倦便散了。",		--物品名：温泉 检查状态：普通状态
-        	BOMBED = "不过是一场反应。",		--物品名：温泉 检查状态：被沐浴球处理过
-        	GLASS = "月光把水凝成了玻璃。",		--物品名：温泉 检查状态：温泉水面已经结晶
-			EMPTY = "那我等它再满起来。",		--物品名：温泉 检查状态：内容为空
+        	GENERIC = "我这双老脚应该好好泡泡了。",
+        	BOMBED = "对，我稍后肯定要泡脚喵。",
+        	GLASS = "我现在强烈质疑月光玻璃的有机构成喵。",
+			EMPTY = "假以时日，泉水会自己补满的。",
         },
-        MOONGLASS = "边缘极利。小心拿。",		--物品名：月亮碎片
-        MOONGLASS_CHARGED = "趁能量未尽，找个体面的用途。",		--物品名：注能月亮碎片
-        MOONGLASS_ROCK = "能照见我的倒影。还算清楚。",		--物品名：月光玻璃
-        BATHBOMB = "教科书般的反应。",		--物品名：沐浴球
+        MOONGLASS = "也许我能留一个样本，研究它的成分。",
+        MOONGLASS_CHARGED = "能量似乎不稳定，我得尽快利用它。",
+        MOONGLASS_ROCK = "虽然看起来像矿物质，但可能是有机物喵。",
+        BATHBOMB = "嗯，我最喜欢边泡热水澡，边看书了。",
         TRAP_STARFISH =
         {
-            GENERIC = "一只小海星。模样讨喜。",		--物品名：海星 检查状态：普通状态
-            CLOSED = "它差点咬到我。",		--物品名：海星 检查状态：处于关闭状态
+            GENERIC = "我是你的话会小心的避开它。",
+            CLOSED = "跟双子叶植物纲捕蝇草属的捕猎方法相同。",
         },
-        DUG_TRAP_STARFISH = "它骗不了第二次。",		--物品名：海星陷阱
+        DUG_TRAP_STARFISH = "它不再是危险了。",
         SPIDER_MOON =
         {
-        	GENERIC = "月亮让它变了样子。",		--物品名：破碎蜘蛛 检查状态：普通状态
-        	SLEEPING = "不动了。很好。",		--物品名：破碎蜘蛛 检查状态：正在睡眠
-        	DEAD = "死透了。",		--物品名：破碎蜘蛛 检查状态：已经死亡
+        	GENERIC = "土壤中的矿物质可能激发了它的敌意。",
+        	SLEEPING = "太好了，它在睡觉。",
+        	DEAD = "不在了就好。",
         },
-        MOONSPIDERDEN = "这不是寻常的蛛巢。",		--物品名：破碎蜘蛛洞
+        MOONSPIDERDEN = "这些可怜的丑陋生物在这里筑了巢。",
 		FRUITDRAGON =
 		{
-			GENERIC = "长得讨喜。可惜还没熟。",		--物品名：沙拉蝾螈 检查状态：普通状态
-			RIPE = "熟了。气味变了。",		--物品名：沙拉蝾螈 检查状态：已经成熟
-			SLEEPING = "在打盹。声音轻些。",		--物品名：沙拉蝾螈 检查状态：正在睡眠
+			GENERIC = "动植物在这个标本中融为了一体喵。",
+			RIPE = "闻起来很美味喵。",
+			SLEEPING = "处于深度睡眠中。",
 		},
         PUFFIN =
         {
-            GENERIC = "活的海鹦，我是第一次见。",		--物品名：海鹦鹉 检查状态：普通状态
-            HELD = "捉到一只。值得一记。",		--物品名：海鹦鹉 检查状态：正被角色携带
-            SLEEPING = "睡得沉。",		--物品名：海鹦鹉 检查状态：正在睡眠
+            GENERIC = "亲爱的长角海鹦属鸟儿！",
+            HELD = "可爱的鸟儿啊喵。",
+            SLEEPING = "处于深度睡眠中喵。",
         },
 
-		MOONGLASSAXE = "刃口很好。我用得顺手。",		--物品名：月光玻璃斧
-		GLASSCUTTER = "刀不错。可惜我用不惯。",		--物品名：玻璃刀
+		MOONGLASSAXE = "对于效率的追求是无止境的喵！",
+		GLASSCUTTER = "我喜欢单刀直入喵。",
 
         ICEBERG =
         {
-            GENERIC = "那东西，绕开为好。", 		--物品名：迷你冰山 检查状态：普通状态
-            MELTED = "化尽了。", 		--物品名：迷你冰山 检查状态：已经融化
+            GENERIC = "我们不能让船撞上冰山。", --unimplemented
+            MELTED = "从危险的固体变成了无害的液体。谢谢你，热量。", --unimplemented
         },
-        ICEBERG_MELTED = "一点没剩。", 		--物品名：融化的迷你冰山
+        ICEBERG_MELTED = "从危险的固体变成了无害的液体。谢谢你，热量。", --unimplemented
 
-        MINIFLARE = "点一发，让他们知道我在。",		--物品名：信号弹
-        MEGAFLARE = "它会让所有存在都知道我在此。",		--物品名：敌对信号弹
+        MINIFLARE = "人群聚在一起会安全一点。",
+        MEGAFLARE = "我可以把对手引到我所选择的地方。",
 
 		MOON_FISSURE =
 		{
-			GENERIC = "平静与恐惧，在我脑中同时作响。",		--物品名：天体裂缝 检查状态：普通状态
-			NOLIGHT = "裂隙在扩大。看得见了。",		--物品名：天体裂缝 检查状态：裂隙尚未发光
+			GENERIC = "我看过麦斯威尔的燃料，和它不是同一种魔法。",
+			NOLIGHT = "我开始理解这里的月亮周期了喵。",
 		},
         MOON_ALTAR =
         {
-            MOON_ALTAR_WIP = "它想被完成。",		--物品名：天体祭坛 检查状态：月亮祭坛仍在组装
-            GENERIC = "唔？你刚才说什么？",		--物品名：天体祭坛 检查状态：普通状态
+            MOON_ALTAR_WIP = "它说我如果能完成就会告诉我一个秘密。",
+            GENERIC = "有个声音在说它有知识要分享。",
         },
 
-        MOON_ALTAR_IDOL = "我有种强烈的念头，想把它搬走。",		--物品名：天体祭坛雕像
-        MOON_ALTAR_GLASS = "它不愿待在地上。",		--物品名：天体祭坛底座
-        MOON_ALTAR_SEED = "它想让我给它一个位置。",		--物品名：天体祭坛宝球
+        MOON_ALTAR_IDOL = "它的能量在刺激着我的大脑喵。",
+        MOON_ALTAR_GLASS = "我相信它在试图跟我进行心灵感应喵。",
+        MOON_ALTAR_SEED = "它向我的大脑投射了一个祭坛的图像。",
 
-        MOON_ALTAR_ROCK_IDOL = "里面封着东西。",		--物品名：吸引人的结构
-        MOON_ALTAR_ROCK_GLASS = "内里有物。",		--物品名：吸引人的结构
-        MOON_ALTAR_ROCK_SEED = "里面不空。",		--物品名：吸引人的结构
+        MOON_ALTAR_ROCK_IDOL = "我认为最好还是把它开采出来。",
+        MOON_ALTAR_ROCK_GLASS = "我认为最好还是把它开采出来。",
+        MOON_ALTAR_ROCK_SEED = "我认为最好还是把它开采出来。",
 
-        MOON_ALTAR_CROWN = "钓上来了。现在去找裂隙。",		--物品名：未激活天体贡品
-        MOON_ALTAR_COSMIC = "它在等一件事发生。",		--物品名：天体贡品
+        MOON_ALTAR_CROWN = "来吧，让我带你回到属于你的地方吧。",
+        MOON_ALTAR_COSMIC = "说明还有很多知识等待着我们去寻找。",
 
-        MOON_ALTAR_ASTRAL = "它只是更大机关的一角。",		--物品名：天体圣殿
-        MOON_ALTAR_ICON = "该放哪里，我知道。",		--物品名：天体圣殿象征
-        MOON_ALTAR_WARD = "它该和其余几件放在一处。",		--物品名：天体圣殿卫戍
+        MOON_ALTAR_ASTRAL = "你准备好和我分享你的知识了吗？",
+        MOON_ALTAR_ICON = "它把一种紧迫感投射到了我的心中。",
+        MOON_ALTAR_WARD = "这是在传达一种想被重建的消息。",
 
         SEAFARING_PROTOTYPER =
         {
-            GENERIC = "是不是该谢我一句。",		--物品名：智囊团 检查状态：普通状态
-            BURNT = "到了海上，学问也会丢。",		--物品名：智囊团 检查状态：已经烧毁
+            GENERIC = "注意力集中在海上是好事喵。",
+            BURNT = "真不负责喵。",
         },
-        BOAT_ITEM = "在水上做试验，不坏。",		--物品名：船套装
-        BOAT_GRASS_ITEM = "严格来说，这也算船。",		--物品名：草筏套装
-        STEERINGWHEEL_ITEM = "能拼出一只舵。",		--物品名：方向舵套装
-        ANCHOR_ITEM = "有锚了。",		--物品名：锚套装
-        MAST_ITEM = "桅杆也能造了。",		--物品名：桅杆套装
+        BOAT_ITEM = "这将赋予我们航海的能力。",
+        BOAT_GRASS_ITEM = "它的耐用性值得怀疑，但当下还能凑活喵。",
+        STEERINGWHEEL_ITEM = "掌舵船只的必需品。",
+        ANCHOR_ITEM = "这能让我们给船造一个锚。",
+        MAST_ITEM = "利用风能的工具。",
         MUTATEDHOUND =
         {
-        	DEAD = "可以喘口气了。",		--物品名：恐怖猎犬 检查状态：已经死亡
-        	GENERIC = "这东西不该存在。",		--物品名：恐怖猎犬 检查状态：普通状态
-        	SLEEPING = "本能叫我快走。",		--物品名：恐怖猎犬 检查状态：正在睡眠
+        	DEAD = "真可惜啊。",
+        	GENERIC = "又是种月亮带来的变异...嗯。",
+        	SLEEPING = "我想更近距离的观察它。",
         },
 
         MUTATED_PENGUIN =
         {
-			DEAD = "到尽头了。",		--物品名：永冻企鸥 检查状态：已经死亡
-			GENERIC = "它不该是这副样子。",		--物品名：永冻企鸥 检查状态：普通状态
-			SLEEPING = "好在它在睡。",		--物品名：永冻企鸥 检查状态：正在睡眠
+			DEAD = "那东西被解决了。",
+			GENERIC = "某种能量使得这个物种产生了错误变异喵。",
+			SLEEPING = "没有理由吵醒它。",
 		},
         CARRAT =
         {
-        	DEAD = "结束了。",		--物品名：胡萝卜鼠 检查状态：已经死亡
-        	GENERIC = "胡萝卜居然长了腿。",		--物品名：胡萝卜鼠 检查状态：普通状态
-        	HELD = "近看，实在不体面。",		--物品名：胡萝卜鼠 检查状态：正被角色携带
-        	SLEEPING = "睡着了，倒有点可爱，喵。",		--物品名：胡萝卜鼠 检查状态：正在睡眠
+        	DEAD = "或许不用这样吧。",
+        	GENERIC = "惊人啊，又一种动植物杂交品种。多么神奇。",
+        	HELD = "动植物和谐的融合在了一起喵。",
+        	SLEEPING = "处于深度睡眠中。",
         },
 
 		BULLKELP_PLANT =
         {
-            GENERIC = "海带。成色不坏。",		--物品名：公牛海带 检查状态：普通状态
-            PICKED = "采过了。等它再长。",		--物品名：公牛海带 检查状态：已经采集
+            GENERIC = "褐藻门海带科。",
+            PICKED = "褐藻门海带科植物需要时间重新生长。",
         },
-		BULLKELP_ROOT = "能种在深水里。",		--物品名：公牛海带茎
-        KELPHAT = "想舒服，先忍一忍。",		--物品名：海花环
-		KELP = "湿透了。真讨厌，喵。",		--物品名：海带叶
-		KELP_COOKED = "煮软了，黏。",		--物品名：熟海带叶
-		KELP_DRIED = "咸得过分了。",		--物品名：干海带叶
+		BULLKELP_ROOT = "公牛海带果然名不虚传喵。",
+        KELPHAT = "据说可以影响人的精神健康喵。",
+		KELP = "一种可食用的海带标本喵。",
+		KELP_COOKED = "烹饪并没有提升口感喵。",
+		KELP_DRIED = "新的口感让它稍微可口了一些。",
 
-		GESTALT = "它似乎能给我……一些知识。",		--物品名：虚影
-        GESTALT_GUARD = "它说，靠太近就要我好看。",		--物品名：大虚影
+		GESTALT = "是某种强大力量的投射物喵。",
+        GESTALT_GUARD = "相比小型的同类，它们拥有更高的防御能力。",
 
-		COOKIECUTTER = "它看船的眼神……我不喜欢。",		--物品名：饼干切割机
-		COOKIECUTTERSHELL = "牙还在，壳已空。",		--物品名：饼干切割机壳
-		COOKIECUTTERHAT = "至少不会弄湿我的头发。",		--物品名：饼干切割机帽子
+		COOKIECUTTER = "它的眼睛盯死了我的筏子。",
+		COOKIECUTTERSHELL = "厚厚的碳酸钙外壳喵。",
+		COOKIECUTTERHAT = "哎，这个味道很难闻。",
 		SALTSTACK =
 		{
-			GENERIC = "是天然长成的？",		--物品名：盐堆 检查状态：普通状态
-			MINED_OUT = "采空了。一点没留。",		--物品名：盐堆 检查状态：已经采空
-			GROWING = "它自己就会长成这副模样。",		--物品名：盐堆 检查状态：正在生长
+			GENERIC = "着实有趣……不过这些雕塑是如何建造的？",
+			MINED_OUT = "盐已经被开采了。",
+			GROWING = "哎呀……它们尽然是浑然天成的喵。",
 		},
-		SALTROCK = "有个念头催我去舔一下。",		--物品名：盐晶
-		SALTBOX = "食物能多存几日了，喵。",		--物品名：盐盒
+		SALTROCK = "它在以一种奇异的几何样式增长。",
+		SALTBOX = "应该能阻止食物变质喵。",
 
-		TACKLESTATION = "海钓的事，该整理了。",		--物品名：钓具容器
-		TACKLESKETCH = "某件钓具的图。我自己也能做。",		--物品名：{item}广告
+		TACKLESTATION = "工欲善其事，必先利其器喵。",
+		TACKLESKETCH = "有意思！可预见到会极大提升我的鱼技！",
 
-        MALBATROSS = "好大一只鸟。",		--物品名：邪天翁
-        MALBATROSS_FEATHER = "羽毛漂亮。从大鸟身上落的。",		--物品名：邪天翁羽毛
-        MALBATROSS_BEAK = "有鱼腥味。",		--物品名：邪天翁喙
-        MAST_MALBATROSS_ITEM = "比看上去轻。",		--物品名：飞翼风帆套装
-        MAST_MALBATROSS = "展翼，出海，喵。",		--物品名：飞翼风帆
-		MALBATROSS_FEATHERED_WEAVE = "我纺的羽被。会很软，喵。",		--物品名：羽毛帆布
+        MALBATROSS = "它似乎属于信天翁科。",
+        MALBATROSS_FEATHER = "它的羽毛有着近乎鱼鳞的质感。",
+        MALBATROSS_BEAK = "他们的喙进化的非常适合抓住溜滑的猎物喵。",
+        MAST_MALBATROSS_ITEM = "扬起风帆，驶向远方！",
+        MAST_MALBATROSS = "多么引人注目的翼展啊！",
+		MALBATROSS_FEATHERED_WEAVE = "一种结实，轻盈的材料。",
 
         GNARWAIL =
         {
-            GENERIC = "你的角，长得很气派。",		--物品名：一角鲸 检查状态：普通状态
-            BROKENHORN = "你的角断了。",		--物品名：一角鲸 检查状态：角已经折断
-            FOLLOWER = "鲸鱼。跟着我也好。",		--物品名：一角鲸 检查状态：已经成为当前角色的跟随者
-            BROKENHORN_FOLLOWER = "到处乱伸角，就是这个下场。",		--物品名：一角鲸 检查状态：已跟随当前角色且角已折断
+            GENERIC = "它似乎是哺乳纲一角鲸的变种。",
+            BROKENHORN = "你活该被烧喵。",
+            FOLLOWER = "他变得礼貌多了。",
+            BROKENHORN_FOLLOWER = "亲爱的，以后肯定会长回来的喵。",
         },
-        GNARWAIL_HORN = "不可思议。收进柜子里吧。",		--物品名：一角鲸的角
+        GNARWAIL_HORN = "一角鲸的\"角\"其实是它的牙齿，知道吧。",
 
-        WALKINGPLANK = "不能造一艘救生船么。",		--物品名：跳板
-        WALKINGPLANK_GRASS = "我更愿要一条救生船。",		--物品名：跳板
-        OAR = "靠臂力。",		--物品名：桨
-		OAR_DRIFTWOOD = "浮木为桨，也算趁手。",		--物品名：浮木桨
+        WALKINGPLANK = "对于受困海上的人，这是一条危险的逃跑路线。",
+        WALKINGPLANK_GRASS = "对于受困海上的人，这是一条危险的逃跑路线。",
+        OAR = "一、二；一、二！",
+		OAR_DRIFTWOOD = "更轻，更有效的设计。",
 
-		OCEANFISHINGROD = "这才是像样的海钓竿。",		--物品名：海钓竿
-		OCEANFISHINGBOBBER_NONE = "加个浮漂，准头会好。",		--物品名：鱼钩
-        OCEANFISHINGBOBBER_BALL = "鱼会喜欢这个球。",		--物品名：木球浮漂
-        OCEANFISHINGBOBBER_OVAL = "这次，它们逃不出我的爪子。",		--物品名：硬物浮漂
-		OCEANFISHINGBOBBER_CROW = "我吃鱼。乌鸦免了。",		--物品名：黑羽浮漂
-		OCEANFISHINGBOBBER_ROBIN = "红色浮漂。但愿它只引来鱼。",		--物品名：红羽浮漂
+		OCEANFISHINGROD = "结实的杆子，适合海钓。",
+		OCEANFISHINGBOBBER_NONE = "使用浮漂可以提升钓竿的准度喵。",
+        OCEANFISHINGBOBBER_BALL = "人类有记载的首次使用钓鱼浮漂是在1496年喵。",
+        OCEANFISHINGBOBBER_OVAL = "人类有记载的首次使用钓鱼浮漂是在1496年。",
+		OCEANFISHINGBOBBER_CROW = "人类有记载的首次使用钓鱼浮漂是在1496年喵。",
+		OCEANFISHINGBOBBER_ROBIN = "人类有记载的首次使用钓鱼浮漂是在1496年喵。",
+		OCEANFISHINGBOBBER_ROBIN_WINTER = "人类有记载的首次使用钓鱼浮漂是在1496年喵。",
+		OCEANFISHINGBOBBER_CANARY = "人类有记载的首次使用钓鱼浮漂是在1496年喵。",
+		OCEANFISHINGBOBBER_GOOSE = "硕大的羽毛确实让人眼前一亮喵。",
+		OCEANFISHINGBOBBER_MALBATROSS = "硕大的羽毛确实让人眼前一亮。",
 
-		OCEANFISHINGBOBBER_ROBIN_WINTER = "冬天的羽毛。颜色很克制。",		--物品名：蔚蓝羽浮漂
-		OCEANFISHINGBOBBER_CANARY = "这抹黄，鱼儿会多看两眼。",		--物品名：黄羽浮漂
-		OCEANFISHINGBOBBER_GOOSE = "鹅羽浮起时，鱼就无处可逃。",		--物品名：鹅羽浮漂
-		OCEANFISHINGBOBBER_MALBATROSS = "邪天翁的羽毛。难得一见。",		--物品名：邪天翁羽浮漂
+		OCEANFISHINGLURE_SPINNER_RED = "它在白天能更好的发挥效用。",
+		OCEANFISHINGLURE_SPINNER_GREEN = "它在黄昏能更好的发挥效用。",
+		OCEANFISHINGLURE_SPINNER_BLUE = "它在夜晚能更好的发挥效用。",
+		OCEANFISHINGLURE_SPOON_RED = "它在白天能更好的发挥效用。",
+		OCEANFISHINGLURE_SPOON_GREEN = "它在黄昏时能更好的发挥效用。",
+		OCEANFISHINGLURE_SPOON_BLUE = "它在夜晚能更好的发挥效用。",
+		OCEANFISHINGLURE_HERMIT_RAIN = "好像是配合降水使用的。",
+		OCEANFISHINGLURE_HERMIT_SNOW = "适用于降雪天气。",
+		OCEANFISHINGLURE_HERMIT_DROWSY = "真迷人！它的脊骨分泌一种强劲的神经毒素喵。",
+		OCEANFISHINGLURE_HERMIT_HEAVY = "这会确保我能抓到一条大标本。",
 
-		OCEANFISHINGLURE_SPINNER_RED = "日出色的亮片。鱼会信以为真。",		--物品名：日出旋转亮片
-		OCEANFISHINGLURE_SPINNER_GREEN = "黄昏的光泽。正适合骗鱼。",		--物品名：黄昏旋转亮片
-		OCEANFISHINGLURE_SPINNER_BLUE = "夜色的亮片。鱼看不清，正好。",		--物品名：夜间旋转亮片
-		OCEANFISHINGLURE_SPOON_RED = "匙形的饵。小鱼最容易咬。",		--物品名：日出匙型假饵
-		OCEANFISHINGLURE_SPOON_GREEN = "黄昏色的勺饵。愿者上钩。",		--物品名：黄昏匙型假饵
-		OCEANFISHINGLURE_SPOON_BLUE = "暗色的小勺。骗小鱼足够了。",		--物品名：夜间匙型假饵
-		OCEANFISHINGLURE_HERMIT_RAIN = "要懂鱼的心思，得先沾点水。",		--物品名：雨天鱼饵
-		OCEANFISHINGLURE_HERMIT_SNOW = "雪天里动手，鱼看不清是谁。",		--物品名：雪天鱼饵
-		OCEANFISHINGLURE_HERMIT_DROWSY = "麻醉的饵。有学问兜底。",		--物品名：麻醉鱼饵
-		OCEANFISHINGLURE_HERMIT_HEAVY = "沉甸甸的。分量不轻。",		--物品名：重量级鱼饵
+		OCEANFISH_SMALL_1 = "非常微小的标本。",
+		OCEANFISH_SMALL_2 = "咸水鱼的小标本。",
+		OCEANFISH_SMALL_3 = "小型生物。",
+		OCEANFISH_SMALL_4 = "它们只能长到这样大小。",
+		OCEANFISH_SMALL_5 = "我不熟悉这类的生物……",
+		OCEANFISH_SMALL_6 = "有意思，它似乎伪装错了环境喵。",
+		OCEANFISH_SMALL_7 = "哎呀，你简直太搭配我家里那个花园了。",
+		OCEANFISH_SMALL_8 = "小心啊，孩子们，一定不要直视它。",
+        OCEANFISH_SMALL_9 = "虽说颜色不同寻常，但与射水鱼并无二致。",
 
-		OCEANFISH_SMALL_1 = "小家伙。还不够塞牙，喵。",		--物品名：小孔雀鱼
-		OCEANFISH_SMALL_2 = "这般尺寸，不值一提。",		--物品名：针鼻喷墨鱼
-		OCEANFISH_SMALL_3 = "尚且年幼。放它一马？不。",		--物品名：小饵鱼
-		OCEANFISH_SMALL_4 = "幼鱼而已。成不了气候。",		--物品名：三文鱼苗
-		OCEANFISH_SMALL_5 = "一口的量。我不客气了。",		--物品名：爆米花鱼
-		OCEANFISH_SMALL_6 = "叶形的鱼。倒是应景。",		--物品名：落叶比目鱼
-		OCEANFISH_SMALL_7 = "开花的鱼。总算到手。",		--物品名：花朵金枪鱼
-		OCEANFISH_SMALL_8 = "烫。别碰我的爪子。",		--物品名：炽热太阳鱼
-		OCEANFISH_SMALL_9 = "随口一说。你总归有用。",		--物品名：口水鱼
+		OCEANFISH_MEDIUM_1 = "噢天啊……这看起来正常么喵？",
+		OCEANFISH_MEDIUM_2 = "这种物种通常喜欢深水喵。",
+		OCEANFISH_MEDIUM_3 = "噢，天啊，我相信这些是入侵物种。",
+		OCEANFISH_MEDIUM_4 = "我从来就没迷信过黑猫，更别说是鲶鱼了喵！",
+		OCEANFISH_MEDIUM_5 = "动植物的迷人组合喵。",
+		OCEANFISH_MEDIUM_6 = "似乎是欧洲鲤的一种亚种。",
+		OCEANFISH_MEDIUM_7 = "似乎是欧洲鲤的一种亚种。",
+		OCEANFISH_MEDIUM_8 = "当然，所有鱼类都是冷血动物，但这也太神奇了。",
+        OCEANFISH_MEDIUM_9 = "我推测它的颜色是多年进食无花果后导致的。",
 
-		OCEANFISH_MEDIUM_1 = "相貌不佳。但愿味道能补救。",		--物品名：泥鱼
-		OCEANFISH_MEDIUM_2 = "费了不少力气。值不值另说。",		--物品名：斑鱼
-		OCEANFISH_MEDIUM_3 = "钓鱼这事，我不曾失手。",		--物品名：浮夸狮子鱼
-		OCEANFISH_MEDIUM_4 = "通体漆黑。但愿不带晦气。",		--物品名：黑鲶鱼
-		OCEANFISH_MEDIUM_5 = "颜色俗了些。仅此而已。",		--物品名：玉米鳕鱼
-		OCEANFISH_MEDIUM_6 = "肥美。今晚有口福了，喵。",		--物品名：花锦鲤
-		OCEANFISH_MEDIUM_7 = "金色的一条。分量十足。",		--物品名：金锦鲤
-		OCEANFISH_MEDIUM_8 = "冰鲷。摸上去还凉着。",		--物品名：冰鲷鱼
-		OCEANFISH_MEDIUM_9 = "甜味。是收获的滋味。",		--物品名：甜味鱼
+		PONDFISH = "我猜应该是某种白鲑鱼喵。",
+		PONDEEL = "是鳗鱼喵。",
 
-		PONDFISH = "这一条，够我吃一整天。",		--物品名：淡水鱼
-		PONDEEL = "能成一道好菜。只要火候对。",		--物品名：活鳗鱼
-
-		FISHMEAT = "一块鱼肉。仅此而已。",		--物品名：生鱼肉
-		FISHMEAT_COOKED = "火候正好。上桌吧，喵。",		--物品名：鱼排
-		FISHMEAT_SMALL = "一小块。聊胜于无。",		--物品名：小鱼块
-		FISHMEAT_SMALL_COOKED = "熟的一小块。勉强够数。",		--物品名：熟小鱼块
+        FISHMEAT = "一块有气味的鱼肉喵。",
+        FISHMEAT_COOKED = "烤得真好。",
+        FISHMEAT_SMALL = "水生动物的肉喵。",
+        FISHMEAT_SMALL_COOKED = "小小的营养物。",
 		SPOILED_FISH =
-		{
-			GENERIC = "这气味。我不打算追究来源。",		--物品名：变质的鱼 检查状态：普通状态
-			CAN_PROCESS = "让开。这东西只配进堆肥。",		--物品名：变质的鱼 检查状态：可放入堆肥设施处理
-		},
+        {
+            GENERIC = "那块鱼肉已经变成了生物危害物喵。",
+--fallback to speech_wilson.lua             CAN_PROCESS = "only_used_by_wx78",
+        },
 
-		FISH_BOX = "塞得满满当当。像沙丁鱼那样，喵。",		--物品名：锡鱼罐
-		POCKET_SCALE = "简陋的秤。勉强能用。",		--物品名：弹簧秤
+		FISH_BOX = "海鲜的精密保鲜设备喵。",
+        POCKET_SCALE = "我随时准备好称重。",
 
-		TACKLECONTAINER = "多出来的收纳。我不讨厌。",		--物品名：钓具箱
-		SUPERTACKLECONTAINER = "费了些周折才到手。",		--物品名：超级钓具箱
+		TACKLECONTAINER = "东西收拾干净心灵才能干净喵。",
+		SUPERTACKLECONTAINER = "什么都能装、收拾的井井有条。",
 
 		TROPHYSCALE_FISH =
 		{
-			GENERIC = "来。看看我今日的收获。",		--物品名：鱼类计重器 检查状态：普通状态
-			HAS_ITEM = "重量: {weight}\n钓手: {owner}",		--物品名：鱼类计重器 检查状态：已经放置物品
-			HAS_ITEM_HEAVY = "重量: {weight}\n钓手: {owner}\n收获不俗。",		--物品名：鱼类计重器 检查状态：放置物品重量较大
-			BURNING = "若论火势，我给它满分。",		--物品名：鱼类计重器 检查状态：正在燃烧
-			BURNT = "我的战果，全成灰了。",		--物品名：鱼类计重器 检查状态：已经烧毁
-			OWNER = "并非炫耀。随意看看便好。\n重量: {weight}\n钓手: {owner}",		--物品名：鱼类计重器 检查状态：当前角色是秤上物品的主人
-			OWNER_HEAVY = "重量: {weight}\n钓手: {owner}\n确实钓到一条大的。",		--物品名：鱼类计重器 检查状态：当前角色拥有秤上的重型物品
+			GENERIC = "展示大型水生植物的设备。",
+			HAS_ITEM = "重量: {weight}\n捕获人: {owner}喵",
+			HAS_ITEM_HEAVY = "重量: {weight}\n捕获人: {owner}\n成绩喜人喵!",
+			BURNING = "天啊，这应该不属于设计功能之一。",
+			BURNT = "噢，不好...",
+			OWNER = "重量: {weight}\n捕获人: {owner}\n欧吼！看来我是胜利者了！",
+			OWNER_HEAVY = "重量: {weight}\n捕获人: {owner}\n钓鱼还挺容易的，不是吗？",
 		},
 
-		OCEANFISHABLEFLOTSAM = "沾了泥的草。仅此而已。",		--物品名：海洋残骸
+		OCEANFISHABLEFLOTSAM = "噢，真脏！",
 
-		CALIFORNIAROLL = "可惜我手边没有筷子，喵。",		--物品名：加州卷
-		SEAFOODGUMBO = "一大碗。海里的东西都在里头。",		--物品名：海鲜浓汤
-		SURFNTURF = "恰到好处。无可挑剔。",		--物品名：海鲜牛排
+		CALIFORNIAROLL = "美味的寿司卷喵。",
+		SEAFOODGUMBO = "我已经感觉到了胃灼热！",
+		SURFNTURF = "完美佳肴喵。",
 
-		WOBSTER_SHELLER = "一只调皮的龙虾。钳子不小。",		--物品名：龙虾
-		WOBSTER_DEN = "石头里藏着龙虾。别伸手。",		--物品名：龙虾窝
-		WOBSTER_SHELLER_DEAD = "下锅之后会好得多。",		--物品名：死龙虾
-		WOBSTER_SHELLER_DEAD_COOKED = "不必再等了。就是现在，喵。",		--物品名：美味的龙虾
+        WOBSTER_SHELLER = "非常有趣的无脊椎动物喵。",
+        WOBSTER_DEN = "节肢动物的家喵。",
+        WOBSTER_SHELLER_DEAD = "我也可能现在就吃掉它。",
+        WOBSTER_SHELLER_DEAD_COOKED = "晚餐准备好了喵！",
 
-		LOBSTERBISQUE = "盐可以再添一点。与我无关。",		--物品名：龙虾汤
-		LOBSTERDINNER = "清晨吃它，还算正餐么。",		--物品名：龙虾正餐
+        LOBSTERBISQUE = "我几乎忘记了真正的食物是什么味道。",
+        LOBSTERDINNER = "太堕落了。",
 
-		WOBSTER_MOONGLASS = "月光下的一只。同样调皮。",		--物品名：月光龙虾
-		MOONGLASS_WOBSTER_DEN = "月光玻璃里，藏着月光龙虾。",		--物品名：月光玻璃窝
+        WOBSTER_MOONGLASS = "这种节肢动物进化出了适合它环境的能力。",
+        MOONGLASS_WOBSTER_DEN = "看样子是某种动物的巢穴喵。",
 
-		TRIDENT = "三叉落下，动静不小。",		--物品名：刺耳三叉戟
+		TRIDENT = "它能制造出强大的波浪！",
 
 		WINCH =
 		{
-			GENERIC = "需要的时候，它能出力。",		--物品名：夹夹绞盘 检查状态：普通状态
-			RETRIEVING_ITEM = "粗重活计，交给它便是。",		--物品名：夹夹绞盘 检查状态：绞盘正在收回物品
-			HOLDING_ITEM = "吊上来的。会是什么东西。",		--物品名：夹夹绞盘 检查状态：绞盘正吊着物品
+			GENERIC = "人类使用绞盘已经有几百年的历史了。",
+			RETRIEVING_ITEM = "实践加精确度出真知喵！",
+			HOLDING_ITEM = "我抓到了个东西！",
 		},
 
-		HERMITHOUSE = {
-			GENERIC = "一座空房子。还没有人味。",		--物品名：隐士之家 检查状态：普通状态
-			BUILTUP = "只差一点点照料。",		--物品名：隐士之家 检查状态：房屋已经完成升级
-		},
+        HERMITHOUSE = {
+            GENERIC = "啧啧。瞧瞧它的状态喵……",
+            BUILTUP = "提升居住空间能极大改善一个人的心情。",
+        },
 
-		SHELL_CLUSTER = "里面该有不少好贝壳，喵。",		--物品名：贝壳堆
+        SHELL_CLUSTER = "迷人的软体动物集合！",
+        --
 		SINGINGSHELL_OCTAVE3 =
 		{
-			GENERIC = "音偏低了些。",		--物品名：低音贝壳钟 检查状态：普通状态
+			GENERIC = "嘘嘘嘘！",
 		},
 		SINGINGSHELL_OCTAVE4 =
 		{
-			GENERIC = "这就是海的声音么。",		--物品名：中音贝壳钟 检查状态：普通状态
+			GENERIC = "嘘嘘嘘喵！",
 		},
 		SINGINGSHELL_OCTAVE5 =
 		{
-			GENERIC = "它能唱到高音C。",		--物品名：高音贝壳钟 检查状态：普通状态
-		},
+			GENERIC = "嘘嘘嘘！",
+        },
 
-		CHUM = "鱼的口粮。闻着不太好。",		--物品名：鱼食
+        CHUM = "最好不要追究它的成分。",
 
-		SUNKENCHEST =
-		{
-			GENERIC = "真正的所得，是寻宝本身。",		--物品名：沉底宝箱 检查状态：普通状态
-			LOCKED = "贝壳合上了。",		--物品名：沉底宝箱 检查状态：处于锁定状态
-		},
+        SUNKENCHEST =
+        {
+            GENERIC = "体型庞大，功能齐全的软体动物。",
+            LOCKED = "哦，亲爱的。我们需要一把钥匙。",
+        },
 
-		HERMIT_BUNDLE = "这些，她多得是，喵。",		--物品名：一包谢意
-		HERMIT_BUNDLE_SHELLS = "她确实做贝壳的买卖。",		--物品名：贝壳钟包
+        HERMIT_BUNDLE = "多多益善！",
+        HERMIT_BUNDLE_SHELLS = "多多益善喵！",
 
-		RESKIN_TOOL = "这粉尘。颇对我的胃口。",		--物品名：清洁扫把
-		MOON_FISSURE_PLUGGED = "不合学理。却确实有用。",		--物品名：堵住的裂缝
+        RESKIN_TOOL = "我们早就应该大扫除了。",
+        MOON_FISSURE_PLUGGED = "老天啊，堵了这么多，多么坚持不懈啊！",
 
 
+		----------------------- ROT STRINGS GO ABOVE HERE ------------------
 
-		WOBYBIG =
-		{
-			"你给她喂了什么。以学问之名。",		--物品名：沃比 检查状态：第1条台词变体
-			"以学问之名，你喂了她什么。",		--物品名：沃比 检查状态：第2条台词变体
-		},
-		WOBYSMALL =
-		{
-			"有据可查：养狗能宽心。",		--物品名：沃比 检查状态：第1条台词变体
-			"养狗有益心情。这话有依据。",		--物品名：沃比 检查状态：第2条台词变体
-		},
-		WALTERHAT = "年轻时的我，也不喜“户外”。",		--物品名：松树先锋队帽子
+		-- Walter
+        WOBYBIG =
+        {
+            "There must be a mutagen in monster meat that triggers her growth.",
+            "There must be a mutagen in monster meat that triggers her growth.",
+        },
+        WOBYSMALL =
+        {
+            "I was always more of a cat person, but she is very sweet.",
+            "I was always more of a cat person, but she is very sweet.",
+        },
+		WALTERHAT = "我想，人必须努力保持年轻的心态。",
 		SLINGSHOT =
 		{
-			GENERIC = "凡是玻璃，都怕它。",		--物品名：可靠的弹弓 检查状态：普通状态
-			NOT_MINE = "不属于我的，不该碰。",		--物品名：可靠的弹弓 检查状态：不属于当前角色
+			GENERIC = "这个一定小心使用，亲爱的喵。",
+--fallback to speech_wilson.lua 			NOT_MINE = "only_used_by_walter",
 		},
-		SLINGSHOTAMMO_ROCK = "下一发就是它。",		--物品名：鹅卵石
-		SLINGSHOTAMMO_MARBLE = "大理石弹。出手很稳。",		--物品名：大理石弹
-		SLINGSHOTAMMO_THULECITE = "铥石弹。带着诅咒。",		--物品名：诅咒弹药
-		SLINGSHOTAMMO_GOLD = "金弹。贵，但好用。",		--物品名：黄金弹药
-		SLINGSHOTAMMO_HONEY = "黏的。沾上就麻烦。",		--物品名：黏黏弹
-		SLINGSHOTAMMO_SLOW = "它会让对方慢下来。",		--物品名：减速弹药
-		SLINGSHOTAMMO_FREEZE = "冻住。省些力气。",		--物品名：冰冻弹药
-		SLINGSHOTAMMO_POOP = "不太体面。但确实有效。",		--物品名：便便弹
-		SLINGSHOTAMMO_STINGER = "带刺的。会叮人。",		--物品名：针刺弹
-		SLINGSHOTAMMO_MOONGLASS = "月石弹。光倒好看。",		--物品名：月亮弹
-		SLINGSHOTAMMO_GELBLOB = "黏稠的东西。别沾手。",		--物品名：恶液弹
-		SLINGSHOTAMMO_SCRAPFEATHER = "废料做的。带着电。",		--物品名：电击废料弹
-		SLINGSHOTAMMO_DREADSTONE = "绝望凝成的小石子。",		--物品名：绝望小石
-		SLINGSHOTAMMO_GUNPOWDER = "会响。请捂耳。",		--物品名：轰轰弹
-		SLINGSHOTAMMO_LUNARPLANTHUSK = "亮茄的壳。硬得可以。",		--物品名：亮茄外壳弹药
-		SLINGSHOTAMMO_PUREBRILLIANCE = "纯粹的辉煌。刺眼。",		--物品名：纯粹辉煌弹药
-		SLINGSHOTAMMO_HORRORFUEL = "恐惧装进弹药。合适。",		--物品名：纯粹恐惧弹药
-		PORTABLETENT = "许久没睡过安稳觉了。",		--物品名：宿营帐篷
-		PORTABLETENT_ITEM = "有了帐篷，也别得意。",		--物品名：帐篷卷
+		SLINGSHOTAMMO_ROCK = "亲爱的，自己弄脏的记得要自己打扫。",
+		SLINGSHOTAMMO_MARBLE = "亲爱的，自己弄脏的记得要自己打扫。",
+		SLINGSHOTAMMO_THULECITE = "亲爱的，自己弄脏的记得要自己打扫。",
+        SLINGSHOTAMMO_GOLD = "亲爱的，自己弄脏的记得要自己打扫。",
+		SLINGSHOTAMMO_HONEY = "亲爱的，自己弄脏的记得要自己打扫喵。",
+        SLINGSHOTAMMO_SLOW = "亲爱的，自己弄脏的记得要自己打扫。",
+        SLINGSHOTAMMO_FREEZE = "亲爱的，自己弄脏的记得要自己打扫。",
+		SLINGSHOTAMMO_POOP = "噢，不好...",
+		SLINGSHOTAMMO_STINGER = "亲爱的，自己弄脏的记得要自己打扫。",
+		SLINGSHOTAMMO_MOONGLASS = "亲爱的，自己弄脏的记得要自己打扫。",
+		SLINGSHOTAMMO_GELBLOB = "亲爱的，自己弄脏的记得要自己打扫。",
+		SLINGSHOTAMMO_SCRAPFEATHER = "亲爱的，自己弄脏的记得要自己打扫。",
+        SLINGSHOTAMMO_DREADSTONE = "亲爱的，自己弄脏的记得要自己打扫。",
+        SLINGSHOTAMMO_GUNPOWDER = "亲爱的，自己弄脏的记得要自己打扫。",
+        SLINGSHOTAMMO_LUNARPLANTHUSK = "亲爱的，自己弄脏的记得要自己打扫喵。",
+        SLINGSHOTAMMO_PUREBRILLIANCE = "亲爱的，自己弄脏的记得要自己打扫。",
+        SLINGSHOTAMMO_HORRORFUEL = "亲爱的，自己弄脏的记得要自己打扫。",
+        PORTABLETENT = "这是一个可爱的帐篷，但我恐怕没有什么用处喵。",
+        PORTABLETENT_ITEM = "多么实用啊喵。",
 
-		BATTLESONG_DURABILITY = "戏文于我，坐立难安。",		--物品名：武器化的颤音
-		BATTLESONG_HEALTHGAIN = "歌谣。听着有些心酸。",		--物品名：心碎歌谣
-		BATTLESONG_SANITYGAIN = "华彩。倒还提神。",		--物品名：醍醐灌顶华彩
-		BATTLESONG_SANITYAURA = "美声颂。勇气也能唱出来。",		--物品名：英勇美声颂
-		BATTLESONG_FIRERESISTANCE = "看戏前烧了背心一个洞。我称之戏剧性熨烫。",		--物品名：防火假声
-		BATTLESONG_INSTANT_TAUNT = "我可不是持照的诗人。",		--物品名：粗鲁插曲
-		BATTLESONG_INSTANT_PANIC = "诗人这行，我不持照。",		--物品名：惊心独白
+        -- Wigfrid
+        BATTLESONG_DURABILITY = "如果我没记错的话，这是音乐记谱符号喵。",
+        BATTLESONG_HEALTHGAIN = "如果我没记错的话，这是音乐记谱符号。",
+        BATTLESONG_SANITYGAIN = "如果我没记错的话，这是音乐记谱符号喵。",
+        BATTLESONG_SANITYAURA = "如果我没记错的话，这是音乐记谱符号喵。",
+        BATTLESONG_FIRERESISTANCE = "如果我没记错的话，这是音乐记谱符号喵。",
+        BATTLESONG_INSTANT_TAUNT = "哦，我的天，这些都是一些相当丰富多彩的语汇。",
+        BATTLESONG_INSTANT_PANIC = "啊，我最喜欢那些古典的唱词了喵！",
 
-		MUTATOR_WARRIOR = "韦伯，这份涂鸦……我不打算尝。",		--物品名：战士变身涂鸦
-		MUTATOR_DROPPER = "我刚用过饭。给你的蜘蛛朋友吧。",		--物品名：悬蛛变身涂鸦
-		MUTATOR_HIDER = "这份涂鸦，我看你自己留着更好。",		--物品名：洞穴变身涂鸦
-		MUTATOR_SPITTER = "我方才用过饭。真的。你留着。",		--物品名：喷吐变身涂鸦
-		MUTATOR_MOON = "这份涂鸦，我敬谢不敏。",		--物品名：破碎变身涂鸦
-		MUTATOR_HEALER = "好意心领。涂鸦就不必了。",		--物品名：护士变身涂鸦
-		SPIDER_WHISTLE = "别吹。我不想招来蜘蛛。",		--物品名：韦伯口哨
-		SPIDERDEN_BEDAZZLER = "某人的手艺，见长了。",		--物品名：蛛巢装饰套装
-		SPIDER_HEALER = "蜘蛛会自愈了。真是好消息。",		--物品名：护士蜘蛛
-		SPIDER_REPELLENT = "若能为我所用，倒值得研究。",		--物品名：驱赶盒子
-		SPIDER_HEALER_ITEM = "见着蜘蛛，我会转交。也许。",		--物品名：治疗黏团
+        -- Webber
+        MUTATOR_WARRIOR = "多么有趣啊！它被摄入后似乎会改变蛛形纲动物的形态。",
+        MUTATOR_DROPPER = "亲爱的，它们很可爱。",
+        MUTATOR_HIDER = "多么有趣啊！它被摄入后似乎会改变蛛形纲动物的形态。",
+        MUTATOR_SPITTER = "亲爱的，它们很可爱喵。",
+        MUTATOR_MOON = "多么有趣啊！它被摄入后似乎会改变蛛形纲动物的形态喵。",
+        MUTATOR_HEALER = "亲爱的，它们很可爱。",
+        SPIDER_WHISTLE = "蛛形纲动物似乎觉得这种声音很好听。",
+        SPIDERDEN_BEDAZZLER = "完成后一定要整理好，年轻的蛛形纲动物。",
+        SPIDER_HEALER = "这种蛛形纲动物进化出了治疗周围其他人的能力。",
+        SPIDER_REPELLENT = "不幸的是，似乎这些蛛形纲动物只对它们的同类有反应喵。",
+        SPIDER_HEALER_ITEM = "这种膏药似乎是专门为治疗蛛形纲动物而配制的。",
 
-		GHOSTLYELIXIR_SLOWREGEN = "嗯。很有章法。",		--物品名：亡者补药
-		GHOSTLYELIXIR_FASTREGEN = "灵魂的药。颇有讲究。",		--物品名：灵魂万灵药
-		GHOSTLYELIXIR_SHIELD = "不屈。名字起得不错。",		--物品名：不屈药剂
-		GHOSTLYELIXIR_ATTACK = "夜影调的。气味刺鼻。",		--物品名：夜影万金油
-		GHOSTLYELIXIR_SPEED = "精油。步子会轻些。",		--物品名：强健精油
-		GHOSTLYELIXIR_RETALIATION = "复仇也能蒸馏。有趣。",		--物品名：蒸馏复仇
-		GHOSTLYELIXIR_REVIVE = "这东西，最好别用上。",		--物品名：恐怖经历
+		-- Wendy
+		GHOSTLYELIXIR_SLOWREGEN = "按颜色分了类，标识清晰。干得漂亮！",
+		GHOSTLYELIXIR_FASTREGEN = "按颜色分了类，标识清晰。干得漂亮！",
+		GHOSTLYELIXIR_SHIELD = "按颜色分了类，标识清晰。干得漂亮！",
+		GHOSTLYELIXIR_ATTACK = "按颜色分了类，标识清晰。干得漂亮喵！",
+		GHOSTLYELIXIR_SPEED = "按颜色分了类，标识清晰。干得漂亮喵！",
+		GHOSTLYELIXIR_RETALIATION = "按颜色分了类，标识清晰。干得漂亮！",
+        GHOSTLYELIXIR_REVIVE = "按颜色分了类，标识清晰。干得漂亮！",
 		SISTURN =
 		{
-			GENERIC = "添些花，会好看得多。",		--物品名：姐妹骨灰罐 检查状态：普通状态
-			SOME_FLOWERS = "再多些花，也就够了。",		--物品名：姐妹骨灰罐 检查状态：放置了少量花朵
-			LOTS_OF_FLOWERS = "这束花。开得正好。",		--物品名：姐妹骨灰罐 检查状态：放置了大量普通花朵
-			LOTS_OF_FLOWERS_EVIL = "这些花。让我不安。",		--物品名：姐妹骨灰罐 检查状态：放置了大量恶魔花
-			LOTS_OF_FLOWERS_BLOSSOM = "声音很怪。别久留。",		--物品名：姐妹骨灰罐 检查状态：放置了大量月树花
+			GENERIC = "可怜的亲爱的。",
+			SOME_FLOWERS = "花朵是传统上祭献逝者的一种供品。",
+			LOTS_OF_FLOWERS = "花朵似乎吐露着芬芳。",
+            LOTS_OF_FLOWERS_EVIL = "这些花会影响精神稳定。",
+            LOTS_OF_FLOWERS_BLOSSOM = "They generate an unearthly sound.",   
 		},
 
-		WORTOX_SOUL = "灵魂。看着竟不错。", 		--物品名：灵魂
-		WORTOX_NABBAG = "和坎普斯一个模子刻的。",		--物品名：强抢袋
-		WORTOX_REVIVER = "它的用处，我猜得到。",		--物品名：双尾心
-		WORTOX_SOULJAR = "细想之下，这罐子不寻常。",		--物品名：灵魂罐
+        --Wortox
+--fallback to speech_wilson.lua         WORTOX_SOUL = "only_used_by_wortox", --only wortox can inspect souls
+        --WORTOX_DECOY is not needed because it uses the default WORTOX inspection.
+        WORTOX_NABBAG = "他可千万别跟那个讨厌的坎普斯学坏喵。",
+        WORTOX_REVIVER = "只要人人都为自己的行为负责，我们就永远都用不到它。",
+        WORTOX_SOULJAR = "灵魂的容器。",
 
-		PORTABLECOOKPOT_ITEM =
-		{
-			GENERIC = "这才叫烹饪。",		--物品名：便携烹饪锅 检查状态：普通状态
-			DONE = "好了。可以开饭，喵。",		--物品名：便携烹饪锅 检查状态：处理已经完成
+        PORTABLECOOKPOT_ITEM =
+        {
+            GENERIC = "能吃点像样的东西真是太好了。",
+            DONE = "闻起来很滋补。",
 
-			COOKING_LONG = "还需要些时候。急不得。",		--物品名：便携烹饪锅 检查状态：正在烹饪，剩余时间较长
-			COOKING_SHORT = "就快好了。",		--物品名：便携烹饪锅 检查状态：正在烹饪，即将完成
-			EMPTY = "空的。不必掀盖。",		--物品名：便携烹饪锅 检查状态：内容为空
-		},
+			COOKING_LONG = "耐心是美德！",
+			COOKING_SHORT = "马上就能完成喵。",
+			EMPTY = "嗯，我来动手弄点吃的吧。",
+        },
 
-		PORTABLEBLENDER_ITEM = "把食材都搅在一起。",		--物品名：便携研磨器
-		PORTABLESPICER_ITEM =
-		{
-			GENERIC = "香料。能给菜添些层次。",		--物品名：便携香料站 检查状态：普通状态
-			DONE = "该会更可口些。",		--物品名：便携香料站 检查状态：处理已经完成
-		},
-		SPICEPACK = "厨艺的一小步。",		--物品名：厨师袋
-		SPICE_GARLIC = "粉末。气味很有威力。",		--物品名：蒜粉
-		SPICE_SUGAR = "甜。甜得毫不掩饰，喵。",		--物品名：蜂蜜水晶
-		SPICE_CHILI = "一壶液态的火。",		--物品名：辣椒碎
-		SPICE_SALT = "钠。适量便好。",		--物品名：调味盐
-		MONSTERTARTARE = "这附近总该有别的可吃。",		--物品名：怪物鞑靼
-		FRESHFRUITCREPES = "甜果。早餐该有的样子。",		--物品名：鲜果可丽饼
-		FROGFISHBOWL = "鱼腹里，竟塞着一只蛙。",		--物品名：蓝带鱼排
-		POTATOTORNADO = "土豆。卷着龙卷风的力气。",		--物品名：花式回旋块茎
-		DRAGONCHILISALAD = "辣度。但愿我承受得住。",		--物品名：辣龙椒沙拉
-		GLOWBERRYMOUSSE = "沃利的手艺，确实好。",		--物品名：发光浆果慕斯
-		VOLTGOATJELLY = "出人意料的好，喵。",		--物品名：伏特羊肉冻
-		NIGHTMAREPIE = "这一口，有点吓人。",		--物品名：恐怖国王饼
-		BONESOUP = "沃利骨子里就是个厨子。",		--物品名：骨头汤
-		MASHEDPOTATOES = "听说烹饪近乎化学。我该试试。",		--物品名：奶油土豆泥
-		POTATOSOUFFLE = "可口的饭菜，我快忘了滋味。",		--物品名：蓬松土豆蛋奶酥
-		MOQUECA = "他的才华在锅里。我的在纸上。",		--物品名：海鲜杂烩
-		GAZPACHO = "不讲道理。怎么这样好吃。",		--物品名：芦笋冷汤
-		ASPARAGUSSOUP = "气味很好。值得一试。",		--物品名：芦笋汤
-		VEGSTINGER = "芹菜能做吸管么。",		--物品名：蔬菜鸡尾酒
-		BANANAPOP = "别冻我的脑子。它还有用。",		--物品名：香蕉冻
-		CEVICHE = "换个大些的碗。这个太小。",		--物品名：酸橘汁腌鱼
-		SALSA = "辣。……真的很辣。",		--物品名：生鲜萨尔萨酱
-		PEPPERPOPPER = "这一口，分量十足。",		--物品名：爆炒填馅辣椒
+        PORTABLEBLENDER_ITEM = "非常活泼的厨具。",
+        PORTABLESPICER_ITEM =
+        {
+            GENERIC = "得花点力气了。",
+            DONE = "调味品准备好了喵。",
+        },
+        SPICEPACK = "这应该能防止我的粮食变坏喵！",
+        SPICE_GARLIC = "苍天啊，怎么这么大的味儿喵。",
+        SPICE_SUGAR = "果糖。",
+        SPICE_CHILI = "我不喜欢吃辣喵。",
+        SPICE_SALT = "捏一点就够了喵。",
+        MONSTERTARTARE = "盛装打扮的怪物肉。",
+        FRESHFRUITCREPES = "吃完手会黏黏的。",
+        FROGFISHBOWL = "我主动要求试吃喵。",
+        POTATOTORNADO = "真有创意！",
+        DRAGONCHILISALAD = "就喜欢新鲜的绿叶蔬菜喵。",
+        GLOWBERRYMOUSSE = "全新的菜色。太棒了！",
+        VOLTGOATJELLY = "有限的材料缺做出此等美味，着实令人刮目相看。",
+        NIGHTMAREPIE = "吃起来有些像魔法。",
+        BONESOUP = "美味极了。再来一碗。",
+        MASHEDPOTATOES = "忍不住想试几口喵。",
+        POTATOSOUFFLE = "看起来很棒，亲爱的。",
+        MOQUECA = "真是才华横溢。",
+        GAZPACHO = "啊！经典的西班牙美食喵。",
+        ASPARAGUSSOUP = "难闻，但相当营养。",
+        VEGSTINGER = "真是辣",
+        BANANAPOP = "嗯，这难道不提神吗？",
+        CEVICHE = "可以再加一点调味汁。",
+        SALSA = "我的天，味道真刺激！",
+        PEPPERPOPPER = "对我而言有一点辣了！",
 
-		TURNIP = "生萝卜。泥土气很重。",		--物品名：大萝卜
-		TURNIP_COOKED = "烹饪，是学问的实践。",		--物品名：烤大萝卜
-		TURNIP_SEEDS = "圆种子。形态古怪。",		--物品名：圆形种子
+        TURNIP = "根部可食用的芸薹属植物。",
+        TURNIP_COOKED = "烤芸薹属植物喵。",
+        TURNIP_SEEDS = "亲爱的，不种下的话它是不能生长的。",
 
-		GARLIC = "最古老的口气清新剂。",		--物品名：大蒜
-		GARLIC_COOKED = "焦黄得恰到好处。",		--物品名：烤大蒜
-		GARLIC_SEEDS = "一荚种子。形状古怪。",		--物品名：种子荚
+        GARLIC = "百合科葱属植物，洋葱葱属植物的近亲。",
+        GARLIC_COOKED = "烤百合科葱属植物。",
+        GARLIC_SEEDS = "亲爱的，不种下的话它是不能生长的喵。",
 
-		ONION = "看着很脆。切开才知道。",		--物品名：洋葱
-		ONION_COOKED = "一次成功的反应。",		--物品名：烤洋葱
-		ONION_SEEDS = "尖头种子。一小撮。",		--物品名：尖形种子
+        ONION = "可食用的球茎状洋葱葱属植物。",
+        ONION_COOKED = "烤洋葱葱属植物。",
+        ONION_SEEDS = "亲爱的，不种下的话它是不能生长的喵。",
 
-		POTATO = "地下的苹果。姑且这么说。",		--物品名：土豆
-		POTATO_COOKED = "温度的功劳。",		--物品名：烤土豆
-		POTATO_SEEDS = "毛茸茸的种子。有点可爱，喵。",		--物品名：毛茸茸的种子
+        POTATO = "茄科茄属植物马铃薯，在某些文化里属于主食。",
+        POTATO_COOKED = "烤茄科茄属植物马铃薯。",
+        POTATO_SEEDS = "亲爱的，不种下的话它是不能生长的。",
 
-		TOMATO = "红的。里头全是学问。",		--物品名：番茄
-		TOMATO_COOKED = "懂了原理，做饭不难。",		--物品名：烤番茄
-		TOMATO_SEEDS = "带刺的种子。小心拿。",		--物品名：带刺的种子
+        TOMATO = "茄科茄属植物西红柿的果实喵。",
+        TOMATO_COOKED = "烤茄科茄属植物西红柿。",
+        TOMATO_SEEDS = "亲爱的，不种下的话它是不能生长的喵。",
 
-		ASPARAGUS = "一种蔬菜。仅此而已。",		--物品名：芦笋
-		ASPARAGUS_COOKED = "据说对我有益。",		--物品名：烤芦笋
-		ASPARAGUS_SEEDS = "不过是些种子。",		--物品名：筒状种子
+        ASPARAGUS = "富含膳食纤维。",
+        ASPARAGUS_COOKED = "它被消化的时候会释放出硫化合物喵。",
+        ASPARAGUS_SEEDS = "亲爱的，不种下的话它是不能生长的喵。",
 
-		PEPPER = "一只烈性的辣椒。",		--物品名：辣椒
-		PEPPER_COOKED = "它本就该辣。",		--物品名：烤辣椒
-		PEPPER_SEEDS = "几粒种子。收好。",		--物品名：块状种子
+        PEPPER = "如果没错的话，应该是辣椒属的作物。",
+        PEPPER_COOKED = "我要小心，千万不能揉眼睛。",
+        PEPPER_SEEDS = "亲爱的，不种下的话它是不能生长的。",
 
-		WEREITEM_BEAVER = "北方的道理，与这里不同。",		--物品名：俗气海狸像
-		WEREITEM_GOOSE = "看得我毛都要竖起来。",		--物品名：俗气鹅像
-		WEREITEM_MOOSE = "一头受咒的鹿。没什么稀奇。",		--物品名：俗气鹿像
+        WEREITEM_BEAVER = "看起来会引发灾难。",
+        WEREITEM_GOOSE = "一种对加拿大鹅的艺术呈现喵。",
+        WEREITEM_MOOSE = "亲爱的，有人会不小心绊倒的。",
 
-		MERMHAT = "终于可以真面目示人，喵。",        		--物品名：聪明的伪装
-		MERMTHRONE =
-		{
-			GENERIC = "配得上沼泽之王的位子。",		--物品名：皇家地毯 检查状态：普通状态
-			BURNT = "那王座本就有股鱼腥。",		--物品名：皇家地毯 检查状态：已经烧毁
-		},
-		MOSQUITOMUSK = "那些吸血鬼，别想近身。",		--物品名：小痒痒
-		MOSQUITOBOMB = "手有些痒。想扔出去。",		--物品名：蚊子炸弹
-		MOSQUITOFERTILIZER = "植物竟不嫌弃它。",		--物品名：嗡嗡肥料
-		MOSQUITOMERMSALVE = "鱼人之间最时兴的玩意。",		--物品名：蚊血注射液
+        MERMHAT = "I'm not eager to test out its effectiveness.",        
+        MERMTHRONE =
+        {
+            GENERIC = "这种\"坐的下就给你坐\"的君主筛选,我再熟悉不过了喵。",
+            BURNT = "哦，天啊，他们得从头来过了喵。",
+        },
+        MOSQUITOMUSK = "费洛蒙能让人不被诅咒的吸血虫察觉喵。",
+        MOSQUITOBOMB = "绝对恐怖。它让我浑身起疙瘩喵。",
+        MOSQUITOFERTILIZER = "肥料的效果与臭味成正比。",
+        MOSQUITOMERMSALVE = "注入新鲜血液似乎能增强鱼人的整体健康。",
 
-		MERMTHRONE_CONSTRUCTION =
-		{
-			GENERIC = "她究竟在打什么主意。",		--物品名：皇家手工套装 检查状态：普通状态
-			BURNT = "再也看不出原貌了。",		--物品名：皇家手工套装 检查状态：已经烧毁
-		},
-		MERMHOUSE_CRAFTED =
-		{
-			GENERIC = "模样倒还算可爱。",		--物品名：鱼人工艺屋 检查状态：普通状态
-			BURNT = "气味刺鼻。",		--物品名：鱼人工艺屋 检查状态：已经烧毁
-		},
+        MERMTHRONE_CONSTRUCTION =
+        {
+            GENERIC = "别被碎片割到，亲爱的。",
+            BURNT = "噢，天啊……",
+        },
+        MERMHOUSE_CRAFTED =
+        {
+            GENERIC = "我很欣慰她在做建设性的工作喵。",
+            BURNT = "噢，不好...",
+        },
 
-		MERMWATCHTOWER_REGULAR = "找到国王，他们就有了精神。",		--物品名：普通鱼人瞭望塔
-		MERMWATCHTOWER_NOKING = "守卫还在。王却不在了。",		--物品名：无鱼人之王时的鱼人瞭望塔
-		MERMKING = "陛下。",		--物品名：鱼人之王
-		MERMGUARD = "站在他们中间，竟觉得安稳。",		--物品名：忠诚鱼人守卫
-		MERM_PRINCE = "他们讲先来后到。也算规矩。",		--物品名：皇室练习生
+        MERMWATCHTOWER_REGULAR = "他们看起来找到了新领袖。",
+        MERMWATCHTOWER_NOKING = "原始但却高效的堡垒。",
+        MERMKING = "这里他说了算。",
+        MERMGUARD = "皇家保镖。",
+        MERM_PRINCE = "很明显的，这就是储君喵。",
 
-		SQUID = "预感告诉我，它有用。",		--物品名：鱿鱼
+        SQUID = "发光纲头足属！多么美丽的生物发光喵！",
 
-		GHOSTFLOWER = "我的理性拒绝相信这个。",		--物品名：哀悼荣耀
-		SMALLGHOST = "你这个小东西。不算可怕。",		--物品名：小惊吓
+		GHOSTFLOWER = "恐怕我并不熟悉这种物种喵。",
+        SMALLGHOST = "单靠你可爱的样子不足以赢得我的信任！",
 
-		CRABKING =
-		{
-			GENERIC = "哦。是只大蟹。",		--物品名：帝王蟹 检查状态：普通状态
-			INERT = "这座城堡，得翻修一番。",		--物品名：帝王蟹 检查状态：缺少激活条件，处于静止状态
-		},
-		CRABKING_CLAW = "当心那只钳子。",		--物品名：巨钳
+        CRABKING =
+        {
+            GENERIC = "不知它硕大的体型是天然演化，还是月光引起的突变？",
+            INERT = "像一个珠宝架喵。",
+        },
+		CRABKING_CLAW = "谢天谢地，我对贝类不过敏。",
 
-		MESSAGEBOTTLE = "也许是给我的。谁知道呢。",		--物品名：瓶中信
-		MESSAGEBOTTLEEMPTY = "空的。什么都没有。",		--物品名：空瓶子
+		MESSAGEBOTTLE = "不是最有效的寄件方法。",
+		MESSAGEBOTTLEEMPTY = "这种类型的瓶子被广泛用于制作罐头。",
 
-		MEATRACK_HERMIT =
-		{
-			DONE = "肉干成了。可以吃。",		--物品名：晾肉架 检查状态：处理已经完成
-			DRYING = "风干需要时间。等着。",		--物品名：晾肉架 检查状态：肉类正在晾晒
-			DRYINGINRAIN = "雨天晾肉，得多等些时候。",		--物品名：晾肉架 检查状态：雨中仍挂着肉类，晾晒暂停
-			GENERIC = "挂在这里，应当妥当。",		--物品名：晾肉架 检查状态：普通状态
-			BURNT = "架子烧没了。",		--物品名：晾肉架 检查状态：已经烧毁
-			DONE_NOTMEAT = "按行话说，这叫作“干燥”。",		--物品名：晾肉架 检查状态：非肉类晾晒已经完成
-			DRYING_NOTMEAT = "风干这件事，谈不上学问。",		--物品名：晾肉架 检查状态：非肉类正在晾晒
-			DRYINGINRAIN_NOTMEAT = "雨，请让一让。改日再来。",		--物品名：晾肉架 检查状态：雨中仍挂着非肉类，晾晒暂停
-		},
-		BEEBOX_HERMIT =
-		{
-			READY = "里头满着蜜，喵。",		--物品名：蜂箱 检查状态：已经准备就绪
-			FULLHONEY = "蜜已经装到顶了。",		--物品名：蜂箱 检查状态：蜂蜜储量已满
-			GENERIC = "不知里头有没有一点甜。",		--物品名：蜂箱 检查状态：普通状态
-			NOHONEY = "空的。一滴也无。",		--物品名：蜂箱 检查状态：没有蜂蜜
-			SOMEHONEY = "还得再等等。",		--物品名：蜂箱 检查状态：存有少量蜂蜜
-			BURNT = "怎么会烧起来。",		--物品名：蜂箱 检查状态：已经烧毁
-		},
+        MEATRACK_HERMIT =
+        {
+            DONE = "这个过程已经完成了喵。",
+            DRYING = "脱水是一个缓慢的过程喵。",
+            DRYINGINRAIN = "下雨让脱水过程暂停了喵。",
+            GENERIC = "看来我们的几丁质的朋友可以使用一些帮助。",
+            BURNT = "它似乎并不是很牢固喵。",
+            DONE_NOTMEAT = "这个过程已经完成了。",
+            DRYING_NOTMEAT = "脱水是一个缓慢的过程。",
+            DRYINGINRAIN_NOTMEAT = "下雨让脱水过程暂停了喵。",
+        },
+        BEEBOX_HERMIT =
+        {
+            READY = "可以在它那里采到蜜。",
+            FULLHONEY = "可以在它那里采到蜜。",
+            GENERIC = "它似乎是一种老式的养蜂场。",
+            NOHONEY = "里面没有蜂蜜。",
+            SOMEHONEY = "还没到收获蜂蜜的时候喵。",
+            BURNT = "可怜的蜜蜂喵！",
+        },
 
-		HERMITCRAB = "独居久了，难免寂寞。",		--物品名：寄居蟹隐士
+        HERMITCRAB = "天呀，她有点粗鲁，不是吗喵？",
 
-		HERMIT_PEARL = "我会好好保管。",		--物品名：珍珠的珍珠
-		HERMIT_CRACKED_PEARL = "我……没能护住它。",		--物品名：开裂珍珠
+        HERMIT_PEARL = "噢，亲爱的，我真希望能找到他。",
+        HERMIT_CRACKED_PEARL = "我应该告诉她。",
 
-		WATERPLANT = "不动它的藤壶，它便不为难我们，喵。",		--物品名：海草
-		WATERPLANT_BOMB = "原来是种子。",		--物品名：种壳
-		WATERPLANT_BABY = "尚在萌芽。",		--物品名：海芽
-		WATERPLANT_PLANTER = "海中岩上，它长得最好。",		--物品名：海芽插穗
+        -- DSEAS
+        WATERPLANT = "我对这个品种的海生植物并不熟悉喵。",
+        WATERPLANT_BOMB = "我们最好躲开这些。",
+        WATERPLANT_BABY = "这个一定是个幼体。",
+        WATERPLANT_PLANTER = "也许我有天会重新回到园艺领域。",
 
-		SHARK = "或许我们需要一艘更大的船。",		--物品名：岩石大白鲨
+        SHARK = "太神奇了！整个下巴似乎是由活石组成的！",
 
-		MASTUPGRADE_LAMP_ITEM = "我的主意，向来是亮的。",		--物品名：甲板照明灯
-		MASTUPGRADE_LIGHTNINGROD_ITEM = "陆上与海上的电，都归我管。",		--物品名：避雷导线
+        MASTUPGRADE_LAMP_ITEM = "我特别欣赏一盏好的阅读灯。",
+        MASTUPGRADE_LIGHTNINGROD_ITEM = "一个非常明智的安全措施。",
 
-		WATERPUMP = "灭火很有效。",		--物品名：消防泵
+        WATERPUMP = "这只是常识。",
 
-		BARNACLE = "不像指关节。倒像石头。",		--物品名：藤壶
-		BARNACLE_COOKED = "听说这是道珍馐。",		--物品名：熟藤壶
+        BARNACLE = "古代的人认为鹅是由藤壶长出来的。你能想象吗？",
+        BARNACLE_COOKED = "正如我所猜测的那样，它的味道一点也不像鹅肉。",
 
-		BARNACLEPITA = "不看清它是藤壶时，味道更好。",		--物品名：藤壶皮塔饼
-		BARNACLESUSHI = "筷子似乎又放错了地方。",		--物品名：藤壶握寿司
-		BARNACLINGUINE = "把面递过来。",		--物品名：藤壶中细面
-		BARNACLESTUFFEDFISHHEAD = "饿到这般地步，竟连它也考虑。",		--物品名：酿鱼头
+        BARNACLEPITA = "一个相当有趣的组合。",
+        BARNACLESUSHI = "我想我已经开始喜欢上它了。",
+        BARNACLINGUINE = "哦，天哪，味道十分丰富。",
+        BARNACLESTUFFEDFISHHEAD = "我不认为我可以忍受它喵。",
 
-		LEAFLOAF = "叶与肉。来历不明。",		--物品名：叶肉糕
-		LEAFYMEATBURGER = "虽是素的。仍显得残忍。",		--物品名：素食堡
-		LEAFYMEATSOUFFLE = "这门手艺，怕是走偏了。",		--物品名：果冻沙拉
-		MEATYSALAD = "一份沙拉，竟这般顶饱。",		--物品名：牛肉绿叶菜
+        LEAFLOAF = "如此不寻常的味道！",
+        LEAFYMEATBURGER = "至少我不用担心不够熟。",
+        LEAFYMEATSOUFFLE = "好像是用一种植物源的明胶做的喵。",
+        MEATYSALAD = "尽管是沙拉，但是它还有不少蛋白质。",
 
+        -- GROTTO
 
-		MOLEBAT = "一只规规矩矩的小吸血鬼。",		--物品名：裸鼹蝠
-		MOLEBATHILL = "那窝里藏着什么，不好说。",		--物品名：裸鼹蝠丘
+		MOLEBAT = "我猜想这令人印象深刻的鼻子一定是为了弥补它糟糕的视力喵。",
+        MOLEBATHILL = "这个小山丘似乎主要由脓鼻涕和泥组成。",
 
-		BATNOSE = "这是谁的鼻子。有人知道么。",		--物品名：裸露鼻孔
-		BATNOSE_COOKED = "烤过之后，闻着还是鼻子。",		--物品名：炭烤鼻孔
-		BATNOSEHAT = "戴上它，喝奶不必动手，喵。",		--物品名：牛奶帽
+        BATNOSE = "生物的进化真的很了不起。",
+        BATNOSE_COOKED = "稍微好一些了。",
+        BATNOSEHAT = "多么……有创意。",
 
-		MUSHGNOME = "它大概会定期发作。",		--物品名：蘑菇地精
+        MUSHGNOME = "我应该将你归类为动物还是真菌呢？",
 
-		SPORE_MOON = "离这些孢子远些。",		--物品名：月亮孢子
+        SPORE_MOON = "一种古怪而又有效的防御机制。",
 
-		MOON_CAP = "看着就不太能吃。",		--物品名：月亮蘑菇
-		MOON_CAP_COOKED = "为了学问，我也算豁出去了。",		--物品名：熟月亮蘑菇
+        MOON_CAP = "它似乎具有很强的诱导睡眠的特性喵。",
+        MOON_CAP_COOKED = "真奇怪。一旦煮熟了，它们就具有刺激性了。",
 
-		MUSHTREE_MOON = "这棵树，与旁的明显不同。",		--物品名：月亮蘑菇树
+        MUSHTREE_MOON = "我怀疑是水中的一些物质导致了它的变化。",
 
-		LIGHTFLIER = "装进口袋还发着光。奇怪。",		--物品名：球状光虫
+        LIGHTFLIER = "如果能说服它静止不动，它将是一盏极好的阅读灯。",
 
-		GROTTO_POOL_BIG = "月光的水，让玻璃生长。这便是道理。",		--物品名：玻璃绿洲
-		GROTTO_POOL_SMALL = "小池子，也长玻璃。",		--物品名：小玻璃绿洲
+        GROTTO_POOL_BIG = "真有意思，好像是在形成月光玻璃石笋。",
+        GROTTO_POOL_SMALL = "真有意思，好像是在形成月光玻璃石笋。",
 
-		DUSTMOTH = "整齐的小东西。倒不难看，喵。",		--物品名：尘蛾
+        DUSTMOTH = "如果它能帮我打理图书馆，我会很高兴的。",
 
-		DUSTMOTHDEN = "它们在里头过得很舒坦。",		--物品名：整洁洞穴
+        DUSTMOTHDEN = "似乎是这些生物体内的化学反应产生了铥矿。",
 
-		ARCHIVE_LOCKBOX = "这知识，该如何取出。",		--物品名：蒸馏的知识
-		ARCHIVE_CENTIPEDE = "你拦不住我。",		--物品名：远古哨兵蜈蚣
-		ARCHIVE_CENTIPEDE_HUSK = "一堆旧零件。锈得不轻。",		--物品名：哨兵蜈蚣壳
+        ARCHIVE_LOCKBOX = "似乎要接外部能量源才能启用。",
+        ARCHIVE_CENTIPEDE = "一件令人印象深刻的古代工程产品。",
+        ARCHIVE_CENTIPEDE_HUSK = "这些零件看起来出故障了喵。",
 
-		ARCHIVE_COOKPOT =
-		{
-			COOKING_LONG = "还需要些时间。",		--物品名：远古窑 检查状态：正在烹饪，剩余时间较长
-			COOKING_SHORT = "快了。",		--物品名：远古窑 检查状态：正在烹饪，即将完成
-			DONE = "嗯。可以了。",		--物品名：远古窑 检查状态：处理已经完成
-			EMPTY = "先把灰抖干净，如何。",		--物品名：远古窑 检查状态：内容为空
-			BURNT = "锅毁了。",		--物品名：远古窑 检查状态：已经烧毁
-		},
+        ARCHIVE_COOKPOT =
+        {
+            COOKING_LONG = "还要等一会儿才能煮好喵。",
+            COOKING_SHORT = "快好了！",
+            DONE = "晚餐时间到喵！",
+            EMPTY = "我猜测它有专门针对这些房间的用途。",
+            BURNT = "现在它是真正的废弃了喵。",
+        },
 
-		ARCHIVE_MOON_STATUE = "这样的雕像，让人想写点什么。",		--物品名：远古月亮雕像
-		ARCHIVE_RUNE_STATUE =
-		{
-			LINE_1 = "这许多知识。若我能读懂。",		--物品名：远古月符石 检查状态：第一段碑文或记录
-			LINE_2 = "这些记号，与别处废墟不同。",		--物品名：远古月符石 检查状态：第二段碑文或记录
-			LINE_3 = "字里行间，全是我不识的学问。",		--物品名：远古月符石 检查状态：第三段碑文或记录
-			LINE_4 = "这些标记，笔法又变。",		--物品名：远古月符石 检查状态：第四段碑文或记录
-			LINE_5 = "读懂它，或许要花一生。",		--物品名：远古月符石 检查状态：第五段碑文或记录
-		},
-		VAULT_RUNE = "这个，我看不懂。",		--物品名：圣殿月符石
+        ARCHIVE_MOON_STATUE = "这些房间似乎比其他遗迹年份更早。",
+        ARCHIVE_RUNE_STATUE =
+        {
+            LINE_1 = "真是迷人！这些字形似乎是他们的语言演变的基础。",
+            LINE_2 = "暗影燃料的引入，一定对他们的文化产生了巨大的影响喵。",
+            LINE_3 = "这些字形一定是在他们发现暗影燃料之前就存在了。",
+            LINE_4 = "这个字形一直在重复出现……如果我能解读它的意思就好了。",
+            LINE_5 = "这里还需要进一步研究。",
+        },
+		VAULT_RUNE = "这些相当复杂喵。",
 		VAULT_STATUE =
 		{
-			LORE1 = "他的结局，落进黑暗里。",		--物品名：圣殿雕像 检查状态：第一段背景记载
-			LORE2 = "它在动。看着叫人不适。",		--物品名：圣殿雕像 检查状态：第二段背景记载
-			LORE3 = "这表达，锋利得很。",		--物品名：圣殿雕像 检查状态：第三段背景记载
-			LORE1_STALKER = "我能明白，这为何令你不安。", 		--物品名：圣殿雕像 检查状态：显示与远古织影者有关的记录
+			LORE1 = "看来古代国王已将自己献给了黑暗。",
+			LORE2 = "这是对灭绝级事件的描绘。",
+			LORE3 = "这些一定是古代昆虫社会的士兵阶层喵。",
+            --
+            LORE1_STALKER = "从那以后，你果然长进了不少。", -- when the stalker/king is with you, different inspect for the king statue!
 		},
 
-		ARCHIVE_RESONATOR = {
-			GENERIC = "有此等机器，谁还用地图。",		--物品名：星象探测仪 检查状态：普通状态
-			IDLE = "它似乎找到了该找的东西。",		--物品名：星象探测仪 检查状态：处于待机状态
-		},
+        ARCHIVE_RESONATOR = {
+            GENERIC = "探索之路在等待着我们。",
+            IDLE = "似乎已经没有更多的物品了。",
+        },
 
-		ARCHIVE_RESONATOR_ITEM = "用秘传的知识造了件器物。这感觉似曾相识。",		--物品名：星象探测仪
+        ARCHIVE_RESONATOR_ITEM = "真令人兴奋！这种技术很可能已经有几百年没人使用过了！",
 
-		ARCHIVE_LOCKBOX_DISPENCER = {
-			POWEROFF = "若能叫它重新运转。",		--物品名：知识饮水机 检查状态：设备没有供电
-			GENERIC =  "站在它旁边，就想高谈阔论。",		--物品名：知识饮水机 检查状态：普通状态
-		},
+        ARCHIVE_LOCKBOX_DISPENCER = {
+          POWEROFF = "它似乎缺少能量来源喵。",
+          GENERIC =  "古人居然设计了一种使用液体储存知识的方法。",
+        },
 
-		ARCHIVE_SECURITY_DESK = {
-			POWEROFF = "它已不复从前的用处。",		--物品名：远古哨所 检查状态：设备没有供电
-			GENERIC = "它有意亲近我。",		--物品名：远古哨所 检查状态：普通状态
-		},
+        ARCHIVE_SECURITY_DESK = {
+            POWEROFF = "不知道它的预期目的是什么。",
+            GENERIC = "看起来是一种极为先进的安全系统喵。",
+        },
 
-		ARCHIVE_SECURITY_PULSE = "你要往哪里去。那里有趣么。",		--物品名：远古档案馆安全脉冲
+        ARCHIVE_SECURITY_PULSE = "跟随它似乎并不明智。",
 
-		ARCHIVE_SWITCH = {
-			VALID = "这些宝石供能。合乎章法，我确定。",		--物品名：华丽基座 检查状态：宝石组合有效，可以激活
-			GEMS = "槽是空的。",		--物品名：华丽基座 检查状态：已插入宝石但尚未完全激活
-		},
+        ARCHIVE_SWITCH = {
+            VALID = "这些底座似乎能从宝石中汲取能量喵。",
+            GEMS = "似乎需要特定的宝石才能激活。",
+        },
 
-		ARCHIVE_PORTAL = {
-			POWEROFF = "毫无反应。",		--物品名：封印的传送门 检查状态：设备没有供电
-			GENERIC = "通了电，却没有回应。奇怪。",		--物品名：封印的传送门 检查状态：普通状态
-		},
+        ARCHIVE_PORTAL = {
+            POWEROFF = "这个设计让我联想到了我们之前穿越过的大门喵。",
+            GENERIC = "真遗憾，它似乎已经不能再运行了。",
+        },
 
-		WALL_STONE_2 = "墙不错。砌得齐整。",		--物品名：档案馆石墙
-		WALL_RUINS_2 = "一段旧墙。年岁不小。",		--物品名：档案馆铥墙
+        WALL_STONE_2 = "很安全。",
+        WALL_RUINS_2 = "非常牢固的墙。",
 
-		REFINED_DUST = "……啊嚏。失礼了。",		--物品名：尘土块
-		DUSTMERINGUE = "这种东西，谁会动口。",		--物品名：琥珀美食
+        REFINED_DUST = "在这总比在我的书架上更好。",
+        DUSTMERINGUE = "也许这附近有一种生物可以代谢这个。",
 
-		SHROOMCAKE = "名副其实。果然。",		--物品名：蘑菇蛋糕
-		SHROOMBAIT = "味道如梦。",		--物品名：酿夜帽
+        SHROOMCAKE = "我不认为那东西可以当成是“蛋糕”，亲爱的喵。",
+        SHROOMBAIT = "这种恶臭组合会让任何摄入它的生物失去知觉喵。",
 
-		NIGHTMAREGROWTH = "这些晶体，值得警惕。",		--物品名：梦魇城墙
+        NIGHTMAREGROWTH = "这些晶体结构似乎不是天然的喵。",
 
-		TURFCRAFTINGSTATION = "真正的学者，总要开新的天地。",		--物品名：土地夯实器
+        TURFCRAFTINGSTATION = "我推测这是古代农耕体系的一个重要组成部分。",
 
-        MOON_ALTAR_LINK = "有东西正在底下酝酿。别去碰它。",		--物品名：神秘能量
+        MOON_ALTAR_LINK = "我有些看不透它的目的喵。",
 
+        -- FARMING
         COMPOSTINGBIN =
         {
-            GENERIC = "这气味，恕我难以欣赏。",		--物品名：堆肥桶 检查状态：普通状态
-            WET = "过湿了。它会烂给我看。",		--物品名：堆肥桶 检查状态：处于潮湿状态
-            DRY = "太干了。还差一点火候。",		--物品名：堆肥桶 检查状态：处于干燥状态
-            BALANCED = "配比正好。可以了。",		--物品名：堆肥桶 检查状态：堆肥配比平衡
-            BURNT = "烧过了。连气味都成了灰。",		--物品名：堆肥桶 检查状态：已经烧毁
+            GENERIC = "堆肥是园艺的一个重要组成部分喵。",
+            WET = "混合物的水分含量过高喵。",
+            DRY = "它需要更大的湿度。",
+            BALANCED = "混合的非常均衡。",
+            BURNT = "嗯……我想植物也需要碳。",
         },
-        COMPOST = "给植物的口粮。我不吃。",		--物品名：堆肥
-		SOIL_AMENDER =
+        COMPOST = "任何花园的成功秘诀都是营养丰富的土壤。",
+        SOIL_AMENDER =
 		{
-			GENERIC = "剩下的，交给时间和微生物。",		--物品名：催长剂起子 检查状态：普通状态
-			STALE = "还在发酵。耐心些。",		--物品名：催长剂起子 检查状态：土壤改良剂仍在发酵
-			SPOILED = "那股味道说明它成了。",		--物品名：催长剂起子 检查状态：土壤改良剂已经完全发酵
+			GENERIC = "如果处理得当，海带是一种很好的肥料。",
+			STALE = "还应该再放置一段时间，才能达到完全的效力。",
+			SPOILED = "我可以接受，不过要是当初再多留一点时间就更好了喵。",
 		},
 
-		SOIL_AMENDER_FERMENTED = "浓得有些失礼，但确实有效。",		--物品名：超级催长剂
+		SOIL_AMENDER_FERMENTED = "哦，花园会非常喜欢这个!",
 
         WATERINGCAN =
         {
-            GENERIC = "浇水用的。别指望我拎着它跑。",		--物品名：空浇水壶 检查状态：普通状态
-            EMPTY = "空了。附近总有水塘。",		--物品名：空浇水壶 检查状态：内容为空
+            GENERIC = "一个标准的浇水壶。",
+            EMPTY = "也许附近有淡水源。",
         },
         PREMIUMWATERINGCAN =
         {
-            GENERIC = "鸟嘴造型。品位可疑，功能尚可。",		--物品名：空鸟嘴壶 检查状态：普通状态
-            EMPTY = "没有水，它就只是件摆设。",		--物品名：空鸟嘴壶 检查状态：内容为空
+            GENERIC = "虽然有点不寻常，但不失为一种有效的灌溉工具。",
+            EMPTY = "我得把它装满水才能用。",
         },
 
-		FARM_PLOW = "翻土用的。省力，也省心。",		--物品名：耕地机
-		FARM_PLOW_ITEM = "先找一块配得上它的地。",		--物品名：耕地机
-		FARM_HOE = "把土理松，种子才肯住下。",		--物品名：园艺锄
-		GOLDEN_FARM_HOE = "镀金也改不了它翻土的本分。",		--物品名：黄金园艺锄
-		NUTRIENTSGOGGLESHAT = "戴上它，泥土里的账目一目了然。",		--物品名：高级耕作先驱帽
-		PLANTREGISTRYHAT = "要懂植物，先把它顶在头上。",		--物品名：耕作先驱帽
+		FARM_PLOW = "多么高效啊!",
+		FARM_PLOW_ITEM = "我最好给我的花园找个合适的地方。",
+		FARM_HOE = "人类从新石器时代就开始种植农作物喵。",
+		GOLDEN_FARM_HOE = "它是最具可塑性的金属，不过我们还是先看看它耕田的效果吧。",
+		NUTRIENTSGOGGLESHAT = "谨慎的园丁确保他们能够分辨出作物的每一个细节喵。",
+		PLANTREGISTRYHAT = "这似乎是一种可穿戴式目录，详细介绍了各种植物门类喵。",
 
-        FARM_SOIL_DEBRIS = "杂物。我的园子不欢迎。",		--物品名：农田杂物
+        FARM_SOIL_DEBRIS = "哦不，你想都别想！从我的花园出去喵！",
 
-		FIRENETTLES = "怕烫就别靠近花园。",		--物品名：火荨麻叶
-		FORGETMELOTS = "嗯……我方才要说什么来着。",		--物品名：必忘我
-		SWEETTEA = "一杯茶，把烦心事都冲淡。",		--物品名：舒缓茶
-		TILLWEED = "从我的园子里出去。",		--物品名：犁地草
-		TILLWEEDSALVE = "我的救星。",		--物品名：犁地草膏
-        WEED_IVY = "你不是蔬菜。别装了。",		--物品名：刺针旋花
-        IVY_SNARE = "一点礼貌也没有。",		--物品名：缠绕根须
+		FIRENETTLES = "卑鄙的东西喵。",
+		FORGETMELOTS = "这种作物可以用来冲泡相当愉快的草药茶喵。",
+		SWEETTEA = "仿佛我所有的烦恼和忧虑都消失了。",
+		TILLWEED = "真麻烦！",
+		TILLWEEDSALVE = "犁地草的根部似乎有一定药用价值。",
+        WEED_IVY = "又一种农作物的害虫。",
+        IVY_SNARE = "这种植物有很强的领地性喵。",
 
 		TROPHYSCALE_OVERSIZEDVEGGIES =
 		{
-			GENERIC = "收成的分量，我一称便知。",		--物品名：农产品秤 检查状态：普通状态
-			HAS_ITEM = "重量: {weight}\n收获日: {day}\n不坏。",		--物品名：农产品秤 检查状态：已经放置物品
-			HAS_ITEM_HEAVY = "重量: {weight}\n收获日: {day}\n长到这般地步，倒是意外。",		--物品名：农产品秤 检查状态：放置物品重量较大
-            HAS_ITEM_LIGHT = "太寻常了。秤都懒得报数。",		--物品名：农产品秤 检查状态：放置物品重量较轻
-			BURNING = "这是在烧哪道菜？",		--物品名：农产品秤 检查状态：正在燃烧
-			BURNT = "这大概不算最好的做法。",		--物品名：农产品秤 检查状态：已经烧毁
+			GENERIC = "看看我的园艺能力能不能经得住检验!",
+			HAS_ITEM = "重量: {weight}\n收获日: {day}\n值得尊敬的收获。",
+			HAS_ITEM_HEAVY = "重量: {weight}\n收获日: {day}\n老天，好大的成就喵！",
+            HAS_ITEM_LIGHT = "恐怕这点农产品的重量太小，统计不出来。",
+			BURNING = "噢，不好...",
+			BURNT = "恐怕无能为力了喵。",
         },
 
-        CARROT_OVERSIZED = "胡萝卜。多得有些失态。",		--物品名：巨型胡萝卜
-        CORN_OVERSIZED = "好大一根玉米。",		--物品名：巨型玉米
-        PUMPKIN_OVERSIZED = "南瓜胀成了这副模样。",		--物品名：巨型南瓜
-        EGGPLANT_OVERSIZED = "至今不明白它为何叫茄子。",		--物品名：巨型茄子
-        DURIAN_OVERSIZED = "可以肯定，它更臭了。",		--物品名：巨型榴莲
-        POMEGRANATE_OVERSIZED = "我见过最大的石榴。",		--物品名：巨型石榴
-        DRAGONFRUIT_OVERSIZED = "我还以为它会生出翅膀。",		--物品名：巨型火龙果
-        WATERMELON_OVERSIZED = "又大又多汁。今晚有口福了，喵。",		--物品名：巨型西瓜
-        TOMATO_OVERSIZED = "比例惊人的一颗番茄。",		--物品名：巨型番茄
-        POTATO_OVERSIZED = "这土豆，分量十足。",		--物品名：巨型土豆
-        ASPARAGUS_OVERSIZED = "看来芦笋要吃上一阵了。",		--物品名：巨型芦笋
-        ONION_OVERSIZED = "长得这样快，熏得我眼眶发酸。",		--物品名：巨型洋葱
-        GARLIC_OVERSIZED = "大蒜。大得放肆。",		--物品名：巨型大蒜
-        PEPPER_OVERSIZED = "尺寸相当不合常理的辣椒。",		--物品名：巨型辣椒
+        CARROT_OVERSIZED = "适当研究、规划和照顾的结果。",
+        CORN_OVERSIZED = "收获颇为可观。",
+        PUMPKIN_OVERSIZED = "妙不可言的丰满南瓜喵。",
+        EGGPLANT_OVERSIZED = "十分漂亮的茄属植物。",
+        DURIAN_OVERSIZED = "哦，我们的矮小的绿色朋友一定会很兴奋的!",
+        POMEGRANATE_OVERSIZED = "一株硕大的石榴科石榴属标本。",
+        DRAGONFRUIT_OVERSIZED = "适当研究、规划和照顾的结果喵。",
+        WATERMELON_OVERSIZED = "适当研究、规划和照顾的结果。",
+        TOMATO_OVERSIZED = "我一直都很擅长种西红柿。",
+        POTATO_OVERSIZED = "令人印象深刻的硕大块茎！",
+        ASPARAGUS_OVERSIZED = "它是非常好的纤维来源喵!",
+        ONION_OVERSIZED = "一株硕大的洋葱标本。",
+        GARLIC_OVERSIZED = "多么迷人啊，它似乎给自己编出了一个样式！",
+        PEPPER_OVERSIZED = "适当研究、规划和照顾的结果喵。",
 
-        VEGGIE_OVERSIZED_ROTTEN = "腐烂的运气。",		--物品名：腐烂巨型蔬菜
+        VEGGIE_OVERSIZED_ROTTEN = "浪费这么多东西，太可怕了!",
 
 		FARM_PLANT =
 		{
-			GENERIC = "一株植物。仅此而已。",		--物品名：农作物 检查状态：普通状态
-			SEED = "等就是了。",		--物品名：农作物 检查状态：作物处于种子阶段
-			GROWING = "长吧。我看着。",		--物品名：农作物 检查状态：正在生长
-			FULL = "该收取我的成果了。",		--物品名：农作物 检查状态：内容已满
-			ROTTEN = "可惜。早两日收下就好。",		--物品名：农作物 检查状态：已经腐烂
-			FULL_OVERSIZED = "我把作物养到了这个尺寸。",		--物品名：农作物 检查状态：成熟并长成巨型作物
-			ROTTEN_OVERSIZED = "烂得彻底。可惜。",		--物品名：农作物 检查状态：巨型作物已经腐烂
-			FULL_WEED = "冒牌货。我早该把你连根拔了。",		--物品名：农作物 检查状态：成熟的杂草形态
+			GENERIC = "植物王国的一员。",
+			SEED = "从种子开始种植农作物需要极大的耐心喵。",
+			GROWING = "越来越好了喵",
+			FULL = "我敢说，已经可以收割了喵。",
+			ROTTEN = "我最讨厌看到变质的食物!",
+			FULL_OVERSIZED = "多么辉煌喵！",
+			ROTTEN_OVERSIZED = "浪费这么多东西，太可怕了喵!",
+			FULL_WEED = "花园里容不下野草。",
 
-			BURNING = "对植物来说，这不是好事。",		--物品名：农作物 检查状态：正在燃烧
+			BURNING = "世事难料啊喵！",
 		},
 
-        FRUITFLY = "换个地方嗡去。",		--物品名：果蝇
-        LORDFRUITFLY = "别再打搅我的植物。",		--物品名：果蝇王
-        FRIENDLYFRUITFLY = "有它在，园子安静许多。",		--物品名：友好果蝇
-        FRUITFLYFRUIT = "如今这里我说了算。",		--物品名：友好果蝇果
+        FRUITFLY = "这些害虫相当惹人烦喵。",
+        LORDFRUITFLY = "我对花园里的害虫可没有耐心!",
+        FRIENDLYFRUITFLY = "这个似乎是一种更讨喜的亚种。",
+        FRUITFLYFRUIT = "看来，我可以通过这个对这些昆虫进行一定程度的控制。",
 
-        SEEDPOUCH = "种子不该塞在口袋里。",		--物品名：种子袋
+        SEEDPOUCH = "非常实用的种子贮藏和运输工具喵。",
 
-		CARNIVAL_HOST = "一个怪人。",		--物品名：良羽鸦
-		CARNIVAL_CROWKID = "日安，小小鸟。",		--物品名：小乌鸦
-		CARNIVAL_GAMETOKEN = "一枚亮闪闪的代币。",		--物品名：鸦年华代币
+		-- Crow Carnival
+		CARNIVAL_HOST = "他是一个相当令人好奇的人物。",
+		CARNIVAL_CROWKID = "鸦雀都是非常聪明的，这个物种尤其如此。",
+		CARNIVAL_GAMETOKEN = "也许是一种鸟类货币？",
 		CARNIVAL_PRIZETICKET =
 		{
-			GENERIC = "就是那张奖票。",		--物品名：奖票 检查状态：普通状态
-			GENERIC_SMALLSTACK = "就是那几张奖票。",		--物品名：奖票 检查状态：普通票券小堆叠
-			GENERIC_LARGESTACK = "奖票，厚厚一沓。",		--物品名：奖票 检查状态：普通票券大堆叠
+			GENERIC = "我应该可以用这些东西换取某种奖品。",
+			GENERIC_SMALLSTACK = "我推断收集的奖品越多，奖品就越丰厚。",
+			GENERIC_LARGESTACK = "我似乎很擅长这些游戏！",
 		},
 
-		CARNIVALGAME_FEEDCHICKS_NEST = "一扇小小的活门。",		--物品名：饥饿乌鸦
+		CARNIVALGAME_FEEDCHICKS_NEST = "我想这是游戏机制的一部分。",
 		CARNIVALGAME_FEEDCHICKS_STATION =
 		{
-			GENERIC = "它要我先付点亮东西，才肯让我玩。",		--物品名：鸟鸟吃虫虫 检查状态：普通状态
-			PLAYING = "这倒有几分意思。",		--物品名：鸟鸟吃虫虫 检查状态：游戏正在进行
+			GENERIC = "我相信它需要用某种货币来启动。",
+			PLAYING = "这个游戏似乎需要快速的反应力。",
 		},
-		CARNIVALGAME_FEEDCHICKS_KIT = "一天里就搭起来的嘉年华。",		--物品名：鸟鸟吃虫虫套装
-		CARNIVALGAME_FEEDCHICKS_FOOD = "不必我先替它嚼碎吧？",		--物品名：蛴螬
+		CARNIVALGAME_FEEDCHICKS_KIT = "它的构造似乎很简单。",
+		CARNIVALGAME_FEEDCHICKS_FOOD = "这斑斓的彩纸表现的是环节动物喵。",
 
-		CARNIVALGAME_MEMORY_KIT = "把嘉年华装进箱子，随取随用。",		--物品名：篮中蛋套装
+		CARNIVALGAME_MEMORY_KIT = "它的构造似乎很简单喵。",
 		CARNIVALGAME_MEMORY_STATION =
 		{
-			GENERIC = "想玩，先得给它些亮闪闪的。",		--物品名：篮中蛋 检查状态：普通状态
-			PLAYING = "不是我自夸，这我拿手。",		--物品名：篮中蛋 检查状态：游戏正在进行
+			GENERIC = "我相信它需要用某种货币来启动。",
+			PLAYING = "啊！简单的记忆力测试喵。",
 		},
 		CARNIVALGAME_MEMORY_CARD =
 		{
-			GENERIC = "门很小，里头另有乾坤。",		--物品名：蛋篮 检查状态：普通状态
-			PLAYING = "是这张吗？",		--物品名：蛋篮 检查状态：游戏正在进行
+			GENERIC = "我想这是游戏机制的一部分。",
+			PLAYING = "我相信是这里的这个。",
 		},
 
-		CARNIVALGAME_HERDING_KIT = "临时搭起的嘉年华，也别有滋味。",		--物品名：追蛋套装
+		CARNIVALGAME_HERDING_KIT = "它的构造似乎很简单。",
 		CARNIVALGAME_HERDING_STATION =
 		{
-			GENERIC = "它立在那儿，等我拿亮东西来换。",		--物品名：追蛋 检查状态：普通状态
-			PLAYING = "这些蛋想跑，喵。",		--物品名：追蛋 检查状态：游戏正在进行
+			GENERIC = "我相信它需要用某种货币来启动。",
+			PLAYING = "这看起来是一个很好的运动。",
 		},
-		CARNIVALGAME_HERDING_CHICK = "回来。",		--物品名：追蛋
+		CARNIVALGAME_HERDING_CHICK = "现在就去吧，快走喵！",
 
-		CARNIVALGAME_SHOOTING_KIT = "嘉年华也能随身带着走。",		--物品名：保卫鸟巢套装
+		CARNIVALGAME_SHOOTING_KIT = "它的构造似乎很简单喵。",
 		CARNIVALGAME_SHOOTING_STATION =
 		{
-			GENERIC = "这机器只认亮闪闪的报酬。",		--物品名：保卫鸟巢 检查状态：普通状态
-			PLAYING = "弹道我能算，只是数字繁杂。",		--物品名：保卫鸟巢 检查状态：游戏正在进行
+			GENERIC = "我相信它需要用某种货币来启动喵。",
+			PLAYING = "必须精确把握时机才能获胜。",
 		},
 		CARNIVALGAME_SHOOTING_TARGET =
 		{
-			GENERIC = "一扇小小的翻门。",		--物品名：射击靶 检查状态：普通状态
-			PLAYING = "这靶子让我手痒。",		--物品名：射击靶 检查状态：游戏正在进行
+			GENERIC = "我想这是游戏机制的一部分。",
+			PLAYING = "初步看来，游戏目标是在打击昆虫的同时放过鸟类。",
 		},
 
 		CARNIVALGAME_SHOOTING_BUTTON =
 		{
-			GENERIC = "先投币，后开玩。规矩如此。",		--物品名：按钮 检查状态：普通状态
-			PLAYING = "它亮着，我就得按。这是本能。",		--物品名：按钮 检查状态：游戏正在进行
+			GENERIC = "我相信它需要用某种货币来启动。",
+			PLAYING = "这似乎能触发射击机制。",
 		},
 
-		CARNIVALGAME_WHEELSPIN_KIT = "拆开就能开张的嘉年华。",		--物品名：布谷鸟转盘套装
+		CARNIVALGAME_WHEELSPIN_KIT = "它的构造似乎很简单喵。",
 		CARNIVALGAME_WHEELSPIN_STATION =
 		{
-			GENERIC = "它要亮闪闪的东西，才肯转起来。",		--物品名：布谷鸟转盘 检查状态：普通状态
-			PLAYING = "轮子转起来，倒也有产出。",		--物品名：布谷鸟转盘 检查状态：游戏正在进行
+			GENERIC = "我相信它需要用某种货币来启动。",
+			PLAYING = "着实有趣。这样设计谁都不会输。",
 		},
 
-		CARNIVALGAME_PUCKDROP_KIT = "一场说来就来的嘉年华。",		--物品名：鸟房落球套装
+		CARNIVALGAME_PUCKDROP_KIT = "它的构造似乎很简单。",
 		CARNIVALGAME_PUCKDROP_STATION =
 		{
-			GENERIC = "拿亮东西来，它才肯动。",		--物品名：鸟房落球 检查状态：普通状态
-			PLAYING = "物理规律，并不总肯复现。",		--物品名：鸟房落球 检查状态：游戏正在进行
+			GENERIC = "我相信它需要用某种货币来启动。",
+			PLAYING = "一场概率的游戏。",
 		},
 
-		CARNIVAL_PRIZEBOOTH_KIT = "制作摊位的过程，本身便是奖品。",		--物品名：奖品摊位套装
+		CARNIVAL_PRIZEBOOTH_KIT = "它的构造似乎很简单。",
 		CARNIVAL_PRIZEBOOTH =
 		{
-			GENERIC = "我看中的是那边那件。",		--物品名：奖品摊位 检查状态：普通状态
+			GENERIC = "选择的多样性令人感到惊艳。",
 		},
 
-		CARNIVALCANNON_KIT = "我对爆炸颇有经验。",		--物品名：盛夏鸦年华大炮套装
+		CARNIVALCANNON_KIT = "我们就把它放在离营地很远的地方吧。",
 		CARNIVALCANNON =
 		{
-			GENERIC = "这场实验的目的就是炸。",		--物品名：盛夏鸦年华大炮 检查状态：普通状态
-			COOLDOWN = "炸过一轮了。",		--物品名：盛夏鸦年华大炮 检查状态：能力处于冷却期
+			GENERIC = "值得庆幸啊，现在是闲置状态。",
+			COOLDOWN = "哦，这些东西总是弄得一团糟……",
 		},
 
-		CARNIVAL_PLAZA_KIT = "鸟喜欢树，这是验证过的。",		--物品名：鸦年华树苗
+		CARNIVAL_PLAZA_KIT = "多么耐人寻味的标本……我不能完全确定它的亚种喵。",
 		CARNIVAL_PLAZA =
 		{
-			GENERIC = "如今可不像“鸦年华”的样子。",		--物品名：鸦年华树 检查状态：普通状态
-			LEVEL_2 = "有只小鸟说，这里该多些装饰。",		--物品名：鸦年华树 检查状态：第二等级
-			LEVEL_3 = "一棵为庆典而生的树。",		--物品名：鸦年华树 检查状态：第三等级
+			GENERIC = "在它周围放置装饰品似乎是一种习俗。",
+			LEVEL_2 = "哦，是的，进展十分顺利喵!",
+			LEVEL_3 = "这似乎是一个可以接受的装饰水平喵。",
 		},
 
-		CARNIVALDECOR_EGGRIDE_KIT = "但愿奖品就是这些。",		--物品名：盛夏鸦年华蛋形游乐设施套装
-		CARNIVALDECOR_EGGRIDE = "我可以盯着它看几个钟头，喵。",		--物品名：盛夏鸦年华蛋形游乐设施
+		CARNIVALDECOR_EGGRIDE_KIT = "我应该能够很容易地组装它喵。",
+		CARNIVALDECOR_EGGRIDE = "这些鸟类的手艺巧夺天工喵。",
 
-		CARNIVALDECOR_LAMP_KIT = "只差一点收尾。",		--物品名：盛夏夜灯套装
-		CARNIVALDECOR_LAMP = "它的能量，来自异想天开。",		--物品名：盛夏夜灯
-		CARNIVALDECOR_PLANT_KIT = "也许这是一棵黄杨？",		--物品名：微型树套装
-		CARNIVALDECOR_PLANT = "不是它小，就是我大。",		--物品名：微型树
-		CARNIVALDECOR_BANNER_KIT = "还得我亲手搭？我该料到。",		--物品名：光线捕捉器套装
-		CARNIVALDECOR_BANNER = "这些亮片已经把话说尽了。",		--物品名：光线捕捉器
+		CARNIVALDECOR_LAMP_KIT = "我应该能够很容易地组装它。",
+		CARNIVALDECOR_LAMP = "它有一个最令人好奇的光源。",
+		CARNIVALDECOR_PLANT_KIT = "我不介意做一点园艺工作喵。",
+		CARNIVALDECOR_PLANT = "照顾一棵小树是如此令人舒心。",
+		CARNIVALDECOR_BANNER_KIT = "我应该能够很容易地组装它喵。",
+		CARNIVALDECOR_BANNER = "当然，它实际上并不“捕捉”光线，而只是反射光线喵。",
 
 		CARNIVALDECOR_FIGURE =
 		{
-			RARE = "瞧见没有？反复做同一件事终有回报，这就是凭证。",		--物品名：盛夏鸦年华装饰 检查状态：稀有品质
-			UNCOMMON = "这种式样，不算常见。",		--物品名：盛夏鸦年华装饰 检查状态：罕见品质
-			GENERIC = "我究竟从哪儿弄来这么多。",		--物品名：盛夏鸦年华装饰 检查状态：普通状态
+			RARE = "我相信这是整个系列中最稀有的品种。",
+			UNCOMMON = "它似乎还比较罕见。",
+			GENERIC = "它放在小的珍宝柜里会很可爱，你不觉得吗？",
 		},
-		CARNIVALDECOR_FIGURE_KIT = "探索的趣味。",		--物品名：绿色神秘盒子
-		CARNIVALDECOR_FIGURE_KIT_SEASON2 = "未知总叫人心里发痒。",		--物品名：黄色神秘盒子
-		CARNIVALDECOR_FIGURE_KIT_SEASON3 = "拆开之前，最是有趣。",		--物品名：红色神秘盒子
+		CARNIVALDECOR_FIGURE_KIT = "多么耐人寻味啊！我想知道里面有什么？",
+		CARNIVALDECOR_FIGURE_KIT_SEASON2 = "多么耐人寻味啊！我想知道里面有什么喵？",
+		CARNIVALDECOR_FIGURE_KIT_SEASON3 = "多么耐人寻味啊！我想知道里面有什么？",
 
-        CARNIVAL_BALL = "极简，且天才。", 		--物品名：发光红球
-		CARNIVAL_SEEDPACKET = "我有点饿了。",		--物品名：种子包
-		CARNIVALFOOD_CORNTEA = "这种饮料本该如此脆吗？",		--物品名：玉米泥
+        CARNIVAL_BALL = "我不希望看到有人在易碎物品附近玩这个喵。", --unimplemented
+		CARNIVAL_SEEDPACKET = "在饮食中增加一点额外的纤维素永远不会有坏处。",
+		CARNIVALFOOD_CORNTEA = "这是一种需要培养的品位，饮用后分外清爽喵。",
 
-        CARNIVAL_VEST_A = "穿上它，像要去冒险。",		--物品名：叽叽喳喳围巾
-        CARNIVAL_VEST_B = "像把一片树荫披在身上。",		--物品名：叽叽喳喳斗篷
-        CARNIVAL_VEST_C = "但愿里头没有虫。",		--物品名：叽叽喳喳小披肩
+        CARNIVAL_VEST_A = "鸟类似乎已经发展出一种用树叶制作衣服的方法喵。",
+        CARNIVAL_VEST_B = "这些鸟类已经进化到了穿衣服的地步，多么令人着迷喵。",
+        CARNIVAL_VEST_C = "它散发着夏叶的独有的芬芳。",
 
-        YOTB_SEWINGMACHINE = "缝纫能有多难。",		--物品名：缝纫机
-        YOTB_SEWINGMACHINE_ITEM = "看来得先装起来。",		--物品名：缝纫机套装
-        YOTB_STAGE = "奇怪。我没见他上台，也没见他离场。",		--物品名：裁判席
-        YOTB_POST =  "这场比赛会很顺利。",		--物品名：皮弗娄牛舞台
-        YOTB_STAGE_ITEM = "看来要先搭起来。",		--物品名：裁判席
-        YOTB_POST_ITEM =  "先装好它为好。",		--物品名：皮弗娄牛舞台
+        -- YOTB
+        YOTB_SEWINGMACHINE = "我更喜欢钩针喵。",
+        YOTB_SEWINGMACHINE_ITEM = "我理当先装好它。",
+        YOTB_STAGE = "真迷人！",
+        YOTB_POST =  "皮弗娄牛就在这里展示给评委们看喵。",
+        YOTB_STAGE_ITEM = "我认为它不能自己完成搭建。",
+        YOTB_POST_ITEM =  "应该很轻松就能立起来喵。",
 
 
-        YOTB_PATTERN_FRAGMENT_1 = "把这些拼起来，应能得出一件皮弗娄牛礼服。",		--物品名：恐怖款式碎片
-        YOTB_PATTERN_FRAGMENT_2 = "拼合之后，该是一件正式的皮弗娄牛礼服。",		--物品名：正式款式碎片
-        YOTB_PATTERN_FRAGMENT_3 = "这些碎片凑起来，是件喜庆的皮弗娄牛礼服。",		--物品名：喜庆款式碎片
+        YOTB_PATTERN_FRAGMENT_1 = "仅仅是一个更大的礼服款式中的一小部分。",
+        YOTB_PATTERN_FRAGMENT_2 = "仅仅是一个更大的礼服款式中的一小部分。",
+        YOTB_PATTERN_FRAGMENT_3 = "仅仅是一个更大的礼服款式中的一小部分喵。",
 
         YOTB_BEEFALO_DOLL_WAR = {
-            GENERIC = "这配方把可抱性做到了极致。",		--物品名：战士皮弗娄牛玩偶 检查状态：普通状态
-            YOTB = "不知评委会怎么说。",		--物品名：战士皮弗娄牛玩偶 检查状态：牛年活动外观
+            GENERIC = "真是太有魅力了！",
+            YOTB = "评委也许能给我一些关于它风格方面的启示喵。",
         },
         YOTB_BEEFALO_DOLL_DOLL = {
-            GENERIC = "柔软得很有分寸。",		--物品名：娃娃皮弗娄牛玩偶 检查状态：普通状态
-            YOTB = "评委的口味，我一向猜不准。",		--物品名：娃娃皮弗娄牛玩偶 检查状态：牛年活动外观
+            GENERIC = "真是太有魅力了！",
+            YOTB = "评委也许能给我一些关于它风格方面的启示。",
         },
         YOTB_BEEFALO_DOLL_FESTIVE = {
-            GENERIC = "抱起来像一团节日的暖意。",		--物品名：喜庆皮弗娄牛玩偶 检查状态：普通状态
-            YOTB = "这一身，评委会不会嫌吵？",		--物品名：喜庆皮弗娄牛玩偶 检查状态：牛年活动外观
+            GENERIC = "真是太有魅力了！",
+            YOTB = "评委也许能给我一些关于它风格方面的启示喵。",
         },
         YOTB_BEEFALO_DOLL_NATURE = {
-            GENERIC = "做工讲究，连绒毛都理得顺。",		--物品名：花朵皮弗娄牛玩偶 检查状态：普通状态
-            YOTB = "就等评委点头了。",		--物品名：花朵皮弗娄牛玩偶 检查状态：牛年活动外观
+            GENERIC = "真是太有魅力了喵！",
+            YOTB = "评委也许能给我一些关于它风格方面的启示。",
         },
         YOTB_BEEFALO_DOLL_ROBOT = {
-            GENERIC = "铁甲裹着棉花，思路有趣。",		--物品名：铁甲皮弗娄牛玩偶 检查状态：普通状态
-            YOTB = "评委大约会喜欢这种硬派。",		--物品名：铁甲皮弗娄牛玩偶 检查状态：牛年活动外观
+            GENERIC = "真是太有魅力了喵！",
+            YOTB = "评委也许能给我一些关于它风格方面的启示。",
         },
         YOTB_BEEFALO_DOLL_ICE = {
-            GENERIC = "摸上去凉，倒还抱得住。",		--物品名：寒霜皮弗娄牛玩偶 检查状态：普通状态
-            YOTB = "评审席上，应当也会觉得清爽。",		--物品名：寒霜皮弗娄牛玩偶 检查状态：牛年活动外观
+            GENERIC = "真是太有魅力了！",
+            YOTB = "评委也许能给我一些关于它风格方面的启示喵。",
         },
         YOTB_BEEFALO_DOLL_FORMAL = {
-            GENERIC = "正装也掩不住它的圆润。",		--物品名：正式皮弗娄牛玩偶 检查状态：普通状态
-            YOTB = "得体。评委会认的。",		--物品名：正式皮弗娄牛玩偶 检查状态：牛年活动外观
+            GENERIC = "真是太有魅力了！",
+            YOTB = "评委也许能给我一些关于它风格方面的启示。",
         },
         YOTB_BEEFALO_DOLL_VICTORIAN = {
-            GENERIC = "旧式剪裁，颇有家教。",		--物品名：维多利亚皮弗娄牛玩偶 检查状态：普通状态
-            YOTB = "这种讲究，评委看得出。",		--物品名：维多利亚皮弗娄牛玩偶 检查状态：牛年活动外观
+            GENERIC = "真是太有魅力了喵！",
+            YOTB = "评委也许能给我一些关于它风格方面的启示。",
         },
         YOTB_BEEFALO_DOLL_BEAST = {
-            GENERIC = "毛色极好，值得多看两眼，喵。",		--物品名：幸运兽皮弗娄牛玩偶 检查状态：普通状态
-            YOTB = "它若得奖，我不意外。",		--物品名：幸运兽皮弗娄牛玩偶 检查状态：牛年活动外观
+            GENERIC = "真是太有魅力了！",
+            YOTB = "评委也许能给我一些关于它风格方面的启示。",
         },
 
-        WAR_BLUEPRINT = "何等英武。",		--物品名：战士礼服款式
-        DOLL_BLUEPRINT = "我的皮弗娄牛一定招人喜欢。",		--物品名：娃娃礼服款式
-        FESTIVE_BLUEPRINT = "该添些节庆气了。",		--物品名：节日盛装款式
-        ROBOT_BLUEPRINT = "一件缝纫活要这么多焊接，未免可疑。",		--物品名：铁甲礼服款式
-        NATURE_BLUEPRINT = "花，配什么都好。",		--物品名：花朵礼服款式
-        FORMAL_BLUEPRINT = "这是甲等皮弗娄牛的礼服。",		--物品名：正式礼服款式
-        VICTORIAN_BLUEPRINT = "我祖母好像穿过类似的。",		--物品名：维多利亚礼服款式
-        ICE_BLUEPRINT = "我喜欢新鲜的皮弗娄牛，不是冻的。",		--物品名：寒霜礼服款式
-        BEAST_BLUEPRINT = "看来我要走运了。",		--物品名：幸运兽礼服款式
+        WAR_BLUEPRINT = "看上去颇有攻击性。",
+        DOLL_BLUEPRINT = "就我的口味而言，有些幼稚。",
+        FESTIVE_BLUEPRINT = "它使用了一个折中的色彩组合喵。",
+        ROBOT_BLUEPRINT = "我不确定到底需要多少缝纫工作。",
+        NATURE_BLUEPRINT = "真令人愉悦喵！",
+        FORMAL_BLUEPRINT = "让皮弗娄牛看起来很体面这件事实在是没什么道理。",
+        VICTORIAN_BLUEPRINT = "啊，这种风格的确让我想起了喵……",
+        ICE_BLUEPRINT = "谨慎起见，还是要准备一套冬天的衣物。",
+        BEAST_BLUEPRINT = "我不是一个靠运气的人，但在比赛中有一点运气也不是坏事。",
 
-        BEEF_BELL = "它让皮弗娄牛变得温顺。科学自会解释。",		--物品名：皮弗娄牛铃
+        BEEF_BELL = "它的某种音色会引起皮弗娄牛的好感。",
 
+		-- YOT Catcoon
 		KITCOONDEN =
 		{
-			GENERIC = "要缩到这么小，才藏得进去。",		--物品名：小浣猫托儿所 检查状态：普通状态
-            BURNT = "不。",		--物品名：小浣猫托儿所 检查状态：已经烧毁
-			PLAYING_HIDEANDSEEK = "它们躲到哪儿去了。",		--物品名：小浣猫托儿所 检查状态：小浣猫正在玩捉迷藏
-			PLAYING_HIDEANDSEEK_TIME_ALMOST_UP = "时候不多了。它们在哪儿？",		--物品名：小浣猫托儿所 检查状态：小浣猫捉迷藏即将结束
+			GENERIC = "小猫们的良好居所。",
+            BURNT = "看来小猫们已经失去了住所。",
+			PLAYING_HIDEANDSEEK = "小猫们目前正试图躲起来喵。",
+			PLAYING_HIDEANDSEEK_TIME_ALMOST_UP = "小猫们的躲猫猫游戏很快就会结束了。",
 		},
 
-		KITCOONDEN_KIT = "一套都在这里。",		--物品名：小浣猫托儿所套装
+		KITCOONDEN_KIT = "建造正规猫房的材料喵。",
 
 		TICOON =
 		{
-			GENERIC = "他看上去很清楚自己在做什么。",		--物品名：大虎 检查状态：普通状态
-			ABANDONED = "我自己也能找到它们。",		--物品名：大虎 检查状态：已被原主人遗弃
-			SUCCESS = "他找到一个了。",		--物品名：大虎 检查状态：追踪已经成功
-			LOST_TRACK = "有人先一步发现了它们。",		--物品名：大虎 检查状态：已经失去追踪目标
-			NEARBY = "附近有动静。",		--物品名：大虎 检查状态：追踪目标就在附近
-			TRACKING = "跟紧他的步子。",		--物品名：大虎 检查状态：正在追踪目标
-			TRACKING_NOT_MINE = "他在替别人引路。",		--物品名：大虎 检查状态：正在追踪其他角色的目标
-			NOTHING_TO_TRACK = "没什么可追的了。",		--物品名：大虎 检查状态：当前没有可追踪目标
-			TARGET_TOO_FAR_AWAY = "太远了。他闻不到。",		--物品名：大虎 检查状态：追踪目标距离过远
+			GENERIC = "异常睿智的猫科动物喵。",
+			ABANDONED = "他丢下我一个人去寻找小猫喵。",
+			SUCCESS = "他遇到了其中一只小猫。",
+			LOST_TRACK = "这只小猫在我们到达之前就被发现了喵。",
+			NEARBY = "我相信我们已经很接近了喵。",
+			TRACKING = "他正在引导我去一只小猫的藏身处。",
+			TRACKING_NOT_MINE = "他正在引导别人去小猫的藏身处。",
+			NOTHING_TO_TRACK = "没有任何明确的证据能让我们找到小猫。",
+			TARGET_TOO_FAR_AWAY = "小猫离得很远，足以隐藏它们的气味喵。",
 		},
 
 		YOT_CATCOONSHRINE =
         {
-            GENERIC = "在做什么呢。",		--物品名：浣猫神龛 检查状态：普通状态
-            EMPTY = "也许它想要一根羽毛。",		--物品名：浣猫神龛 检查状态：内容为空
-            BURNT = "烧焦的毛皮味。",		--物品名：浣猫神龛 检查状态：已经烧毁
+            GENERIC = "野猫的特别代表。",
+            EMPTY = "献上金色的供品是必要的。",
+            BURNT = "那场火太大了，没及时扑灭喵。",
         },
 
-		KITCOON_FOREST = "这一只，我承认它好看，喵。",		--物品名：小浣猫
-		KITCOON_SAVANNA = "小小的，倒有几分威风。",		--物品名：小浣猫
-		KITCOON_MARSH = "我得多收几只……做研究。",		--物品名：小浣猫
-		KITCOON_DECIDUOUS = "毛色干净。养得不错。",		--物品名：小浣猫
-		KITCOON_GRASS = "它看我的样子，很有分寸。",		--物品名：小浣猫
-		KITCOON_ROCKY = "这一只，我记下了。",		--物品名：小浣猫
-		KITCOON_DESERT = "样本还差几只。",		--物品名：小浣猫
-		KITCOON_MOON = "月光把它照得很好看。",		--物品名：小浣猫
-		KITCOON_YOT = "节庆打扮，倒也体面。",		--物品名：小浣猫
+		KITCOON_FOREST = "它似乎已经演化出了一种伪装的形式。",
+		KITCOON_SAVANNA = "与老虎的相似性令人难以置信喵。",
+		KITCOON_MARSH = "这种猫科动物有着相当不可思议的外表。",
+		KITCOON_DECIDUOUS = "哦，亲爱的，你真是可爱喵。",
+		KITCOON_GRASS = "哦，亲爱的，你被吓到了吗？",
+		KITCOON_ROCKY = "嗯，它们的身体语言似乎在说它们窝火了。",
+		KITCOON_DESERT = "它们演化出了大耳朵，便于猎取沙漠中的小动物。",
+		KITCOON_MOON = "猫科动物？而且来自月球？相当令人着迷……",
+		KITCOON_YOT = "哦，亲爱的，这个铃铛极大增强了你的……可爱程度。呵呵!",
 
+        -- Moon Storm
         ALTERGUARDIAN_PHASE1 = {
-            GENERIC = "破坏科学，你要付代价。",		--物品名：天体英雄 检查状态：普通状态
-            DEAD = "中了。",		--物品名：天体英雄 检查状态：已经死亡
+            GENERIC = "我们的行为似乎引起了某种防御机制。",
+            DEAD = "奇怪啊，我本来以为要折腾一番呢。",
         },
         ALTERGUARDIAN_PHASE2 = {
-            GENERIC = "我想我把它惹恼了。",		--物品名：天体英雄 检查状态：普通状态
-            DEAD = "这回我确信收拾干净了。",		--物品名：天体英雄 检查状态：已经死亡
+            GENERIC = "有趣，它似乎利用了祭坛的某些方面进行战斗。",
+            DEAD = "这种惰性应该不会持续太久喵。",
         },
-        ALTERGUARDIAN_PHASE2SPIKE = "你的意思，我明白了。",		--物品名：月光玻璃尖刺
-        ALTERGUARDIAN_PHASE3 = "它现在必定动了怒。",		--物品名：天体英雄
-        ALTERGUARDIAN_PHASE3TRAP = "反复试过，我可以确认：这东西让人想睡。",		--物品名：启迪陷阱
-        ALTERGUARDIAN_PHASE3DEADORB = "它死了吗。那股力量还在附近游荡。",		--物品名：天体英雄
-        ALTERGUARDIAN_PHASE3DEAD = "该派个人过去戳一下，才算数。",		--物品名：被击败的天体英雄
+        ALTERGUARDIAN_PHASE2SPIKE = "我会努力不被它的障碍物困住。",
+        ALTERGUARDIAN_PHASE3 = "如果我的假设正确，这应该是它的最终形式喵。",
+        ALTERGUARDIAN_PHASE3TRAP = "它们似乎有催眠的能力。我最好避开一些。",
+        ALTERGUARDIAN_PHASE3DEADORB = "有趣，它似乎保留了为其提供动力的能量。",
+        ALTERGUARDIAN_PHASE3DEAD = "能量移除之后，我怀疑它多半不能再生了喵。",
 
-        ALTERGUARDIANHAT = "它让我看见了无限的可能。",		--物品名：启迪之冠
-        ALTERGUARDIANHATSHARD = "连碎片都这样夺目。",		--物品名：启迪碎片
+        ALTERGUARDIANHAT = "它所包含的知识如此广阔……我要是能全部记录下来就好了……",
+        ALTERGUARDIANHATSHARD = "这些碎片存储了大量能量喵。",
 
         MOONSTORM_GLASS = {
-            GENERIC = "呈玻璃状。",		--物品名：充能玻璃石 检查状态：普通状态
-            INFUSED = "它泛着地外的光。"		--物品名：充能玻璃石 检查状态：已经注入月亮能量
+            GENERIC = "玻璃似乎稳定了下来喵。",
+            INFUSED = "它在散发着一种发微光的能力喵。"
         },
 
-        MOONSTORM_STATIC = "新的发现。像过电一样。",		--物品名：能量静电
-        MOONSTORM_STATIC_ITEM = "它把我的头发弄得一团糟。",		--物品名：约束静电
-        MOONSTORM_STATIC_ROAMER = "它似乎在传输中走失了。",		--物品名：未约束的静电
-        MOONSTORM_SPARK = "姑且叫它“希格斯伯里粒子”。",		--物品名：月熠
+        MOONSTORM_STATIC = "这种能量似乎很不稳定喵。",
+        MOONSTORM_STATIC_ITEM = "这个设备好像以某种方式遏制了能量。",
+        MOONSTORM_STATIC_ROAMER = "能量体已经偏离了。",
+        MOONSTORM_SPARK = "我本以为它是某种电力，可是似乎完全是另一种东西喵……",
 
-        BIRD_MUTANT = "那原本该是只乌鸦。",		--物品名：月盲乌鸦
-        BIRD_MUTANT_SPITTER = "我不喜欢它看我的眼神。",		--物品名：奇形鸟
+        BIRD_MUTANT = "噢，天啊。那个生物看起来不健康。",
+        BIRD_MUTANT_SPITTER = "这可怜的东西似乎被非自然手段改变了喵。",
 
-        WAGSTAFF_NPC = "同行一场，我该帮他。",		--物品名：颗粒状传输
+        WAGSTAFF_NPC = "他似乎在研究风暴，我应该帮助他。",
 
-        WAGSTAFF_NPC_MUTATIONS = "科学从不歇息。",		--物品名：颗粒状传输
-        WAGSTAFF_NPC_WAGPUNK = "他到底去了哪儿。",		--物品名：颗粒状传输
+        WAGSTAFF_NPC_MUTATIONS = "辛苦活干完了，他才安逸地出现。",
+        WAGSTAFF_NPC_WAGPUNK = "啊，对知识的追求啊。",
 
-        ALTERGUARDIAN_CONTAINED = "它正在抽干那怪物的气力。",		--物品名：月亮精华提取器
+        ALTERGUARDIAN_CONTAINED = "不知道他要那么多的能量做什么喵。",
 
-        WAGSTAFF_TOOL_1 = "正是我找的那件工具。",		--物品名：网状缓冲器
-        WAGSTAFF_TOOL_2 = "我当然知道缘由。只是……说来话长。",		--物品名：装置除垢器
-        WAGSTAFF_TOOL_3 = "这显然是件十分科学的工具。",		--物品名：垫圈开槽器
-        WAGSTAFF_TOOL_4 = "我的直觉说，就是它。",		--物品名：概念刷洗器
-        WAGSTAFF_TOOL_5 = "我知道它做什么用。科学。",		--物品名：校准观察机
+        WAGSTAFF_TOOL_1 = "噢，天啊。真不知道这个是不是他要的工具……",
+        WAGSTAFF_TOOL_2 = "也许这就是他要的工具？我建议建立一个索引。",
+        WAGSTAFF_TOOL_3 = "他当时语焉不详，但也许要找的就是这个。",
+        WAGSTAFF_TOOL_4 = "哪怕有一点点的整理，他的工具也不至于这么难找……",
+        WAGSTAFF_TOOL_5 = "可惜没有标签……我只好假设这就是他要找的。",
 
-        MOONSTORM_GOGGLESHAT = "月亮加土豆。我怎么没早想到。",		--物品名：星象护目镜
+        MOONSTORM_GOGGLESHAT = "不同寻常的设计，但却出奇有效。",
 
         MOON_DEVICE = {
-            GENERIC = "它捕到能量了。我早知道会这样。",		--物品名：月亮虹吸器 检查状态：普通状态
-            CONSTRUCTION1 = "科学才刚开始。",		--物品名：月亮虹吸器 检查状态：第一阶段建造状态
-            CONSTRUCTION2 = "像样多了。",		--物品名：月亮虹吸器 检查状态：第二阶段建造状态
+            GENERIC = "如同我的假设一样，它的功能就是储能电池。",
+            CONSTRUCTION1 = "恐怕我一时间还不能说清它的功能。",
+            CONSTRUCTION2 = "这些组件渐渐都放好了。",
         },
 
+		-- Wanda
         POCKETWATCH_HEAL = {
-			GENERIC = "里头多半有很有趣的结构。",		--物品名：不老表 检查状态：普通状态
-			RECHARGING = "它需要时间……重新校准。诸如此类。",		--物品名：不老表 检查状态：正在重新充能
+			GENERIC = "钟表学与魔法混合在一起，真的很吸引人。",
+			RECHARGING = "在两次使用之间，它似乎需要一些时间来补充其能量。",
 		},
 
         POCKETWATCH_REVIVE = {
-			GENERIC = "里头多半藏着精巧的机关。",		--物品名：第二次机会表 检查状态：普通状态
-			RECHARGING = "它要缓一缓……重新对准，那个……时间。",		--物品名：第二次机会表 检查状态：正在重新充能
+			GENERIC = "钟表学与魔法混合在一起，真的很吸引人。",
+			RECHARGING = "在两次使用之间，它似乎需要一些时间来补充其能量喵。",
 		},
 
         POCKETWATCH_WARP = {
-			GENERIC = "里面必定有值得一看的结构。",		--物品名：倒走表 检查状态：普通状态
-			RECHARGING = "它在弄“时间之类的东西”。术语如此。",		--物品名：倒走表 检查状态：正在重新充能
+			GENERIC = "钟表学与魔法混合在一起，真的很吸引人喵。",
+			RECHARGING = "在两次使用之间，它似乎需要一些时间来补充其能量。",
 		},
 
         POCKETWATCH_RECALL = {
-			GENERIC = "我想里面有一套精巧的结构。",		--物品名：溯源表 检查状态：普通状态
-			RECHARGING = "它在做“时间那类的事”。术语就是这么写的。",		--物品名：溯源表 检查状态：正在重新充能
-			UNMARKED = "唔，这一下退得太远了。",		--物品名：溯源表 检查状态：尚未记录传送位置
-			MARKED_SAMESHARD = "该跳进时间流了吗？",		--物品名：溯源表 检查状态：已标记当前世界分片的位置
-			MARKED_DIFFERENTSHARD = "这一跳不小，但我做得到。",		--物品名：溯源表 检查状态：已标记其他世界分片的位置
+			GENERIC = "钟表学与魔法混合在一起，真的很吸引人。",
+			RECHARGING = "在两次使用之间，它似乎需要一些时间来补充其能量喵。",
+--fallback to speech_wilson.lua 			UNMARKED = "only_used_by_wanda",
+--fallback to speech_wilson.lua 			MARKED_SAMESHARD = "only_used_by_wanda",
+--fallback to speech_wilson.lua 			MARKED_DIFFERENTSHARD = "only_used_by_wanda",
 		},
 
         POCKETWATCH_PORTAL = {
-			GENERIC = "里面多半有些有趣的结构。",		--物品名：裂缝表 检查状态：普通状态
-			RECHARGING = "它在忙“时间之类的事”。术语如此。",		--物品名：裂缝表 检查状态：正在重新充能
-			UNMARKED = "回去走一趟如何？会很有趣。",		--物品名：裂缝表 检查状态：尚未记录传送位置
-			MARKED_SAMESHARD = "该跳进时间流了吗？",		--物品名：裂缝表 检查状态：已标记当前世界分片的位置
-			MARKED_DIFFERENTSHARD = "这一跃不小，我应当可以。",		--物品名：裂缝表 检查状态：已标记其他世界分片的位置
+			GENERIC = "钟表学与魔法混合在一起，真的很吸引人喵。",
+			RECHARGING = "在两次使用之间，它似乎需要一些时间来补充其能量。",
+--fallback to speech_wilson.lua 			UNMARKED = "only_used_by_wanda unmarked",
+--fallback to speech_wilson.lua 			MARKED_SAMESHARD = "only_used_by_wanda same shard",
+--fallback to speech_wilson.lua 			MARKED_DIFFERENTSHARD = "only_used_by_wanda other shard",
 		},
 
         POCKETWATCH_WEAPON = {
-			GENERIC = "出事只是时间问题。",		--物品名：警钟 检查状态：普通状态
-			DEPLETED = "还得再找些暗影燃料。",		--物品名：警钟 检查状态：能量已经耗尽
+			GENERIC = "一个方便的口袋型武器。",
+--fallback to speech_wilson.lua 			DEPLETED = "only_used_by_wanda",
 		},
 
-        POCKETWATCH_PARTS = "不到一分钟，科学就成了魔法。",		--物品名：时间碎片
-        POCKETWATCH_DISMANTLER = "买来许是二手的。",		--物品名：钟表匠工具
+        POCKETWATCH_PARTS = "看来这些钟表已经被注入了暗影燃料。",
+        POCKETWATCH_DISMANTLER = "这些工具是专门用于制作钟表的。",
 
         POCKETWATCH_PORTAL_ENTRANCE =
 		{
-			GENERIC = "往前走，去看。",		--物品名：时间裂缝 检查状态：普通状态
-			DIFFERENTSHARD = "往前走，去发现。",		--物品名：时间裂缝 检查状态：目标位于其他世界分片
+			GENERIC = "由钟表装置触发的魔法，多么令人着迷啊！",
+			DIFFERENTSHARD = "由钟表装置触发的魔法，多么令人着迷啊！",
 		},
-        POCKETWATCH_PORTAL_EXIT = "好一段漫长的下坠。",		--物品名：时间裂缝
+        POCKETWATCH_PORTAL_EXIT = "不知她是否会允许我记录我的观察喵……",
 
-        WATERTREE_PILLAR = "好大一棵树。",		--物品名：大树干
-        OCEANTREE = "这些树该是迷路了。",		--物品名：疙瘩树
-        OCEANTREENUT = "里面有活物。",		--物品名：疙瘩树果
-        WATERTREE_ROOT = "不是平方根。",		--物品名：大树根
+        -- Waterlog
+        WATERTREE_PILLAR = "究竟是什么促成了如此先进的增长喵？",
+        OCEANTREE = "它似乎是红树和柳树的杂交品种。",
+        OCEANTREENUT = "哦，天哪，这颗种子似乎相当渴望成长。",
+        WATERTREE_ROOT = "我建议不要让小船撞到这些。",
 
-        OCEANTREE_PILLAR = "不如原先那棵，但也不坏。",		--物品名：高出平均值的树干
+        OCEANTREE_PILLAR = "我虽然能模拟它的生长条件，但难以企及它原来的程度。",
 
-        OCEANVINE = "学名唤作“树面条”。",		--物品名：苔藓藤条
-        FIG = "我叫它“牛顿的无花果”。",		--物品名：无花果
-        FIG_COOKED = "被科学加热过了。",		--物品名：熟无花果
+        OCEANVINE = "这些藤蔓似乎享受着与树的共生关系。",
+        FIG = "我喜欢吃熟透了的无花果。",
+        FIG_COOKED = "烹饪之后激发了更多的风味喵。",
 
-        SPIDER_WATER = "它们凭什么浮得起来？",		--物品名：海黾
-        MUTATOR_WATER = "哦。这看起来……很合口，韦伯。",		--物品名：海黾变身涂鸦
-        OCEANVINE_COCOON = "轻轻戳一下，会怎样？",		--物品名：海黾巢穴
-        OCEANVINE_COCOON_BURNT = "像烤焦的吐司。",		--物品名：海黾巢穴
+        SPIDER_WATER = "它们如此的身躯，居然还能创造足够的表面张力浮在水面，简直不可思议。",
+        MUTATOR_WATER = "多么有趣啊！它们被摄入后似乎会改变蛛形纲动物的形态。",
+        OCEANVINE_COCOON = "这种物种似乎既是树栖的又是水栖的喵。",
+        OCEANVINE_COCOON_BURNT = "多么不幸。",
 
-        GRASSGATOR = "他好像不太喜欢我。",		--物品名：草鳄鱼
+        GRASSGATOR = "它看起来比较温顺。",
 
-        TREEGROWTHSOLUTION = "唔，树木的食粮。",		--物品名：树果酱
+        TREEGROWTHSOLUTION = "这种无花果混合物似乎能诱发树木迅速生长喵。",
 
-        FIGATONI = "我的天。",		--物品名：无花果意面
-        FIGKABAB = "无花果，旁边一根棍子。",		--物品名：无花果烤串
-        KOALEFIG_TRUNK = "好极了。我的鼻子塞得满满当当。",		--物品名：无花果酿象鼻
-        FROGNEWTON = "无花果把别的味道都调和了。",		--物品名：无花果蛙腿三明治
+        FIGATONI = "这样组合虽然出乎意料，但却又有几分讨喜喵。",
+        FIGKABAB = "我想既然可以做肉串，那现在这样做也是合乎逻辑了。",
+        KOALEFIG_TRUNK = "富含蛋白质和纤维。",
+        FROGNEWTON = "味道十分独特。",
 
+        -- The Terrorarium
         TERRARIUM = {
-            GENERIC = "看它久了，眼前会浮起许多小方块。",		--物品名：盒中泰拉 检查状态：普通状态
-            CRIMSON = "我有种不祥的预感。",		--物品名：盒中泰拉 检查状态：已转化为猩红状态
-            ENABLED = "我到彩虹那一边了吗？",		--物品名：盒中泰拉 检查状态：特殊事件生成已经启用
-			WAITING_FOR_DARK = "会是什么呢。不如睡一觉再看。",		--物品名：盒中泰拉 检查状态：正在等待夜晚到来
-			COOLDOWN = "之后需要缓一缓。",		--物品名：盒中泰拉 检查状态：能力处于冷却期
-			SPAWN_DISABLED = "应当不会再被窥视打扰了。",		--物品名：盒中泰拉 检查状态：特殊事件生成已被禁用
+            GENERIC = "它必然不属于这个世界。有趣了。",
+            CRIMSON = "噩梦燃料似乎对它有负面作用。",
+            ENABLED = "这是什么意思？！",
+			WAITING_FOR_DARK = "我相信它在储存能量，但为了什么目的呢？",
+			COOLDOWN = "它似乎已经耗尽了能量，但我说不准会持续多久。",
+			SPAWN_DISABLED = "只要不被打扰，它应该会继续不活跃喵。",
         },
 
+        -- Wolfgang
         MIGHTY_GYM =
         {
-            GENERIC = "看一眼就觉得肌肉拉伤。",		--物品名：强大健身房 检查状态：普通状态
-            BURNT = "再不会让谁拉伤了。",		--物品名：强大健身房 检查状态：已经烧毁
+            GENERIC = "请注意不要过度劳累，亲爱的喵。",
+            BURNT = "我建议换个地方锻炼吧喵。",
         },
 
-        DUMBBELL = "我更常做脑力训练。",		--物品名：哑铃
-        DUMBBELL_GOLDEN = "精诚所至，金石为开。",		--物品名：黄金哑铃
-		DUMBBELL_MARBLE = "我早把脑子练成了最结实的一块肌肉。",		--物品名：大理石哑铃
-        DUMBBELL_GEM = "这点分量，我随手就能举——啊，我的腰！",		--物品名：宝石哑铃
-        POTATOSACK = "不是土豆样的石头，就是石头样的土豆。",		--物品名：土豆袋
+        DUMBBELL = "做点运动对健康相当有益。",
+        DUMBBELL_GOLDEN = "做点运动对健康相当有益喵。",
+		DUMBBELL_MARBLE = "做点运动对健康相当有益。",
+        DUMBBELL_GEM = "做点运动对健康相当有益喵。",
+        POTATOSACK = "他似乎对块茎类植物有深深的喜爱。",
 
-        DUMBBELL_HEAT = "热身尚可。",		--物品名：热铃
-        DUMBBELL_REDGEM = "确实感到肌肉在烧。",		--物品名：火铃
-        DUMBBELL_BLUEGEM = "没有比这更凉快的了。",		--物品名：冰铃
+        DUMBBELL_HEAT = "运动和温度调节的有趣结合。",
+        DUMBBELL_REDGEM = "小心点，亲爱的，那看起来有点易燃。",
+        DUMBBELL_BLUEGEM = "我的天，摸起来凉透了喵！",
 
         TERRARIUMCHEST =
 		{
-			GENERIC = "没人因为偷看箱子而出事吧？",		--物品名：显眼箱子 检查状态：普通状态
-			BURNT = "它不会再打扰谁了。",		--物品名：显眼箱子 检查状态：已经烧毁
-			SHIMMER = "那东西看着有些格格不入。",		--物品名：显眼箱子 检查状态：宝箱正在闪烁提示
+			GENERIC = "我想知道它是如何来到这里的喵。",
+			BURNT = "噢，不好...",
+			SHIMMER = "那道光的折射相当不自然。",
 		},
 
-		EYEMASKHAT = "蒙上眼，反而看得更清楚。",		--物品名：眼面具
+		EYEMASKHAT = "应该没有这么大的老花镜吧。",
 
-        EYEOFTERROR = "眼睛是弱点。瞄准它。",		--物品名：恐怖之眼
-        EYEOFTERROR_MINI = "它在看我。",		--物品名：可疑窥视者
-        EYEOFTERROR_MINI_GROUNDED = "快了。它要破壳了。",		--物品名：恐怖之蛋
+        EYEOFTERROR = "这是给左眼戴的还是右眼戴的呢？我猜是右眼喵。",
+        EYEOFTERROR_MINI = "我虽然很想弄清楚，但现在不是研究你的时候喵。",
+        EYEOFTERROR_MINI_GROUNDED = "是眼球……的胚胎？这些生物的构造真是复杂啊。",
 
-        FROZENBANANADAIQUIRI = "冰凉、甜腻。尚可。",		--物品名：冰香蕉冻唇蜜
-        BUNNYSTEW = "它的运气，到此为止。",		--物品名：炖兔子
-        MILKYWHITES = "……不必了。",		--物品名：乳白物
+        FROZENBANANADAIQUIRI = "喝着这个读一本小书将会十分惬意喵。",
+        BUNNYSTEW = "虽然很多卡路里，但是营养丰富，而且香气四溢喵。",
+        MILKYWHITES = "巩膜，是玻璃体的不透明的白色覆盖物。还有另一个名字叫恶心。",
 
-        CRITTER_EYEOFTERROR = "多一只眼睛照看，也不算坏事。",		--物品名：友好窥视者
+        CRITTER_EYEOFTERROR = "我想知道你的神经系统是纯装饰性的，还是具备一定的功能……",
 
-        SHIELDOFTERROR ="用它的下颌作盾。颇有创意。",		--物品名：恐怖盾牌
-        TWINOFTERROR1 = "敌友未明。先别动。",		--物品名：激光眼
-        TWINOFTERROR2 = "看不清立场。都别动。",		--物品名：魔焰眼
+        SHIELDOFTERROR ="它似乎更适合进攻，而不是人们想象的防御。",
+        TWINOFTERROR1 = "真奇怪，不知道是谁造出来的？",
+        TWINOFTERROR2 = "真奇怪，不知道是谁造出来的喵？",
 
-		COTL_TRINKET = "一件小玩意儿，也算成就。",		--物品名：红眼冠
-		TURF_COTL_GOLD = "别踩。那地面比你的鞋贵。",		--物品名：黄金地板
-		TURF_COTL_BRICK = "砖。铺得还算齐整。",		--物品名：砖地板
+		-- Cult of the Lamb
+		COTL_TRINKET = "天哪，它刚刚是对我眨眼了吗喵？",
+		TURF_COTL_GOLD = "孩子们，在踏上那层地板之前先把脚擦干净！",
+		TURF_COTL_BRICK = "砖砌体，应用于地面。",
 		COTL_TABERNACLE_LEVEL1 =
 		{
-			LIT = "光很柔。让人想留下，喵。",		--物品名：低微咩咩雕像 检查状态：已经点亮
-			GENERIC = "还缺燃料。",		--物品名：低微咩咩雕像 检查状态：普通状态
+			LIT = "这座雕像似乎年久失修喵。",
+			GENERIC = "需要小火才能达到全部效果。",
 		},
 		COTL_TABERNACLE_LEVEL2 =
 		{
-			LIT = "这座像，有点鼓舞人心。",		--物品名：有所改进咩咩雕像 检查状态：已经点亮
-			GENERIC = "燃料不足。",		--物品名：有所改进咩咩雕像 检查状态：普通状态
+			LIT = "多么迷人的雕像啊。",
+			GENERIC = "需要小火才能达到全部效果。",
 		},
 		COTL_TABERNACLE_LEVEL3 =
 		{
-			LIT = "我可以一直看下去……一直。",		--物品名：完美无瑕咩咩雕像 检查状态：已经点亮
-			GENERIC = "等着添燃料。",		--物品名：完美无瑕咩咩雕像 检查状态：普通状态
+			LIT = "金色表面反射的火光催人入睡。",
+			GENERIC = "需要小火才能达到全部效果。",
 		},
 
-        CATTOY_MOUSE = "给老鼠装上轮子。人类真是闲不住，喵。",		--物品名：发条鼠玩具
-        KITCOON_NAMETAG = "名字要好好取。就叫……小灰，小银。",		--物品名：小浣猫项圈
+        -- Year of the Catcoon
+        CATTOY_MOUSE = "一个简单的机械原理支撑起了这件猫科动物的玩具。",
+        KITCOON_NAMETAG = "啊，这确实勾起了我对亲爱的老猫的回忆喵……",
 
 		KITCOONDECOR1 =
         {
-            GENERIC = "不是真鸟。小家伙们分不清。",		--物品名：火鸡不倒翁 检查状态：普通状态
-            BURNT = "起火了。",		--物品名：火鸡不倒翁 检查状态：已经烧毁
+            GENERIC = "它的动作似乎对小猫有催眠作用喵。",
+            BURNT = "随火而去了喵。",
         },
 		KITCOONDECOR2 =
         {
-            GENERIC = "它们总是三心二意。我也是，喵。",		--物品名：逗猫小鱼 检查状态：普通状态
-            BURNT = "烧没了。",		--物品名：逗猫小鱼 检查状态：已经烧毁
+            GENERIC = "我以前在老家也有一个这样的东西。",
+            BURNT = "不幸的是，它现在已经没有用了。",
         },
 
-		KITCOONDECOR1_KIT = "需要组装。我来。",		--物品名：火鸡不倒翁套装
-		KITCOONDECOR2_KIT = "工序不复杂。",		--物品名：逗猫小鱼套装
+		KITCOONDECOR1_KIT = "为小猫建造娱乐性玩具的材料。",
+		KITCOONDECOR2_KIT = "为小猫建造娱乐性玩具的材料喵。",
 
-        WX78MODULE_MAXHEALTH = "小小一枚，倒装了不少学问。",		--物品名：强化电路
-        WX78MODULE_MAXSANITY1 = "精巧。里面全是门道。",		--物品名：处理器电路
-        WX78MODULE_MAXSANITY = "结构紧凑。设计者有些心思。",		--物品名：超级处理器电路
-        WX78MODULE_MOVESPEED = "这么小的东西，藏着这么多道理。",		--物品名：加速电路
-        WX78MODULE_MOVESPEED2 = "精密得近乎优雅。",		--物品名：超级加速电路
-        WX78MODULE_HEAT = "一枚电路，胜过一炉火。",		--物品名：热能电路
-        WX78MODULE_NIGHTVISION = "夜里也能看清。正合我意。",		--物品名：光电电路
-        WX78MODULE_COLD = "制冷之物。夏天会想念它。",		--物品名：制冷电路
-        WX78MODULE_TASER = "电。用来对付不听话的。",		--物品名：电气化电路
-        WX78MODULE_LIGHT = "光被收进了这么小的壳里。",		--物品名：照明电路
-        WX78MODULE_MAXHUNGER1 = "胃口也能改造。真是执着，喵。",		--物品名：胃增益电路
-        WX78MODULE_MAXHUNGER = "吃得多，未必是好事。",		--物品名：超级胃增益电路
-        WX78MODULE_MUSIC = "会唱歌的零件。有点意思，喵。",		--物品名：合唱盒电路
-        WX78MODULE_BEE = "模仿蜂。造物者的玩笑。",		--物品名：豆增压电路
-        WX78MODULE_MAXHEALTH2 = "加固过的。摸上去很稳。",		--物品名：超级强化电路
+        -- WX78
+        WX78MODULE_MAXHEALTH = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_MAXSANITY1 = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感喵。",
+        WX78MODULE_MAXSANITY = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感喵。",
+        WX78MODULE_MOVESPEED = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感喵。",
+        WX78MODULE_MOVESPEED2 = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_HEAT = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_NIGHTVISION = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_COLD = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_TASER = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_LIGHT = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_MAXHUNGER1 = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_MAXHUNGER = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感喵。",
+        WX78MODULE_MUSIC = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_BEE = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_MAXHEALTH2 = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
 
         WX78_SCANNER =
         {
-            GENERIC ="他把一部分自己，放进了这里。",		--物品名：生物扫描分析仪 检查状态：普通状态
-            HUNTING = "别让那份数据跑了。",		--物品名：生物扫描分析仪 检查状态：正在搜寻扫描目标
-            SCANNING = "它有发现了。",		--物品名：生物扫描分析仪 检查状态：正在扫描目标
+            GENERIC ="我猜我们的常驻女工可能协助了建造。",
+            HUNTING = "它似乎在寻找一个可分析的样本。",
+            SCANNING = "它似乎在收集那个样本的数据。",
         },
 
-        WX78_SCANNER_ITEM = "它会梦见被扫描的羊吗。",		--物品名：生物扫描分析仪
-        WX78_SCANNER_SUCCEEDED = "它急着展示成果。可以理解。",		--物品名：生物扫描分析仪
+        WX78_SCANNER_ITEM = "它当前处于休眠状态喵。",
+        WX78_SCANNER_SUCCEEDED = "我相信它已经完成了研究资料的编纂。",
 
-        WX78_MODULEREMOVER = "精细，复杂。别乱碰。",		--物品名：电路提取器
+        WX78_MODULEREMOVER = "这个一定小心使用，亲爱的喵。",
 
-        SCANDATA = "有新鲜研究的气味。",		--物品名：生物数据
+        SCANDATA = "分析地鞭辟入里。干得好！",
 
-		JUSTEGGS = "蛋。还缺一点培根。",		--物品名：普通煎蛋
-		VEGGIEOMLET = "早餐要吃得像样。",		--物品名：早餐锅
-		TALLEGGS = "早餐上的突破。",		--物品名：苏格兰高鸟蛋
-		BEEFALOFEED = "不必了，谢谢。",		--物品名：蒸树枝
-		BEEFALOTREAT = "颗粒太粗。不合我的口味。",		--物品名：皮弗娄牛零食
+		-- QOL 2022
+		JUSTEGGS = "如果能有一些黄油吐司当主食就好了。",
+		VEGGIEOMLET = "一份健康、平衡的早餐。",
+		TALLEGGS = "像大多数舒适食品一样，它可能会对动脉造成巨大破坏。",
+		BEEFALOFEED = "皮弗娄牛似乎很擅长消化树枝。",
+		BEEFALOTREAT = "谁都喜欢偶尔吃两口好吃的。",
 
-        BOAT_ROTATOR = "方向由我定。左或右，都一样。",		--物品名：转向舵
-        BOAT_ROTATOR_KIT = "该带它出去转一圈。",		--物品名：转向舵套装
-        BOAT_BUMPER_KELP = "解决不了全部问题。聊胜于无。",		--物品名：海带保险杠
-        BOAT_BUMPER_KELP_KIT = "一件待装的护舷。",		--物品名：海带保险杠套装
-		BOAT_BUMPER_SHELL = "一层薄壳。总比没有好。",		--物品名：贝壳保险杠
-        BOAT_BUMPER_SHELL_KIT = "护舷，尚未装上。",		--物品名：贝壳保险杠套装
-        BOAT_BUMPER_CRABKING = "王冠的光，照在我的船上。",		--物品名：帝王蟹保险杠
-        BOAT_BUMPER_CRABKING_KIT = "装上去就好了。",		--物品名：帝王蟹保险杠套装
+        -- Pirates
+        BOAT_ROTATOR = "它让我能在旋转甲板的同时保持我们的方向喵。",
+        BOAT_ROTATOR_KIT = "它应该能提高船的可操作性喵。",
+        BOAT_BUMPER_KELP = "一个厚厚的褐藻门海带科屏障。",
+        BOAT_BUMPER_KELP_KIT = "在船上配备保护屏障是明智之举。",
+		BOAT_BUMPER_SHELL = "一道厚厚的软体动物屏障喵。",
+        BOAT_BUMPER_SHELL_KIT = "在船上配备保护屏障是明智之举。",
+        BOAT_BUMPER_CRABKING = "厚厚的地壳外骨骼屏障。",
+        BOAT_BUMPER_CRABKING_KIT = "在船上配备保护屏障是明智之举。",
 
         BOAT_CANNON = {
-            GENERIC = "空的。得找东西填进去。",		--物品名：大炮 检查状态：普通状态
-            AMMOLOADED = "装填完毕。随时可以开火。",		--物品名：大炮 检查状态：已经装填弹药
-            NOAMMO = "没有炮弹。耐心些。",		--物品名：大炮 检查状态：没有装填弹药
+            GENERIC = "海战中一种非常有效的武器，前提是要正确装弹。",
+            AMMOLOADED = "那可不是闹着玩的喵。",
+            NOAMMO = "还有弹药这个小问题，亲爱的喵……",
         },
-        BOAT_CANNON_KIT = "还不是炮。装配好就是了。",		--物品名：大炮套装
-        CANNONBALL_ROCK_ITEM = "尺寸正好。",		--物品名：炮弹
+        BOAT_CANNON_KIT = "很不幸，这是一项必要的预防措施喵。",
+        CANNONBALL_ROCK_ITEM = "适用于大炮的投射物喵。",
 
         OCEAN_TRAWLER = {
-            GENERIC = "捕鱼的工具。效率不错。",		--物品名：海洋拖网捕鱼器 检查状态：普通状态
-            LOWERED = "放下去了。等。",		--物品名：海洋拖网捕鱼器 检查状态：捕捞网已经放下
-            CAUGHT = "有东西进去了。",		--物品名：海洋拖网捕鱼器 检查状态：渔网已经捕获目标
-            ESCAPED = "到手的东西，跑了。",		--物品名：海洋拖网捕鱼器 检查状态：捕获目标已经逃脱
-            FIXED = "修好了。可以继续。",		--物品名：海洋拖网捕鱼器 检查状态：已经修复
+            GENERIC = "这将使收集鱼类变得更加便利。",
+            LOWERED = "忍耐是一种美德。",
+            CAUGHT = "一次成功的捕获喵。",
+            ESCAPED = "噢，天啊。没等我回来我的鱼就跑了。",
+            FIXED = "受损部件得到了修复喵。",
         },
-        OCEAN_TRAWLER_KIT = "该放在鱼多的地方。",		--物品名：海洋拖网捕鱼器套装
+        OCEAN_TRAWLER_KIT = "这只是一个简单的组装作业。",
 
         BOAT_MAGNET =
         {
-            GENERIC = "我向来被磁力吸引。像……那词我一时想不起。",		--物品名：自动航行仪 检查状态：普通状态
-            ACTIVATED = "成了。……我早知道会成。",		--物品名：自动航行仪 检查状态：已经激活
+            GENERIC = "虽然它的设计相当古怪，但是理论很扎实。",
+            ACTIVATED = "强大的磁力会把我的船拉向目标。",
         },
-        BOAT_MAGNET_KIT = "诸多妙想之一。不值一提。",		--物品名：自动航行仪套装
+        BOAT_MAGNET_KIT = "我以后要和他谈谈他在说明书的写作中一逗到底的问题。",
 
         BOAT_MAGNET_BEACON =
         {
-            GENERIC = "附近有磁铁，它就会靠过去。",		--物品名：自动航行灯塔 检查状态：普通状态
-            ACTIVATED = "磁力。",		--物品名：自动航行灯塔 检查状态：已经激活
+            GENERIC = "它能吸引大型电磁铁，但首先要先启动它喵。",
+            ACTIVATED = "磁力灯塔已经开启了喵。",
         },
-        DOCK_KIT = "造一座码头所需的，都在这里。",		--物品名：码头套装
-        DOCK_WOODPOSTS_ITEM = "果然。码头缺的就是它。",		--物品名：码头桩
+        DOCK_KIT = "建造码头的一些基本材料喵。",
+        DOCK_WOODPOSTS_ITEM = "对浮动码头来说没有必要，但外观确实令人愉快喵。",
 
         MONKEYHUT =
         {
-            GENERIC = "树屋太易燃。不是久留之地。",		--物品名：猴子小屋 检查状态：普通状态
-            BURNT = "我早说过了。",		--物品名：猴子小屋 检查状态：已经烧毁
+            GENERIC = "尽管它们与海洋关系密切，但猿类似乎仍然喜欢在树上睡觉。",
+            BURNT = "光顾偷窃，忽略了建设消防力量。",
         },
-        POWDER_MONKEY = "在我的船上撒野，胆子不小。",		--物品名：火药猴
-        PRIME_MATE = "帽子戴对了，话就不用多说。",		--物品名：大副
-		LIGHTCRAB = "会发光的东西。有意思。",		--物品名：发光蟹
-        CUTLESS = "切不了东西，扎人倒是很在行。",		--物品名：木头短剑
-        CURSED_MONKEY_TOKEN = "看上去无害。仅是看上去。",		--物品名：诅咒饰品
-        OAR_MONKEY = "桨也能当武器。",		--物品名：战桨
-        BANANABUSH = "那丛灌木结的是香蕉。",		--物品名：香蕉丛
-        DUG_BANANABUSH = "连根挖起，也还是香蕉。",		--物品名：香蕉丛
-        PALMCONETREE = "长成松树模样的棕榈。有意思，喵。",		--物品名：棕榈松果树
-        PALMCONE_SEED = "一棵树的开始。",		--物品名：棕榈松果树芽
-        PALMCONE_SAPLING = "它的志向，是长成一棵树。",		--物品名：棕榈松果树苗
-        PALMCONE_SCALE = "若树有指甲，大约长这样。",		--物品名：棕榈松果树鳞片
-        MONKEYTAIL = "能不能吃，值得一验。",		--物品名：猴尾草
-        DUG_MONKEYTAIL = "拔出来了。还是那句话：能吃吗。",		--物品名：猴尾草
+        POWDER_MONKEY = "你的行为令人发指！得好好找人管教管教！",
+        PRIME_MATE = "多么奇怪的颜色。也许是一种动物的警戒色喵？",
+		LIGHTCRAB = "它们的半透明外壳使它们身体的生物荧光得以闪现。",
+        CUTLESS = "如果孩子们表现好的话，可以拿这个当玩具。",
+        CURSED_MONKEY_TOKEN = "灵长类的珠宝。",
+        OAR_MONKEY = "这似乎是船上猿猴地位的象征。",
+        BANANABUSH = "它的果实与地下品系非常相似。",
+        DUG_BANANABUSH = "果实与我们熟知的地下品系非常相似。",
+        PALMCONETREE = "它似乎属于槭树科，但拥有一些针叶树的特征。",
+        PALMCONE_SEED = "亲爱的，不种下的话它是不能生长的。",
+        PALMCONE_SAPLING = "它还没有完全成熟。",
+        PALMCONE_SCALE = "树木天然盔甲的一部分。",
+        MONKEYTAIL = "这或许是常见的香蒲科香蒲属的一种变种？",
+        DUG_MONKEYTAIL = "这或许是常见的香蒲科香蒲属的一种变种？",
 
-        MONKEY_MEDIUMHAT = "戴上去，像个船长了。",		--物品名：船长的三角帽
-        MONKEY_SMALLHAT = "至少能护住头发。",		--物品名：海盗头巾
-        POLLY_ROGERSHAT = "一只小鸟说过它有用。",		--物品名：波莉·罗杰的帽子
-        POLLY_ROGERS = "说话的就是它。",		--物品名：波莉·罗杰
+        MONKEY_MEDIUMHAT = "长期在海上工作的人戴的头饰。",
+        MONKEY_SMALLHAT = "它可能需要彻底清洗一下。",
+        POLLY_ROGERSHAT = "对我来说有点浮夸了。",
+        POLLY_ROGERS = "请用你内心的声音鸣叫，亲爱的。",
 
-        MONKEYISLAND_PORTAL = "只出不进。这不合常理。",		--物品名：非自然传送门
-        MONKEYISLAND_PORTAL_DEBRIS = "这机器看着眼熟。奇怪。",		--物品名：损坏的机器
-        MONKEYQUEEN = "这一带，听她的。",		--物品名：月亮码头女王
-        MONKEYPILLAR = "名副其实的栋梁。",		--物品名：猴子柱
-        PIRATE_FLAG_POLE = "喂。",		--物品名：月亮码头海盗旗
+        MONKEYISLAND_PORTAL = "它似乎正在渗入这个世界。",
+        MONKEYISLAND_PORTAL_DEBRIS = "我非常怀疑我遇到的那些猿猴是否有足够的智慧来建造它。",
+        MONKEYQUEEN = "多么有趣啊，猿猴似乎是母系社会喵。",
+        MONKEYPILLAR = "这些似乎是支撑王座的柱子喵。",
+        PIRATE_FLAG_POLE = "噢，天啊。此乃不祥之兆。",
 
-        BLACKFLAG = "绅士海盗，还是个科学家。名号顺口。",		--物品名：黑旗
-        PIRATE_STASH = "这装饰，我喜欢。",		--物品名：海盗藏宝点
-        STASH_MAP = "人生有些方向，值得一看。",		--物品名：海盗地图
+        BLACKFLAG = "历史上，海盗也曾打着红旗或白旗航行。",
+        PIRATE_STASH = "这似乎是地图上指示的地点喵。",
+        STASH_MAP = "笔迹凌乱，但终究可以辨识。",
 
-        BANANAJUICE = "喝下去，有点落草为寇的意思，喵。",		--物品名：香蕉奶昔
+        BANANAJUICE = "啊，我正需要一些提神的东西。",
 
-        FENCE_ROTATOR = "注意。重新布防。",		--物品名：栅栏击剑
+        FENCE_ROTATOR = "有时，为了保持事物的排列有序，锐利是必要的。",
 
-        CHARLIE_STAGE_POST = "是陷阱。剧本早就写好了。",		--物品名：舞台
-        CHARLIE_LECTURN = "有人要演戏？",		--物品名：剧本
+        CHARLIE_STAGE_POST = "建造者一定是受了古希腊戏剧的启发。",
+        CHARLIE_LECTURN = "它列出了下一幕中的角色。",
 
-        CHARLIE_HECKLER = "它们是来添戏的。",		--物品名：嘲鸫
+        CHARLIE_HECKLER = "我不会把他们的批评归类为有建设性喵。",
 
-        PLAYBILL_THE_DOLL = "C.W. 亲笔。",		--物品名：附魔玩偶 舞台剧
-        PLAYBILL_THE_VEIL = "暗域先驱献上。",		--物品名：黑罩 舞台剧
-        PLAYBILL_THE_VAULT = "署名只有一个字母：E。",		--物品名：任务完成 一份忏悔
-        STATUEHARP_HEDGESPAWNER = "花回来了。头没有。",		--物品名：荆棘密布的雕像
-        HEDGEHOUND = "埋伏。",		--物品名：蔷薇狼
-        HEDGEHOUND_BUSH = "一丛荆棘。",		--物品名：蔷薇
+        PLAYBILL_THE_DOLL = "我怀疑故事情节有更深层次的含义。",
+        PLAYBILL_THE_VEIL = "你问我意见的话，我会说相当直白。",
+        PLAYBILL_THE_VAULT = "这与其说是舞台剧，不如说更像是对事件的忏悔或重述。",
+        STATUEHARP_HEDGESPAWNER = "有人放任藤蔓爬满了那座可怜的雕像。",
+        HEDGEHOUND = "啊。这就解释了它为什么会呼吸喵。",
+        HEDGEHOUND_BUSH = "真奇怪。这丛玫瑰似乎在……呼吸。",
 
-        MASK_DOLLHAT = "玩偶的面具。",		--物品名：玩偶面具
-        MASK_DOLLBROKENHAT = "裂了的玩偶面具。",		--物品名：开裂玩偶面具
-        MASK_DOLLREPAIREDHAT = "曾经是玩偶面具。",		--物品名：破碎玩偶面具
-        MASK_BLACKSMITHHAT = "铁匠的面具。",		--物品名：铁匠面具
-        MASK_MIRRORHAT = "说是面具，倒更像镜子。",		--物品名：镜子面具
-        MASK_QUEENHAT = "女王的面具。",		--物品名：女王面具
-        MASK_KINGHAT = "国王的面具。",		--物品名：国王面具
-        MASK_TREEHAT = "树的面具。",		--物品名：树木面具
-        MASK_FOOLHAT = "小丑的面具。",		--物品名：小丑面具
+        MASK_DOLLHAT = "它似乎是一张舞台面具喵。",
+        MASK_DOLLBROKENHAT = "它似乎是一张舞台面具。",
+        MASK_DOLLREPAIREDHAT = "它似乎是一张舞台面具。",
+        MASK_BLACKSMITHHAT = "它似乎是一张舞台面具。",
+        MASK_MIRRORHAT = "它似乎是一张舞台面具喵。",
+        MASK_QUEENHAT = "它似乎是一张舞台面具。",
+        MASK_KINGHAT = "它似乎是一张舞台面具。",
+        MASK_TREEHAT = "它似乎是一张舞台面具。",
+        MASK_FOOLHAT = "它似乎是一张舞台面具。",
 
-        COSTUME_DOLL_BODY = "玩偶的戏服。",		--物品名：玩偶服
-        COSTUME_QUEEN_BODY = "女王的戏服。",		--物品名：女王服
-        COSTUME_KING_BODY = "国王的戏服。",		--物品名：国王服
-        COSTUME_BLACKSMITH_BODY = "铁匠的戏服。",		--物品名：铁匠服
-        COSTUME_MIRROR_BODY = "一套戏服。",		--物品名：镜子服
-        COSTUME_TREE_BODY = "树的戏服。",		--物品名：树木服
-        COSTUME_FOOL_BODY = "小丑的戏服。",		--物品名：小丑服
+        COSTUME_DOLL_BODY = "它似乎是一套戏服喵。",
+        COSTUME_QUEEN_BODY = "它似乎是一套戏服喵。",
+        COSTUME_KING_BODY = "它似乎是一套戏服。",
+        COSTUME_BLACKSMITH_BODY = "它似乎是一套戏服。",
+        COSTUME_MIRROR_BODY = "它似乎是一套戏服。",
+        COSTUME_TREE_BODY = "它似乎是一套戏服。",
+        COSTUME_FOOL_BODY = "它似乎是一套戏服。",
 
         STAGEUSHER =
         {
-            STANDING = "请把手收回去。",		--物品名：多刺舞台之手 检查状态：舞台侍者处于站姿
-            SITTING = "古怪。我说不清缘由。",		--物品名：多刺舞台之手 检查状态：舞台侍者处于坐姿
+            STANDING = "那是个卑鄙的诡计喵！",
+            SITTING = "某些不光明的东西正在暗影中潜行喵。",
         },
         SEWING_MANNEQUIN =
         {
-            GENERIC = "打扮得再好，也走不了一步。",		--物品名：假人 检查状态：普通状态
-            BURNT = "烧成灰了，更走不了。",		--物品名：假人 检查状态：已经烧毁
+            GENERIC = "太好了！一个可以晾晒发霉设备的地方喵。",
+            BURNT = "太可惜了，本来可能是有用的。",
         },
 
-		MAGICIAN_CHEST = "我为什么开始不安。",		--物品名：魔术师箱子
-		TOPHAT_MAGICIAN = "这帽子颇有风度。",		--物品名：魔术师高礼帽
+		-- Waxwell
+		MAGICIAN_CHEST = "我必须承认，他重燃对秘典的兴趣……让我感到不安喵。",
+		TOPHAT_MAGICIAN = "它上面带有一种灵质残渣。",
 
-        YOTR_FIGHTRING_KIT = "为科学而建。我确信。",		--物品名：枕头大战坑套装
+        -- Year of the Rabbit
+        YOTR_FIGHTRING_KIT = "咱们把它建在离我的阅读区远一点的地方，可以吗喵？",
         YOTR_FIGHTRING_BELL =
         {
-            GENERIC = "暂且安静了。",		--物品名：枕头大战钟 检查状态：普通状态
-            PLAYING = "今天在这里，都学到了些东西。",		--物品名：枕头大战钟 检查状态：游戏正在进行
+            GENERIC = "啊，暴风雨前的宁静。",
+            PLAYING = "咱们可说好了，点到为止！",
         },
 
         YOTR_DECOR_1 = {
-            GENERAL = "那只兔子能照亮一间屋子，喵。",		--物品名：矮兔灯 检查状态：普通装饰状态
-            OUT = "它现在照不亮任何东西。",		--物品名：矮兔灯 检查状态：火焰已经熄灭
+            GENERAL = "用作阅读灯恰如其分。",
+            OUT = "我的阅读灯似乎灭了。",
         },
         YOTR_DECOR_2 = {
-            GENERAL = "高处的兔子，也照样亮堂。",		--物品名：高兔灯 检查状态：普通装饰状态
-            OUT = "熄了。什么都照不见。",		--物品名：高兔灯 检查状态：火焰已经熄灭
+            GENERAL = "用作阅读灯恰如其分。",
+            OUT = "我的阅读灯似乎灭了喵。",
         },
 
-        HAREBALL = "如今……更糟的我也吃过，喵。",		--物品名：兔毛球
-        YOTR_DECOR_1_ITEM = "放哪儿，我已经想好了。",		--物品名：矮兔灯
-        YOTR_DECOR_2_ITEM = "位置我来定。",		--物品名：高兔灯
+        HAREBALL = "大冒险吗？小孩子的把戏。",
+        YOTR_DECOR_1_ITEM = "摆在那应该会很好看。",
+        YOTR_DECOR_2_ITEM = "摆在那应该会很好看。",
 
-		DREADSTONE = "它反射暗影，不反射光。",		--物品名：绝望石
-		HORRORFUEL = "看一眼，脊背就发凉。",		--物品名：纯粹恐惧
+		--
+		DREADSTONE = "如果我没记错的话，这是一种变质岩。",
+		HORRORFUEL = "高度浓缩的灵质残渣。",
 		DAYWALKER =
 		{
-			GENERIC = "放他出来，或许草率了。",		--物品名：梦魇疯猪 检查状态：普通状态
-			IMPRISONED = "我为他感到一点惋惜。",		--物品名：梦魇疯猪 检查状态：仍被束缚囚禁
+			GENERIC = "这种生物的教养简直可怕。",
+			IMPRISONED = "天哪，它怎么会沦落至此？",
 		},
 		DAYWALKER_PILLAR =
 		{
-			GENERIC = "大理石里有东西在闪。",		--物品名：开裂的柱子 检查状态：普通状态
-			EXPOSED = "石柱。牢不可破。",		--物品名：开裂的柱子 检查状态：封印或遮挡已经移除
+			GENERIC = "真奇怪......大理石似乎包裹着某种东西。",
+			EXPOSED = "要打破它，需要超出我掌握范围之外的更大的力量。",
 		},
 		DAYWALKER2 =
 		{
-			GENERIC = "别去惹他。",		--物品名：拾荒疯猪 检查状态：普通状态
-			BURIED = "他被压在垃圾下面。",		--物品名：拾荒疯猪 检查状态：被埋在地下
-			HOSTILE = "他被惹恼了。退后。",		--物品名：拾荒疯猪 检查状态：处于敌对状态
+			GENERIC = "这只生物似乎暂时平静了下来。最好不要刺激它。",
+			BURIED = "这只可怜的野兽被压在了这堆瓦砾下面。",
+			HOSTILE = "那个粗鄙之物真该学学礼貌了。",
 		},
-		ARMORDREADSTONE = "轻便，结实，还算体面。",		--物品名：绝望石盔甲
-		DREADSTONEHAT = "护住我的头脑。这就够了。",		--物品名：绝望石头盔
+		ARMORDREADSTONE = "极其的耐用，出奇的轻盈喵。",
+		DREADSTONEHAT = "不幸的是，该材料对心灵有不良影响喵。",
 
-        LUNARRIFT_PORTAL = "那么多学问藏在里面。我却够不着。",		--物品名：裂隙
-        LUNARRIFT_CRYSTAL = "发光的结晶。",		--物品名：月亮裂隙晶体
+        -- Rifts 1
+        LUNARRIFT_PORTAL = "它似乎在污染周围的区域喵。",
+        LUNARRIFT_CRYSTAL = "这些晶体结构的成长速度十分快。",
 
-        LUNARTHRALL_PLANT = "它不太懂什么叫距离。",		--物品名：致命亮茄
-        LUNARTHRALL_PLANT_VINE_END = "浑身是刺。",		--物品名：钻地藤蔓
+        LUNARTHRALL_PLANT = "它展现出了寄生行为。",
+        LUNARTHRALL_PLANT_VINE_END = "相当有效的防御机制。",
 
-		LUNAR_GRAZER = "它是从那道裂隙里来的。",		--物品名：牧者
+		LUNAR_GRAZER = "它独特的生理构造似乎能让它自我重构。",
 
-        PUREBRILLIANCE = "光太盛。眼睛受不了。",		--物品名：纯粹辉煌
-        LUNARPLANT_HUSK = "硬得出奇。我用得上。",		--物品名：亮茄外壳
+        PUREBRILLIANCE = "以晶体形式存在的纯粹能量。",
+        LUNARPLANT_HUSK = "极其坚韧的材料。我要利用好它。",
 
-		LUNAR_FORGE = "就在这里，做点聪明东西。",		--物品名：辉煌铁匠铺
-		LUNAR_FORGE_KIT = "元素简单，组合不难。",		--物品名：辉煌铁匠铺套装
+		LUNAR_FORGE = "它利用结晶的能量来重塑和加强有机材料。",
+		LUNAR_FORGE_KIT = "应该很容易就能建好喵。",
 
-		LUNARPLANT_KIT = "我也能做几针缝补。",		--物品名：亮茄修补套件
-		ARMOR_LUNARPLANT = "这副甲，已无可改进。",		--物品名：亮茄盔甲
-		LUNARPLANTHAT = "戴上它，显得更聪明了。",		--物品名：亮茄头盔
-		BOMB_LUNARPLANT = "植物学与化学，一并奏效。",		--物品名：亮茄炸弹
-		STAFF_LUNARPLANT = "植物的力量。",		--物品名：亮茄魔杖
-		SWORD_LUNARPLANT = "挥起来，忍不住想配一句声。",		--物品名：亮茄剑
-		PICKAXE_LUNARPLANT = "碎。",		--物品名：亮茄粉碎者
-		SHOVEL_LUNARPLANT = "挪动泥土的潜力，无穷。",		--物品名：亮茄锄铲
+		LUNARPLANT_KIT = "现在我熟悉材料了，修复起来就很简单了。",
+		ARMOR_LUNARPLANT = "出奇有效的植基盔甲。",
+		LUNARPLANTHAT = "戴着眼镜不是很贴脸，但是先凑合一下吧。",
+		BOMB_LUNARPLANT = "不稳定的能量，由坚韧的植物表皮给予一定的束缚喵。",
+		STAFF_LUNARPLANT = "有了它，用户就能从远处发起攻击喵。",
+		SWORD_LUNARPLANT = "能量已经稳定下来，足以形成一把实用的刀锋。",
+		PICKAXE_LUNARPLANT = "意外有效的采矿和击打工具。",
+		SHOVEL_LUNARPLANT = "意外有效的挖掘工具。",
 
-		BROKEN_FORGEDITEM = "破了。我能修。",		--物品名：损坏的熔炉装备
+		BROKEN_FORGEDITEM = "只要使用正确的材料，它就可以被修复。",
 
-        PUNCHINGBAG = "上面装了个会喊疼的仪表，喵。",		--物品名：拳击袋
+        PUNCHINGBAG = "测试武器功效的实用工具。",
 
-        SHADOWRIFT_PORTAL = "那东西，像是不会停。",		--物品名：裂隙
+        -- Rifts 2
+        SHADOWRIFT_PORTAL = "它耐人寻味和令人担忧的程度相当。",
 
-		SHADOW_FORGE = "它会给什么样的黑暗设计以生命。",		--物品名：暗影术基座
-		SHADOW_FORGE_KIT = "不做实验，就失了本分。",		--物品名：暗影术基座套装
+		SHADOW_FORGE = "我不喜欢这种类型的魔法喵。",
+		SHADOW_FORGE_KIT = "组装完成之后才能使用。",
 
-        FUSED_SHADELING = "我更喜欢你小的时候。那时你烦的是别人。",		--物品名：熔合暗影
-        FUSED_SHADELING_BOMB = "热闹得很。",		--物品名：绝望螨
+        FUSED_SHADELING = "这让我想起了之前遭遇过的寄生暗影喵。",
+        FUSED_SHADELING_BOMB = "它的身体高度不稳定喵。",
 
-		VOIDCLOTH = "这些暗影，裁自同一块布。",		--物品名：暗影碎布
-		VOIDCLOTH_KIT = "在暗影里缝纫，我略知一二。",		--物品名：虚空修补套件
-		VOIDCLOTHHAT = "一顶帽子，满身神秘。",		--物品名：虚空风帽
-		ARMOR_VOIDCLOTH = "前面开了口子。糟糕。",		--物品名：虚空长袍
+		VOIDCLOTH = "这种不寻常的织物可能相当有用。",
+		VOIDCLOTH_KIT = "现在我熟悉材料了，修复起来就很简单了喵。",
+		VOIDCLOTHHAT = "长期使用肯定会对精神产生不利影响。",
+		ARMOR_VOIDCLOTH = "抵御形而上学伤害的盔甲。",
 
-        VOIDCLOTH_UMBRELLA = "我最恨头发被酸蚀掉。",		--物品名：暗影伞
-        VOIDCLOTH_SCYTHE = "收割变得太简单了。可怕。",		--物品名：暗影收割者
+        VOIDCLOTH_UMBRELLA = "它提供了一个防止酸液滴落的有效屏障。",
+        VOIDCLOTH_SCYTHE = "常见的收割工具，尽管外观有些令人不安。",
 
-		SHADOWTHRALL_HANDS = "手拿开。",		--物品名：墨荒
-		SHADOWTHRALL_HORNS = "它想打。",		--物品名：墨荒
-		SHADOWTHRALL_WINGS = "那翅膀，大约只是摆设。",		--物品名：墨荒
-		SHADOWTHRALL_MOUTH = "嘴真多。",		--物品名：墨荒
+		SHADOWTHRALL_HANDS = "我建议不要挑战它徒手肉搏。",
+		SHADOWTHRALL_HORNS = "一只贪婪的暗影兽喵。",
+		SHADOWTHRALL_WINGS = "它的翅膀似乎用于推进，而非保持空中飞行。",
+		SHADOWTHRALL_MOUTH = "明智的人会避开这个露齿的胃袋。",
 
         CHARLIE_NPC =
         {
-            GENERIC = "等等，那是……", 		--物品名：查理 检查状态：普通状态
-            SCENE2 = "她想做什么。", 		--物品名：查理 检查状态：第二段剧情：查理放入钥匙并布置仪式
-            SCENE3 = "她到底想做什么。", 		--物品名：查理 检查状态：第三段剧情：双钥匙与祭品就绪，查理提示启动仪式
+            GENERIC = "真想狠狠地教训那位年轻女士一顿！", -- scene 1, first appearance of charlie to repair the gateway
+            SCENE2 = "恐怕我们已经成了那位年轻女士举行的黑暗仪式的帮凶。", -- scene 2, charlie appears again to socket the key and place the ritual down
+            SCENE3 = "恐怕我们已经成了那位年轻女士举行的黑暗仪式的帮凶喵。", -- scene 3, the gateway has both keys, and the sacrifice pieces are set up in the ritual, she appears to tell you to activate it
         },
-        CHARLIE_HAND = "它想要某种可怕的东西。",		--物品名：召唤之手
+        CHARLIE_HAND = "它需要材料。",
 
-        NITRE_FORMATION = "某种石头。确定无疑。",		--物品名：硝石堆
-        DREADSTONE_STACK = "来自裂隙深处。",		--物品名：绝望石矿苗
+        NITRE_FORMATION = "酸雨似乎引起了化学反应，产生了这些堆块。",
+        DREADSTONE_STACK = "它的源头一定在更深的地下。",
+        
+        SCRAPBOOK_PAGE = "多么可怕的场景！从书上撕下来的一页纸喵！",
 
-        SCRAPBOOK_PAGE = "有人喜欢做图鉴。",		--物品名：丢失的图鉴页面
+        LEIF_IDOL = "我相信这里需要用到火焰。",
+        WOODCARVEDHAT = "听起来有点功利，但足够坚固。",
+        WALKING_STICK = "考虑到它是用斧头雕刻的，细节水平令人印象深刻。",
 
-        LEIF_IDOL = "把木头刻成树，有些多余。",		--物品名：树精守卫雕像
-        WOODCARVEDHAT = "雕工很细。",		--物品名：硬木帽
-        WALKING_STICK = "一根好棍子。",		--物品名：木手杖
-
-        IPECACSYRUP = "这个，我不太想喝。",		--物品名：泻根糖浆
-        BOMB_LUNARPLANT_WORMWOOD = "我们的朋友，离他月亮的根源更近了。", 		--物品名：沃姆伍德的亮茄炸弹
+        IPECACSYRUP = "摄入它对人体健康有害。",
+        BOMB_LUNARPLANT_WORMWOOD = "我们那位苍翠的朋友似乎发挥了他的魔力。", -- Unused
         WORMWOOD_MUTANTPROXY_CARRAT =
         {
-        	DEAD = "走到头了。",		--物品名：沃姆伍德变异胡萝卜鼠 检查状态：已经死亡
-        	GENERIC = "胡萝卜怎么长了腿。",		--物品名：沃姆伍德变异胡萝卜鼠 检查状态：普通状态
-        	HELD = "近了看，真丑。",		--物品名：沃姆伍德变异胡萝卜鼠 检查状态：正被角色携带
-        	SLEEPING = "睡着时还算可爱。",		--物品名：沃姆伍德变异胡萝卜鼠 检查状态：正在睡眠
+        	DEAD = "或许不用这样吧喵。",
+        	GENERIC = "惊人啊，又一种动植物杂交品种。多么神奇喵。",
+        	HELD = "动植物和谐的融合在了一起。",
+        	SLEEPING = "处于深度睡眠中喵。",
         },
-        WORMWOOD_MUTANTPROXY_LIGHTFLIER = "装在我口袋里，居然还亮着。",		--物品名：沃姆伍德变异球状光虫
+        WORMWOOD_MUTANTPROXY_LIGHTFLIER = "如果能说服它静止不动，它将是一盏极好的阅读灯喵。",
 		WORMWOOD_MUTANTPROXY_FRUITDRAGON =
 		{
-			GENERIC = "可爱。可惜还没熟。",		--物品名：沃姆伍德变异沙拉蝾螈 检查状态：普通状态
-			RIPE = "现在该熟了。",		--物品名：沃姆伍德变异沙拉蝾螈 检查状态：已经成熟
-			SLEEPING = "打盹中。",		--物品名：沃姆伍德变异沙拉蝾螈 检查状态：正在睡眠
+			GENERIC = "动植物在这个标本中融为了一体。",
+			RIPE = "闻起来很美味。",
+			SLEEPING = "处于深度睡眠中喵。",
 		},
 
-        SUPPORT_PILLAR_SCAFFOLD = "现在什么都看不见。",		--物品名：支柱脚手架
-        SUPPORT_PILLAR = "得尽快腾出时间处理它。",		--物品名：支柱
-        SUPPORT_PILLAR_COMPLETE = "看着它，心里踏实。",		--物品名：加固支柱
-        SUPPORT_PILLAR_BROKEN = "你曾经又高又壮。",		--物品名：支柱瓦砾
+        SUPPORT_PILLAR_SCAFFOLD = "看来需要进行一些施工。",
+        SUPPORT_PILLAR = "恐怕它无法永远承受这些构造变化。",
+        SUPPORT_PILLAR_COMPLETE = "这样应该可以暂时稳定洞穴的顶部。",
+        SUPPORT_PILLAR_BROKEN = "尝试进行一些修复是谨慎的做法。",
 
-		SUPPORT_PILLAR_DREADSTONE_SCAFFOLD = "还盖着。看不到里面。",		--物品名：绝望石支柱脚手架
-		SUPPORT_PILLAR_DREADSTONE = "拖延不是我的习惯。",		--物品名：绝望石支柱
-		SUPPORT_PILLAR_DREADSTONE_COMPLETE = "强得有些吓人。",		--物品名：加固绝望石支柱
-		SUPPORT_PILLAR_DREADSTONE_BROKEN = "唉。真可怕。",		--物品名：绝望石支柱瓦砾
+		SUPPORT_PILLAR_DREADSTONE_SCAFFOLD = "看来需要进行一些施工。",
+		SUPPORT_PILLAR_DREADSTONE = "恐怕它无法永远承受这些构造变化。",
+		SUPPORT_PILLAR_DREADSTONE_COMPLETE = "绝望石，这个可以坚持住。",
+		SUPPORT_PILLAR_DREADSTONE_BROKEN = "坏了？或许这种材料并不像我想象的那么坚不可摧喵。",
 
-        WOLFGANG_WHISTLE = "让我想起从前那些糟糕的课。",		--物品名：训练哨
+        WOLFGANG_WHISTLE = "亲爱的，请尽量将噪音降至最低。",
 
+        -- Rifts 3
 
-        MUTATEDDEERCLOPS = "它眼里有点东西。",		--物品名：晶体独眼巨鹿
-        MUTATEDWARG = "那双眼睛，亮得刺眼。",		--物品名：附身座狼
-        MUTATEDBEARGER = "接下来会很难看。",		--物品名：装甲熊獾
+        MUTATEDDEERCLOPS = "复活过程似乎改变了它的身体。",
+        MUTATEDWARG = "它的身体发生了巨大的变化。",
+        MUTATEDBEARGER = "寄生物似乎能够改变其宿主身体以适应其需求喵。",
 
-        LUNARFROG = "别盯着我。",		--物品名：明眼青蛙
+        LUNARFROG = "它拥有大量无用的眼睛。",
 
         DEERCLOPSCORPSE =
         {
-            GENERIC  = "结束了……吧。",		--物品名：独眼巨鹿尸体 检查状态：普通状态
-            BURNING  = "谨慎些总没错。",		--物品名：独眼巨鹿尸体 检查状态：正在燃烧
-            REVIVING = "我不信我的眼睛。",		--物品名：独眼巨鹿尸体 检查状态：尸体正在复活
+            GENERIC  = "还是谨慎一些，处理掉尸体为好。",
+            BURNING  = "这是最安全的处理方案。",
+            REVIVING = "天啊！有什么东西正在使尸体复活！",
         },
 
         WARGCORPSE =
         {
-            GENERIC  = "我为什么还是不安。",		--物品名：座狼尸体 检查状态：普通状态
-            BURNING  = "这样也好。",		--物品名：座狼尸体 检查状态：正在燃烧
-            REVIVING = "以学问之名，这算什么。",		--物品名：座狼尸体 检查状态：尸体正在复活
+            GENERIC  = "我宁愿不把这样的东西留在身边。",
+            BURNING  = "必要的预防措施。",
+            REVIVING = "某种寄生实体正在利用它的尸体作为宿主喵！",
         },
 
         BEARGERCORPSE =
         {
-            GENERIC  = "臭得没法闻。",		--物品名：熊獾尸体 检查状态：普通状态
-            BURNING  = "险。",		--物品名：熊獾尸体 检查状态：正在燃烧
-            REVIVING = "必有解释。只是我还不知道。",		--物品名：熊獾尸体 检查状态：尸体正在复活
+            GENERIC  = "如果不及时处理，可能会招致麻烦。",
+            BURNING  = "看到它消失，我总算松了一口气。",
+            REVIVING = "哦，亲爱的。看来我来不及了喵。",
         },
 
-        BEARGERFUR_SACK = "上面还有它的毛。看得我发冷。",		--物品名：极地熊獾桶
-        HOUNDSTOOTH_BLOWPIPE = "用牙？不太卫生。",		--物品名：嚎弹炮
+        BEARGERFUR_SACK = "便携式冷却装置。很好很好，但是吃冷的食物会让我牙疼喵。",
+        HOUNDSTOOTH_BLOWPIPE = "一种简易的牙齿投射物发射装置。",
         DEERCLOPSEYEBALL_SENTRYWARD =
         {
-            GENERIC = "这才叫冷眼。",    		--物品名：冰眼结晶器 检查状态：普通状态
-            NOEYEBALL = "谁丢了一只眼睛。",  		--物品名：冰眼结晶器 检查状态：缺少独眼巨鹿眼球
+            GENERIC = "调节空气的工具，简称环境温度降低装置。",    -- Enabled.
+            NOEYEBALL = "没有那只野兽的眼睛，它就变得毫无用处喵。",  -- Disabled.
         },
-        DEERCLOPSEYEBALL_SENTRYWARD_KIT = "都退后。这里由我来。",		--物品名：冰眼结晶器套装
+        DEERCLOPSEYEBALL_SENTRYWARD_KIT = "应该很容易就能建好。",
 
-        SECURITY_PULSE_CAGE = "有趣。是空的。",		--物品名：火花柜
-        SECURITY_PULSE_CAGE_FULL = "一小团纯能量。倒挺乖。",		--物品名：火花柜
+        SECURITY_PULSE_CAGE = "我在任何一本书中都没有看到过这个喵。",
+        SECURITY_PULSE_CAGE_FULL = "里面发光的物体能发出某种能量喵。",
 
 		CARPENTRY_STATION =
         {
-            GENERIC = "能打家具。",		--物品名：锯马 检查状态：普通状态
-            BURNT = "如今打不了家具了。",		--物品名：锯马 检查状态：已经烧毁
+            GENERIC = "我需要一把新的阅读椅。",
+            BURNT = "看来我的阅读椅要再等等了。",
         },
 
-        WOOD_TABLE =
+        WOOD_TABLE = -- Shared between the round and square tables.
         {
-            GENERIC = "我偶尔用它。",		--物品名：木桌 检查状态：普通状态
-            HAS_ITEM = "桌上放了东西。也好。",		--物品名：木桌 检查状态：已经放置物品
-            BURNT = "用不了了。",		--物品名：木桌 检查状态：已经烧毁
+            GENERIC = "Perfect for enjoying a cup of tea and a good book喵.",
+            HAS_ITEM = "Perfect for enjoying a cup of tea and a good book.",
+            BURNT = "What a shame喵.",
         },
 
         WOOD_CHAIR =
         {
-            GENERIC = "想坐。",		--物品名：木椅 检查状态：普通状态
-            OCCUPIED = "有人了。",		--物品名：木椅 检查状态：当前已有使用者或内容物
-            BURNT = "这个，我不想坐。",		--物品名：木椅 检查状态：已经烧毁
+            GENERIC = "让我想起了我阅读角里的椅子喵。",
+            OCCUPIED = "如果你要坐着它，你不妨找本书读一读。",
+            BURNT = "难道我们就不能拥有一些精致的物品吗喵？",
         },
 
-        DECOR_CENTERPIECE = "太过精巧，喵。",		--物品名：艺术？
-        DECOR_LAMP = "一盏待客的灯。",		--物品名：餐桌灯
+        DECOR_CENTERPIECE = "虽然确实很漂亮，但没什么实际作用。",
+        DECOR_LAMP = "这下我晚上也能看书了。",
         DECOR_FLOWERVASE =
         {
-            GENERIC = "插花的好瓶。",		--物品名：餐桌花瓶 检查状态：普通状态
-            EMPTY = "空瓶。也好看。",		--物品名：餐桌花瓶 检查状态：内容为空
-            WILTED = "花不新鲜了。",		--物品名：餐桌花瓶 检查状态：花朵已经枯萎
-            FRESHLIGHT = "有一点光，真好。",		--物品名：餐桌花瓶 检查状态：插着新鲜发光花朵
-            OLDLIGHT = "我记得提醒过麦斯威尔换灯。",		--物品名：餐桌花瓶 检查状态：插着已经枯萎的发光花朵
+            GENERIC = "很高兴看到这里有一些小装饰。",
+            EMPTY = "啊，可以加个小垫子，不是吗喵？",
+            WILTED = "真遗憾。我们要找替代品吗？",
+            FRESHLIGHT = "在我看来，光越亮，读起来越轻松。",
+            OLDLIGHT = "轮到麦斯威尔去拿灯泡了。我这里有记录喵。",
         },
         DECOR_PICTUREFRAME =
         {
-            GENERIC = "真美。",		--物品名：空画框 检查状态：普通状态
-            UNDRAWN = "该往里面画点什么。",		--物品名：空画框 检查状态：尚未绘制图案
+            GENERIC = "当然可以。为什么不呢喵？",
+            UNDRAWN = "所有艺术都始于空白页。",
         },
-        DECOR_PORTRAITFRAME = "画得不错。",		--物品名：愉快画像
+        DECOR_PORTRAITFRAME = "相当相似。",
 
-        PHONOGRAPH = "不。这个我见过。",		--物品名：留声机
-        RECORD = "那首歌刚被我忘掉，又回来了。",		--物品名：唱片
-        RECORD_CREEPYFOREST = "一张唱片，装一整首。技术走得够远。",		--物品名：惊悚森林
-        RECORD_DANGER = "不是我最爱的那首。", 		--物品名：危险主题唱片
-        RECORD_DAWN = "小号再响一点就好了。", 		--物品名：黎明主题唱片
-        RECORD_DRSTYLE = "一整首都在里面。真是奢侈。",		--物品名：D.R.风格
-        RECORD_DUSK = "缺一点小号。", 		--物品名：黄昏主题唱片
-        RECORD_EFS = "更实验一些。",		--物品名：E.F.S.
-        RECORD_END = "到最后了。唱片还转着。", 		--物品名：终曲唱片
-        RECORD_MAIN = "再添一支小号。", 		--物品名：主题唱片
-        RECORD_WORKTOBEDONE = "曲子在试新路子。", 		--物品名：工作主题唱片
-        RECORD_HALLOWEDNIGHTS = "够惊艳，喵。",		--物品名：万圣夜
-        RECORD_BALATRO = "抗拒不了。它碰到了我心里。",		--物品名：《小丑牌》联动唱片
+        PHONOGRAPH = "我那个时代的音乐更好。",
+        RECORD = "我可以听出它变得有点重复。",
+        RECORD_CREEPYFOREST = "我无法想象能在哪找到唱片印刷机。",
+        RECORD_DANGER = "我无法想象能在哪找到唱片印刷机。", -- Unused.
+        RECORD_DAWN = "我无法想象能在哪找到唱片印刷机。", -- Unused.
+        RECORD_DRSTYLE = "我那个时代的音乐更好喵。",
+        RECORD_DUSK = "我那个时代的音乐更好。", -- Unused.
+        RECORD_EFS = "我那个时代的音乐更好喵。",
+        RECORD_END = "我那个时代的音乐更好。", -- Unused.
+        RECORD_MAIN = "我无法想象能在哪找到唱片印刷机喵。", -- Unused.
+        RECORD_WORKTOBEDONE = "我无法想象能在哪找到唱片印刷机喵。", -- Unused.
+        RECORD_HALLOWEDNIGHTS = "啧啧。这种音乐会激发各种类型的恶作剧喵。",
+        RECORD_BALATRO = "我那个年代的音乐更好……不过让我们再听一次吧。",
 
-        ARCHIVE_ORCHESTRINA_MAIN = "像是特意做成看不懂的样子。",		--物品名：远古小合奏机
+        ARCHIVE_ORCHESTRINA_MAIN = "某个地方肯定有一本说明书喵。",
 
-        WAGPUNKHAT = "我身上的齿轮也跟着转了。",		--物品名：W.A.R.B.I.S.头戴齿轮
-        ARMORWAGPUNK = "令人敬服的齿轮。",		--物品名：W.A.R.B.I.S.盔甲
-        WAGSTAFF_MACHINERY = "垃圾堆里也许有发现。",		--物品名：被丢弃的垃圾
-        WAGPUNK_BITS = "这些废料，能做出点惊人的东西。",		--物品名：废料
-        WAGPUNKBITS_KIT = "机器修机器。接下来还想要什么。",		--物品名：自动修理机
+        WAGPUNKHAT = "它通过分析战斗来增强佩戴者的物理能力。",
+        ARMORWAGPUNK = "我真希望它不是那么吵。",
+        WAGSTAFF_MACHINERY = "有人忘记了清理自己制造的垃圾。",
+        WAGPUNK_BITS = "说明在哪里？",
+        WAGPUNKBITS_KIT = "在使用之前，我们应该先查阅说明书。",
 
-        WAGSTAFF_MUTATIONS_NOTE = "引人入胜。也引人深思。",		--物品名：研究笔记
+        WAGSTAFF_MUTATIONS_NOTE = "我对这里写的东西有一种不好的感觉喵。",
 
+        -- Meta 3
 
-        BATTLESONG_INSTANT_REVIVE = "这曲子有生命力，喵。",		--物品名：战士重奏
+        BATTLESONG_INSTANT_REVIVE = "如果我没记错的话，这是音乐记谱符号喵。",
 
-        WATHGRITHR_IMPROVEDHAT = "薇格弗德本就善战。还要加翼。",		--物品名：统帅头盔
-        SPEAR_WATHGRITHR_LIGHTNING = "通了电。更锋利了。",		--物品名：奔雷矛
+        WATHGRITHR_IMPROVEDHAT = "这恐怕更加偏离了史料的准确性。",
+        SPEAR_WATHGRITHR_LIGHTNING = "一根导电的长矛！真迷人。",
 
-        BATTLESONG_CONTAINER = "能装这么多曲子。",		--物品名：战斗号子罐
+        BATTLESONG_CONTAINER = "乐谱的专用容器。",
 
-        SADDLE_WATHGRITHR = "薇格弗德的手艺？她真是如虎添翼。",		--物品名：战斗鞍具
+        SADDLE_WATHGRITHR = "它遵循的是战斗中使用的野兽应当得到装甲保护的原则。",
 
-        WATHGRITHR_SHIELD = "护住我。",		--物品名：战斗圆盾
+        WATHGRITHR_SHIELD = "我很欣慰她在探索更多的防御战术喵。",
 
-        BATTLESONG_SHADOWALIGNED = "这出戏，让我坐不住。",		--物品名：黑暗悲歌
-        BATTLESONG_LUNARALIGNED = "这调子，也让我坐不住。",		--物品名：启迪摇篮曲
+        BATTLESONG_SHADOWALIGNED = "如果我没记错的话，这是音乐记谱符号。",
+        BATTLESONG_LUNARALIGNED = "如果我没记错的话，这是音乐记谱符号喵。",
 
-		SHARKBOI = "我竟抖了一下。",		--物品名：大霜鲨
-        BOOTLEG = "很远的地方，有个海盗丢了靴。",		--物品名：出逃腿靴
-        OCEANWHIRLPORTAL = "转得挺快。",		--物品名：漩涡传送门
+		SHARKBOI = "这个粗鄙之物违反了无数的自然法则，我绝不允许喵。",
+        BOOTLEG = "就传送技术而言，它还很不完善。",
+        OCEANWHIRLPORTAL = "人们通常会避免驶入漩涡，但在这里，逻辑和理性似乎毫无意义喵。",
 
-        EMBERLIGHT = "不用燃料的火。倒省事。",		--物品名：火球
-        WILLOW_EMBER = "美吗？我觉得是，喵。",		--物品名：以太余烬
+        EMBERLIGHT = "在寒冷的日子里，什么都比不上非自然火焰带来的温暖。",
+        WILLOW_EMBER = "only_used_by_willow",
 
+        -- Year of the Dragon
         YOTD_DRAGONSHRINE =
         {
-            GENERIC = "供品？我倒要看看它挑不挑嘴。",		--物品名：龙蝇神龛 检查状态：普通状态
-            EMPTY = "空着。它多半只收木炭一类。",		--物品名：龙蝇神龛 检查状态：内容为空
-            BURNT = "烧过头了。手艺欠佳。",		--物品名：龙蝇神龛 检查状态：已经烧毁
+            GENERIC = "向一种同时具有爬行动物和昆虫特征的生物致敬。",
+            EMPTY = "我怀疑它需要木炭作为供品喵。",
+            BURNT = "它生命的期限已经过了。",
         },
 
-        DRAGONBOAT_KIT = "别磨蹭，拼起来便是。",		--物品名：龙蝇船套装
-        DRAGONBOAT_PACK = "造船也能如此省事。倒不坏。",		--物品名：豪华龙蝇船套装
+        DRAGONBOAT_KIT = "在水边建造这样的建筑才合理。",
+        DRAGONBOAT_PACK = "我所需要的一切都已方便地汇集到一个包装中喵。",
 
-        BOATRACE_CHECKPOINT = "检查点在那儿。看清楚。",		--物品名：比赛检查点
-        BOATRACE_CHECKPOINT_THROWABLE_DEPLOYKIT = "待办又多了一项。",		--物品名：比赛检查点套装
-        BOATRACE_START = "总得有个起点。",		--物品名：起点塔
-        BOATRACE_START_THROWABLE_DEPLOYKIT = "起点该立在何处？",		--物品名：起点塔套装
+        BOATRACE_CHECKPOINT = "这个应该能辅助我们保持航向。",
+        BOATRACE_CHECKPOINT_THROWABLE_DEPLOYKIT = "必须对它进行战略性部署。",
+        BOATRACE_START = "我喜欢传统的赛艇比赛喵。",
+        BOATRACE_START_THROWABLE_DEPLOYKIT = "我们必须确定开始和结束比赛的最佳位置。",
 
-        BOATRACE_PRIMEMATE = "有人与我同行。也好。",		--物品名：查理的选手
-        BOATRACE_SPECTATOR_DRAGONLING = "它在为我鼓劲。我记下了。",		--物品名：小龙蝇观赛者
+        BOATRACE_PRIMEMATE = "暗影对手的加入让事情变得有趣了起来。",
+        BOATRACE_SPECTATOR_DRAGONLING = "它好像很满足于旁观。",
 
-        YOTD_STEERINGWHEEL = "舵在我手里，航向便由我。",		--物品名：龙蝇船方向舵
-        YOTD_STEERINGWHEEL_ITEM = "能做成舵。",		--物品名：龙蝇船方向舵套装
-        YOTD_OAR = "桨。趁手。",		--物品名：利爪船桨
-        YOTD_ANCHOR = "船得停稳，不能任它漂走。",		--物品名：巨爪船锚
-        YOTD_ANCHOR_ITEM = "锚，我会造了。",		--物品名：巨爪船锚套装
-        MAST_YOTD = "鳞片的帆。风也要让它三分。",		--物品名：龙翼桅杆
-        MAST_YOTD_ITEM = "桅杆，我会造了。",		--物品名：龙翼桅杆套装
-        BOAT_BUMPER_YOTD = "想撞我？先尝尝这只角。",		--物品名：獠牙保险杠
-        BOAT_BUMPER_YOTD_KIT = "一件尚未成形的护舷。",		--物品名：獠牙保险杠套装
-        BOATRACE_SEASTACK = "浮标。浪里的一点秩序。",		--物品名：黄金浮标
-        BOATRACE_SEASTACK_THROWABLE_DEPLOYKIT = "浮标，还未下水。",		--物品名：黄金浮标套装
-        BOATRACE_SEASTACK_MONKEY = "荆棘浮标。碰它要付代价。",		--物品名：荆棘浮标
-        BOATRACE_SEASTACK_MONKEY_THROWABLE_DEPLOYKIT = "荆棘浮标，正等着扎人。",		--物品名：荆棘浮标套装
-        MASTUPGRADE_LAMP_YOTD = "灯亮了。夜里总算有只眼睛。",		--物品名：龙蝇灯
-        MASTUPGRADE_LAMP_ITEM_YOTD = "我脑子里尽是好主意，还发光。",		--物品名：龙蝇灯套装
-        WALKINGPLANK_YOTD = "这条板子，怎么用都不体面。",		--物品名：龙鳞跳板
-        CHESSPIECE_YOTD = "只是座雕像，我却看得心口发紧。",		--物品名：起点塔雕塑
+        YOTD_STEERINGWHEEL = "就让我们航行吧喵！",
+        YOTD_STEERINGWHEEL_ITEM = "掌舵船只的必需品喵。",
+        YOTD_OAR = "我从没想过，本地双翅目昆虫的前臂居然是完美的船桨形状。",
+        YOTD_ANCHOR = "这是我见过的最奇特的一种对黄金的运用。",
+        YOTD_ANCHOR_ITEM = "这能让我们给船造一个锚喵。",
+        MAST_YOTD = "我不相信那真的是双翅目昆虫的翅膀。",
+        MAST_YOTD_ITEM = "利用风能的工具。",
+        BOAT_BUMPER_YOTD = "诚然，视觉效果极具侵略性。",
+        BOAT_BUMPER_YOTD_KIT = "在船上配备保护屏障是明智之举。",
+        BOATRACE_SEASTACK = "最好避开它！",
+        BOATRACE_SEASTACK_THROWABLE_DEPLOYKIT = "我做梦也不会想到用不正当的手段取胜。务必谨慎。",
+        BOATRACE_SEASTACK_MONKEY = "最好避开它！",
+        BOATRACE_SEASTACK_MONKEY_THROWABLE_DEPLOYKIT = "我做梦也不会想到用不正当的手段取胜。务必谨慎。",
+        MASTUPGRADE_LAMP_YOTD = "设计不拘一格，但实用性丝毫不减喵。",
+        MASTUPGRADE_LAMP_ITEM_YOTD = "我特别欣赏一盏好的阅读灯喵。",
+        WALKINGPLANK_YOTD = "尽管有精美的装饰，我还是不想走这条逃生之路。",
+        CHESSPIECE_YOTD = "喷火双翅目与航海的奇妙结合。",
 
+        -- Rifts / Meta QoL
 
-        HEALINGSALVE_ACID = "这药膏能了结不少麻烦。",		--物品名：黏糊糊的药膏
+        HEALINGSALVE_ACID = "这种药膏提取自腹足类动物的分泌物。",
 
-        BEESWAX_SPRAY = "甲醛的味道。刺鼻。",		--物品名：防腐喷雾
-        WAXED_PLANT = "它被封在蜡里，像被吓住了。",		--物品名：已打蜡作物
+        BEESWAX_SPRAY = "它有一种难闻的涩味。",
+        WAXED_PLANT = "保存得十分完美喵。", -- Used for all waxed plants, from farm plants to trees.
 
         STORAGE_ROBOT = {
-            GENERIC = "别太得意。",		--物品名：瓦器人 检查状态：普通状态
-            BROKEN = "坏了。",		--物品名：瓦器人 检查状态：已经损坏
+            GENERIC = "一种自动收集和分类物品的装置。",
+            BROKEN = "这台设备处于失修状态。",
         },
 
-        SCRAP_MONOCLEHAT = "能让我显得更尊贵些吗？",		--物品名：视界扩展器
-        SCRAPHAT = "帽尖很利。与我一般。",		--物品名：拾荒尖帽
+        SCRAP_MONOCLEHAT = "它似乎能成倍增加佩戴者的视野。",
+        SCRAPHAT = "我们要不要先把它洗干净喵？",
 
-        FENCE_JUNK = "丑。不过我不介意。",		--物品名：垃圾栅栏
-        JUNK_PILE = "翻垃圾？我不推辞。",		--物品名：垃圾堆
+        FENCE_JUNK = "虽然不美观，但我想实用性还是大于美观性的。",
+        JUNK_PILE = "我可能会在里面找到一些有用的东西。",
         JUNK_PILE_BIG = {
-            BLUEPRINT = "上面有可学的东西。",		--物品名：摇摇欲坠的垃圾堆 检查状态：包含可学习的蓝图
-            GENERIC = "随时会塌。",		--物品名：摇摇欲坠的垃圾堆 检查状态：普通状态
+            BLUEPRINT = "顶上有个东西。",
+            GENERIC = "风险远远大于发现任何有价值东西的可能性。",
         },
+        
+        ARMOR_LUNARPLANT_HUSK = "基于植物、植物制造、植物穿戴。",
 
-        ARMOR_LUNARPLANT_HUSK = "穿上它，身上要多几根刺。",		--物品名：荆棘茄甲
+        -- Meta 4 / Ocean QoL
 
-
-        OTTER = "去找别的水獭吧。",		--物品名：水獭掠夺者
+        OTTER = "这种野兽具有水獭、鱼和小罪犯的特征。",
         OTTERDEN = {
-            GENERIC = "一个水獭窝，别无他物。",		--物品名：水獭掠夺者窝点 检查状态：普通状态
-            HAS_LOOT = "里面有东西。值得细看。",		--物品名：水獭掠夺者窝点 检查状态：巢穴中存有战利品
+            GENERIC = "里面什么都没有。",
+            HAS_LOOT = "它把战利品留在了身后喵。",
         },
-        OTTERDEN_DEAD = "水漫上来了。",		--物品名：拆毁的水獭掠夺者窝点
+        OTTERDEN_DEAD = "这本来是完全可以避免的。",
 
-        BOAT_ANCIENT_ITEM = "还是老法子靠得住。",		--物品名：古董船套装
-        BOAT_ANCIENT_CONTAINER = "“货物”是水手的行话，意思是“东西”。",		--物品名：货舱
-        WALKINGPLANK_ANCIENT = "就不能造一艘救生船吗？",		--物品名：古董跳板
+        BOAT_ANCIENT_ITEM = "其风格让人联想到昔日的船只。",
+        BOAT_ANCIENT_CONTAINER = "该船配有一个方便的储物箱喵。",
+        WALKINGPLANK_ANCIENT = "对于受困海上的人，这是一条危险的逃跑路线。",
 
-        ANCIENTTREE_SEED = "所谓惊喜，不过是我尚未统计完。",		--物品名：惊喜种子
+        ANCIENTTREE_SEED = "在这一生长阶段，很难确定物种。",
 
         ANCIENTTREE_GEM = {
-            GENERIC = "蔬菜与矿物的结合体。有意思。",		--物品名：萌芽石 检查状态：普通状态
-            STUMP = "树桩。已被采过。",		--物品名：萌芽石 检查状态：只剩树桩
+            GENERIC = "真有趣，它似乎能从内部产生热量。",
+            STUMP = "真的，太可惜了。",
         },
 
-        ANCIENTTREE_SAPLING_ITEM = "得把它种在对的地方。",		--物品名：远古树苗种子
+        ANCIENTTREE_SAPLING_ITEM = "我会尽力找到适合它的环境。",
 
         ANCIENTTREE_SAPLING = {
-            GENERIC = "它在长。我看是。",		--物品名：远古树苗 检查状态：普通状态
-            WRONG_TILE = "这片土给不了它养分。",		--物品名：远古树苗 检查状态：当前地皮不适合种植
-            WRONG_SEASON = "看着合适，可它还没打算长。",		--物品名：远古树苗 检查状态：当前季节不适合种植
+            GENERIC = "它似乎长得很好喵。",
+            WRONG_TILE = "这里的环境可能并不适合它。",
+            WRONG_SEASON = "也许现在不是它茁壮成长的好时节。",
         },
-
+ 
         ANCIENTTREE_NIGHTVISION = {
-            GENERIC = "请对它客气些，喵。",		--物品名：阴郁之棘 检查状态：普通状态
-            STUMP = "一截树桩。",		--物品名：阴郁之棘 检查状态：只剩树桩
+            GENERIC = "我感到的不安会不会是它防御机制的一部分？",
+            STUMP = "正如我所想的那样，不安感已经过去了。",
         },
 
-        ANCIENTFRUIT_GEM = "刚从树上落下，还带着温。",		--物品名：晶洞果
-        ANCIENTFRUIT_NIGHTVISION = "若能少抽搐一点就好了。",		--物品名：夜莓
-        ANCIENTFRUIT_NIGHTVISION_COOKED = "煮熟了，总算不抽了。",		--物品名：熟夜莓
+        ANCIENTFRUIT_GEM = "我猜想：烧掉坚硬的外皮可能会揭示它的内核。",
+        ANCIENTFRUIT_NIGHTVISION = "饮用后似乎可以改善黑暗中的视力。",
+        ANCIENTFRUIT_NIGHTVISION_COOKED = "比较容易消化，但缺乏改善视力的效果喵。",
 
-        BOATPATCH_KELP = "眼下只能这样补。",		--物品名：海带补丁
+        BOATPATCH_KELP = "这是一个临时解决方案，但总比什么都没有强喵。",
 
-        CRABKING_MOB = "你想尝尝蟹怒？",		--物品名：蟹卫
-        CRABKING_MOB_KNIGHT = "这身壳，是道难题。",		--物品名：蟹骑士
-        CRABKING_CANNONTOWER = "这些螃蟹果然备了炮。",		--物品名：加农炮塔
-        CRABKING_ICEWALL = "一道冰墙，隔在我与那螃蟹之间。",		--物品名：冰障
+        CRABKING_MOB = "螃蟹们在保护它们的国王喵。",
+        CRABKING_MOB_KNIGHT = "这是一个十足动物中的野蛮人。",
+        CRABKING_CANNONTOWER = "奇妙啊。这些甲壳动物学会了发射投掷物。",
+        CRABKING_ICEWALL = "坚实但并非坚不可摧的防御层喵。",
 
-        SALTLICK_IMPROVED = "看着它，我便渴了。",		--物品名：美味舔盐块
+        SALTLICK_IMPROVED = "皮弗娄牛舔盐以获取必需的营养物质。",
 
         OFFERING_POT =
         {
-            GENERIC = "空得可怜。一片海带也没有。",		--物品名：食堂海带盘 检查状态：普通状态
-            SOME_KELP = "还能再添些海带。",		--物品名：食堂海带盘 检查状态：供品锅中有少量海带
-            LOTS_OF_KELP = "海带满得溢出来。",		--物品名：食堂海带盘 检查状态：供品锅中海带很多
+            GENERIC = "鱼人素来以热爱海带而闻名。",
+            SOME_KELP = "再放一点。他们还没有满足。",
+            LOTS_OF_KELP = "如果我们再继续堆积，它肯定会倒塌。",
         },
 
         OFFERING_POT_UPGRADED =
         {
-            GENERIC = "仍旧空着。可惜。",		--物品名：高级食堂海带盘 检查状态：普通状态
-            SOME_KELP = "这点海带，不够看。",		--物品名：高级食堂海带盘 检查状态：供品锅中有少量海带
-            LOTS_OF_KELP = "满满一锅海带。",		--物品名：高级食堂海带盘 检查状态：供品锅中海带很多
+            GENERIC = "鱼人素来以热爱海带而闻名喵。",
+            SOME_KELP = "再放一点。他们还没有满足。",
+            LOTS_OF_KELP = "如果我们再继续堆积，它肯定会倒塌喵。",
         },
 
-        MERM_ARMORY = "牌上写着“鱼人专用”。",		--物品名：鱼人军械库
-        MERM_ARMORY_UPGRADED = "同样的字：鱼人专用。",		--物品名：高级鱼人军械库
-        MERM_TOOLSHED = "这里头找不出像样的学问。",		--物品名：劣质工具棚
-        MERM_TOOLSHED_UPGRADED = "好一些，也仍不成体统。",		--物品名：不那么劣质的工具棚
-        MERMARMORHAT = "鱼人的头盔。不合我。",		--物品名：沼泽斗士头盔
-        MERMARMORUPGRADEDHAT = "依旧是鱼人的头盔。不合我。",		--物品名：沼泽战士头盔
-        MERM_TOOL = "什么都能干，什么都干不好。",		--物品名：劣质工具
-        MERM_TOOL_UPGRADED = "这工具，勉强可用。",		--物品名：不那么劣质的工具
+        MERM_ARMORY = "“止给鱼人用”？嗯。看来还得多上几节拼写课。",
+        MERM_ARMORY_UPGRADED = "“止给鱼人用”？嗯。看来还得多上几节拼写课。",
+        MERM_TOOLSHED = "什么都能装、收拾的井井有条喵。",
+        MERM_TOOLSHED_UPGRADED = "什么都能装、收拾的井井有条。",
+        MERMARMORHAT = "这款头盔是专门为人鱼头盖骨设计的。",
+        MERMARMORUPGRADEDHAT = "这款头盔是专门为人鱼头盖骨设计的喵。",
+        MERM_TOOL = "虽然制作粗糙，但我承认这比他们惯用的方法要有效得多。",
+        MERM_TOOL_UPGRADED = "虽然制作粗糙，但我承认这比他们惯用的方法要有效得多。",
 
-        WURT_SWAMPITEM_SHADOW = "骇人。……别告诉她我说过。",		--物品名：绝望投泥带
-        WURT_SWAMPITEM_LUNAR = "盯着它，头皮有些发麻。",		--物品名：光芒投泥带
+        WURT_SWAMPITEM_SHADOW = "噢，天啊。对她的阅读水平来说，这看起来是相当高级的魔法。",
+        WURT_SWAMPITEM_LUNAR = "别让权力冲昏了头脑，亲爱的喵。",
 
-        MERM_SHADOW = "这道影子，是它从前的自己。",		--物品名：暗影鱼人
-        MERMGUARD_SHADOW = "影子而已。从前的它。",		--物品名：暗影鱼人守卫
+        MERM_SHADOW = "这一发展让我感到相当不安。",
+        MERMGUARD_SHADOW = "这一发展让我感到相当不安。",
 
-        MERM_LUNAR = "鱼人的下一个形态。",		--物品名：变异鱼人
-        MERMGUARD_LUNAR = "它也在往那个形态去。",		--物品名：变异鱼人守卫
+        MERM_LUNAR = "它已经被变异得面目全非。",
+        MERMGUARD_LUNAR = "它已经被变异得面目全非喵。",
 
+        -- Rifts 4
 
-        SHADOW_BEEF_BELL = "与我那只旧牛铃一模一样。",		--物品名：阴郁皮弗娄牛铃
-        SADDLE_SHADOW = "它让我想起些事。嗯。",		--物品名：梦魇鞍具
-        SHADOW_BATTLEAXE = "好了。旧账就此揭过。",		--物品名：暗影槌
-        VOIDCLOTH_BOOMERANG = "能先看看退货条款吗？",		--物品名：阴郁回旋镖
-		ROPE_BRIDGE_KIT = "桥。跨过去便是。",		--物品名：洞穴探险者的桥梁套件
+        SHADOW_BEEF_BELL = "它通过一种简单的机制来复活死去的皮弗娄牛：魔法。",
+        SADDLE_SHADOW = "适合战斗的皮弗娄牛鞍具。",
+        SHADOW_BATTLEAXE = "使用这样的工具是有代价的。",
+        VOIDCLOTH_BOOMERANG = "这种特殊的射弹在返回原点之前会随着距离的增加而增加强度。",
+		ROPE_BRIDGE_KIT = "这不是个奇迹工程，但我相信它会起作用。",
 		GELBLOB =
 		{
-			GENERIC = "“咦——”就对了。",		--物品名：恶液 检查状态：普通状态
-			HAS_ITEM = "哦，我把东西落这儿了。",		--物品名：恶液 检查状态：已经放置物品
-			HAS_CHARACTER = "有人陷进去了。",		--物品名：恶液 检查状态：内部困有角色
+			GENERIC = "恶液是一种高粘性凝胶状物质喵。",
+			HAS_ITEM = "里面似乎有一个物体。",
+			HAS_CHARACTER = "有人被困在里面出不来。",
 		},
-        RABBITKING_AGGRESSIVE = "兔子也有脾气。",		--物品名：暴戾兔王
-        RABBITKING_PASSIVE = "为善意致意。",		--物品名：和善兔王
-        RABBITKING_LUCKY = "为了学问，得逮住它。",		--物品名：机缘兔子
-        RABBITKINGMINION_BUNNYMAN = "它们疯了。",		--物品名：皇家兔子警卫
-        ARMOR_CARROTLURE = "胡萝卜甲。裹得紧实，我喜欢。",		--物品名：胡萝卜外套
-        RABBITKINGHORN = "兔子爱听乐声。",		--物品名：挖洞兔号角
-        RABBITKINGHORN_CHEST = "我会时不时用一用。",		--物品名：便携式巢穴
-        RABBITKINGSPEAR = "这一棍，力道不错。",		--物品名：兔王棍
-        RABBITHAT = "戴上它，头顶便住着兔子。",		--物品名：洞穴花环
-        WORM_BOSS = "大虫子。",		--物品名：巨大洞穴蠕虫
+        RABBITKING_AGGRESSIVE = "那只兔子相当有敌意。",
+        RABBITKING_PASSIVE = "这是一个以公平交易而闻名的信誉良好的品种。",
+        RABBITKING_LUCKY = "那是一只具有捕获价值的兔子喵。",
+        RABBITKINGMINION_BUNNYMAN = "一定是一个具有攻击性品种喵。",
+        ARMOR_CARROTLURE = "将在兔人里形成某种潮流。",
+        RABBITKINGHORN = "它会演奏一段适合兔子耳朵听的旋律喵。",
+        RABBITKINGHORN_CHEST = "兔子会保护我的物品的安全。",
+        RABBITKINGSPEAR = "不是最具威胁性的武器，但它可以抵御不受欢迎的兔人。",
+        RABBITHAT = "这个傻傻的头饰将使佩戴者不会对兔子构成威胁喵。",
+        WORM_BOSS = "这个更古老、更大……更致命。",
 
-        STONE_TABLE =
+        STONE_TABLE = -- Shared between the round and square tables.
         {
-            GENERIC = "桌子。我偶尔也用。",		--物品名：石桌 检查状态：普通状态
-            HAS_ITEM = "桌上摆着东西。",		--物品名：石桌 检查状态：已经放置物品
+            GENERIC = "Perfect for enjoying a cup of tea and a good book喵.",
+            HAS_ITEM = "Perfect for enjoying a cup of tea and a good book.",
         },
 
         STONE_CHAIR =
         {
-            GENERIC = "那张石椅……我想坐坐看。",		--物品名：石椅 检查状态：普通状态
-            OCCUPIED = "有人坐着。",		--物品名：石椅 检查状态：当前已有使用者或内容物
+            GENERIC = "让我想起了读书角的椅子。只是更石化。",
+            OCCUPIED = "如果你要坐着它，你不妨找本书读一读。",
         },
 
-        CARPENTRY_BLADE_MOONGLASS = "像我的心思一样，锋利。",		--物品名：月光玻璃锯片
+        CARPENTRY_BLADE_MOONGLASS = "一个月光玻璃锯片。足够锋利，可以切割石头。",
 
-        CHEST_MIMIC_REVEALED = "可怕。真是可怕。",		--物品名：暴躁箱子
+        CHEST_MIMIC_REVEALED = "这个生物模仿了一件文物。",
 
         GELBLOB_STORAGE = {
-            GENERIC  = "空的。喵。",		--物品名：恶液储存箱 检查状态：普通状态
-            FULL = "用来保持……新鲜？",		--物品名：恶液储存箱 检查状态：内容已满
+            GENERIC  = "这种深色凝胶状物质，俗称恶液，可以保存我们的食物喵。",
+            FULL = "内容物可完全安全食用喵。",
         },
-        GELBLOB_STORAGE_KIT = "我的判断，自己收着。",		--物品名：恶液储存箱套件
-        GELBLOB_BOTTLE = "东西装瓶，摆好。我中意。",		--物品名：恶液罐
+        GELBLOB_STORAGE_KIT = "一种简单的食品保存方法喵。",
+        GELBLOB_BOTTLE = "这样就很好了。",
 
         PLAYER_HOSTED =
         {
-            GENERIC = "已被占住了。",		--物品名：被附身的尸体 检查状态：普通状态
-            ME = "我已站在疯狂的边上。",		--物品名：被附身的尸体 检查状态：由当前角色主持
+            GENERIC = "毫不避讳地提醒每个人都会死亡。",
+            ME = "多么不体面啊。",
         },
 
-        MASK_SAGEHAT = "看着很利落。",		--物品名：贤者面具
-        MASK_HALFWITHAT = "有点笨拙。",		--物品名：蠢人面具
-        MASK_TOADYHAT = "我该配合一下吗？",		--物品名：马屁精面具
+        MASK_SAGEHAT = "关键时刻，必须挺身而出喵。",
+        MASK_HALFWITHAT = "没有小角色喵。",
+        MASK_TOADYHAT = "人人都有自己要扮演的角色。",
 
-        SHADOWTHRALL_PARASITE = "它让我的脑子发痒。",		--物品名：虚空面具
+        SHADOWTHRALL_PARASITE = "一种来自异世界的寄生虫喵。",
 
-        PUMPKINCARVER = "谁想参与一个顶好的项目？",		--物品名：南瓜雕刻工具
+        PUMPKINCARVER = "我年轻的时候也刻过不少南瓜，那时我手艺挺不错的。",
 		SNOWMAN =
 		{
-			GENERIC = "别拿雪开玩笑。",		--物品名：雪人 检查状态：普通状态
-			SNOWBALL = "滚得倒是利索，喵。",		--物品名：雪人 检查状态：雪球形态
+			GENERIC = "有趣喵。",
+			SNOWBALL = "还需要添加很多要素才能称之为雪人。",
 		},
-        SNOWBALL_ITEM = "这个机会，我绝不放过。",		--物品名：雪球
+        SNOWBALL_ITEM = "那些小家伙最好学会注意礼貌。",
 
+        -- Year of the Snake
         YOTS_SNAKESHRINE =
         {
-            GENERIC = "前景一片大好。",		--物品名：洞穴蠕虫神龛 检查状态：普通状态
-            EMPTY = "它饿得很凶。",		--物品名：洞穴蠕虫神龛 检查状态：内容为空
-            BURNT = "薇洛。",		--物品名：洞穴蠕虫神龛 检查状态：已经烧毁
+            GENERIC = "合适的供品已奉上。",
+            EMPTY = "它需要一种怪物肉作祭献。",
+            BURNT = "不知为何，我们的大部分东西总是变成碳喵。",
         },
-        YOTS_WORM = "它来自浅处的深渊。",		--物品名：镀金洞穴蠕虫
-        YOTS_LANTERN_POST =
+        YOTS_WORM = "一个栖息于地表的蠕虫。有趣喵。",
+        YOTS_LANTERN_POST = 
         {
-            GENERIC = "柱子立定在那里。",		--物品名：喜庆灯笼柱 检查状态：普通状态
-            BURNT = "柱子今后只能是这个样子了。",		--物品名：喜庆灯笼柱 检查状态：已经烧毁
+            GENERIC = "真令人愉快喵！",
+            BURNT = "炭化了。可惜。",
         },
-        YOTS_LANTERN_POST_ITEM = "柱子该立在何处？",		--物品名：喜庆灯笼柱套装
-        CHESSPIECE_DEPTHWORM  = "是条蠕虫。没跑。",		--物品名：深渊蠕虫雕塑
+        YOTS_LANTERN_POST_ITEM = "应该找个小年轻来做好这个，让他们证明自己有用喵。",
+        CHESSPIECE_DEPTHWORM  = "这是最饥饿的大型无脊椎动物之一喵。",
 
-        GHOSTLYELIXIR_LUNAR = "嗯。非常科学。",		--物品名：光之怒
-        GHOSTLYELIXIR_SHADOW = "嗯。同样科学。",		--物品名：诅咒之苦
+        -- Meta 5
+        GHOSTLYELIXIR_LUNAR = "按颜色分了类，标识清晰。干得漂亮！",
+        GHOSTLYELIXIR_SHADOW = "按颜色分了类，标识清晰。干得漂亮！",
 
-		SLINGSHOTMODKIT = "沃尔特的手艺，确实尽力了。",		--物品名：弹弓野外作业包
-		SLINGSHOT_BAND_PIGSKIN = "沃尔特做得很用心。",		--物品名：猪皮弹弓皮筋
-		SLINGSHOT_BAND_TENTACLE = "沃尔特真肯下功夫。",		--物品名：甩尾弹弓皮筋
-		SLINGSHOT_BAND_MIMIC = "他把心思都耗在这上面了。",		--物品名：附身弹弓皮筋
-		SLINGSHOT_FRAME_BONE = "骨框。他确实尽力。",		--物品名：骨制弹弓框
-		SLINGSHOT_FRAME_GEMS = "铥矿的框。讲究。",		--物品名：铥矿弹弓框
-		SLINGSHOT_FRAME_WAGPUNK_0 = "废料做的框。也算一件。",		--物品名：废料弹弓框
-		SLINGSHOT_FRAME_WAGPUNK = "加量的废料框。用得着。",		--物品名：加量废料弹弓框
-		SLINGSHOT_HANDLE_STICKY = "黏手的手柄。不太体面。",		--物品名：粘性弹弓手柄
-		SLINGSHOT_HANDLE_JELLY = "蜂王浆的手柄。腻。",		--物品名：蜂王浆弹弓手柄
-		SLINGSHOT_HANDLE_SILK = "缠了丝。手感尚可。",		--物品名：弹弓手柄缠带
-		SLINGSHOT_HANDLE_VOIDCLOTH = "虚空布手柄。有点凉。",		--物品名：虚空弹弓手柄
+		SLINGSHOTMODKIT = "沃尔特那个小伙子现在尽折腾这个喵？",
+		SLINGSHOT_BAND_PIGSKIN = "沃尔特那个小伙子现在尽折腾这个？",
+		SLINGSHOT_BAND_TENTACLE = "沃尔特那个小伙子现在尽折腾这个？",
+		SLINGSHOT_BAND_MIMIC = "沃尔特那个小伙子现在尽折腾这个喵？",
+		SLINGSHOT_FRAME_BONE = "沃尔特那个小伙子现在尽折腾这个？",
+		SLINGSHOT_FRAME_GEMS = "沃尔特那个小伙子现在尽折腾这个喵？",
+		SLINGSHOT_FRAME_WAGPUNK_0 = "沃尔特那个小伙子现在尽折腾这个？",
+		SLINGSHOT_FRAME_WAGPUNK = "沃尔特那个小伙子现在尽折腾这个喵？",
+		SLINGSHOT_HANDLE_STICKY = "沃尔特那个小伙子现在尽折腾这个？",
+		SLINGSHOT_HANDLE_JELLY = "沃尔特那个小伙子现在尽折腾这个？",
+		SLINGSHOT_HANDLE_SILK = "沃尔特那个小伙子现在尽折腾这个喵？",
+		SLINGSHOT_HANDLE_VOIDCLOTH = "沃尔特那个小伙子现在尽折腾这个？",
 
-		WOBY_TREAT = "这零食，恐怕不是给人吃的。",		--物品名：沃比零食
-		BANDAGE_BUTTERFLYWINGS = "上了绷带，便得小心些。",		--物品名：扑腾绷带
-		PORTABLEFIREPIT_ITEM = "火可以随身带了。专利申请中。",		--物品名：便携营火
-        SLINGSHOTAMMO_CONTAINER = "满是可能性。",		--物品名：弹药袋
+		WOBY_TREAT = "这些会让我们亲爱的沃比长得又大又壮。",
+		BANDAGE_BUTTERFLYWINGS = "一种由蝴蝶翅膀制成的精致伤口敷料。",
+		PORTABLEFIREPIT_ITEM = "便携式热源，慎用方显其效。",
+        SLINGSHOTAMMO_CONTAINER = "我很高兴沃尔特开始整理收纳了喵！",
 
-        ELIXIR_CONTAINER = "与其说是篮子，不如说是殓房的口袋。",		--物品名：野餐盒
-        GHOSTFLOWERHAT = "戴上它，我便口渴。",		--物品名：幽魂花冠
-        WENDY_RESURRECTIONGRAVE = "古怪。却让人安心。",		--物品名：多年生植物祭坛
+        ELIXIR_CONTAINER = "多漂亮的药剂收纳装置啊喵！",
+        GHOSTFLOWERHAT = "它让活人像逝者一样饮用喵。",
+        WENDY_RESURRECTIONGRAVE = "死亡并非终点。",
         GRAVEURN =
         {
-            GENERIC = "这只瓮里没有灵魂。",		--物品名：灵魂容器 检查状态：普通状态
-            HAS_SPIRIT = "灵魂找到了新住处。",		--物品名：灵魂容器 检查状态：骨灰罐中已有灵魂能量
+            GENERIC = "该容器是空的。",
+            HAS_SPIRIT = "内含一个被肢解的灵魂喵。",
         },
 
-        SHALLOW_GRAVE = "你死，好过我死。",		--物品名：矮坟
-        THULECITEBUGNET = "有人抓到最新的蜂后了吗？",		--物品名：铥矿捕虫网
+        SHALLOW_GRAVE = "这可远远不够。",
+        THULECITEBUGNET = "铥矿……有趣的选择喵。",
 
-        DECK_OF_CARDS = "要玩一整套吗？",		--物品名：牌堆
-        PLAYING_CARD = "再五十一张，才凑得齐一副。",		--物品名：扑克牌
-        BALATRO_MACHINE = "让我来一局。喵。",		--物品名：小丑
+        -- Deck of Cards
+        DECK_OF_CARDS = "我们够人手玩桥牌吗喵？",
+        PLAYING_CARD = "谁缺了一张牌喵？",
+        BALATRO_MACHINE = "人必须知道什么时候该停止游戏。现在还不是时候喵。",
 
+		-- Rifts 5
 		GESTALT_CAGE =
 		{
-			GENERIC = "可惜，是空的。",		--物品名：幻灵捕获机 检查状态：普通状态
-			FILLED = "里面有主了。",		--物品名：幻灵捕获机 检查状态：容器已经装入目标
+			GENERIC = "它挺空的。",
+			FILLED = "里面已经包含了一个实体。",
 		},
-		WAGBOSS_ROBOT_SECRET = "真有意思。",		--物品名：未公开构造体
-        WAGBOSS_ROBOT = "有意思。",		--物品名：战争瓦器人
-        WAGBOSS_ROBOT_POSSESSED = "有人试过关机再启吗？",		--物品名：启迪战争瓦器人
-		WAGBOSS_ROBOT_LEG = "它居然还站了一会儿。",		--物品名：战争瓦器人腿
-		ALTERGUARDIAN_PHASE1_LUNARRIFT = "一样，又不一样。",		--物品名：天体仇灵
-		ALTERGUARDIAN_PHASE1_LUNARRIFT_GESTALT = "这大概就是它要的。",		--物品名：纯粹虚影
-        ALTERGUARDIAN_PHASE4_LUNARRIFT = "你毁掉的学问还不够多吗？",		--物品名：天体后裔
+		WAGBOSS_ROBOT_SECRET = "看起来像是某种机器喵。",
+        WAGBOSS_ROBOT = "只有在他失控时才会构成威胁。",
+        WAGBOSS_ROBOT_POSSESSED = "囚禁奴役对该实体来说并非享受。",
+		WAGBOSS_ROBOT_LEG = "这种材料似乎能暂时容纳该存在的力量喵。",
+		ALTERGUARDIAN_PHASE1_LUNARRIFT = "它满载月能而归。",
+		ALTERGUARDIAN_PHASE1_LUNARRIFT_GESTALT = "这个个体无疑是独一无二的。",
+        ALTERGUARDIAN_PHASE4_LUNARRIFT = "一个奇妙的结合体，由机器零件与有知觉的月能组成。",
 		WAGDRONE_ROLLING =
         {
-            GENERIC = "就这么一直转下去。",		--物品名：螨地爬 检查状态：普通状态
-            INACTIVE = "该带它转一圈。",		--物品名：螨地爬 检查状态：当前未激活
-            DAMAGED = "能修。修不好便拆件。",		--物品名：螨地爬 检查状态：已经受损
-            FRIENDLY = "转起来，赢大奖。喵。",		--物品名：螨地爬 检查状态：处于友好状态
+            GENERIC = "具有协同攻击能力的自走式机器人。这项发明展现了不小的创造力。",
+            INACTIVE = "它处于非激活状态喵。",
+            DAMAGED = "我认为它可修复，也可拆解零件。",
+            FRIENDLY = "这个版本相当有用。",
         },
         WAGDRONE_FLYING =
         {
-            GENERIC = "活像从地底爬出来的机器。",		--物品名：黄莺 检查状态：普通状态
-            INACTIVE = "带它转一圈就好。",		--物品名：黄莺 检查状态：当前未激活
-            DAMAGED = "坏得太透，只能拆件。",		--物品名：黄莺 检查状态：已经受损
+            GENERIC = "这类装置依赖陀螺仪的稳定和推进器的升力。既迷人又恼人。",
+            INACTIVE = "它处于非激活状态喵。",
+            DAMAGED = "这个个体现在只是其零件的总和。",
         },
-		WAGDRONE_PARTS = "这下能让事情顺起来。",		--物品名：陀螺传导核心
-		WAGDRONE_BEACON = "方便把东西圈住。",		--物品名：螨地爬屏障柱
+		WAGDRONE_PARTS = "收集的零件可用于维修。",
+		WAGDRONE_BEACON = "它构成了一堵无形的墙喵。",
 
-        WAGPUNK_WORKSTATION = "开工。",		--物品名：概念制造器
-        WAGPUNK_LEVER = "该换个方向了。",		--物品名：杠杆选择器
-        WAGPUNK_FLOOR_KIT = "这是什么地面？",		--物品名：基底扩展器
-        WAGPUNK_CAGEWALL = "成墙，或者什么都不成。",		--物品名：动能场扩展器
+        WAGPUNK_WORKSTATION = "那位研究者的工作站喵。",
+        WAGPUNK_LEVER = "标准的两档启动开关。",
+        WAGPUNK_FLOOR_KIT = "这显然是种海岸拓展这么解决方案喵。",
+        WAGPUNK_CAGEWALL = "它能投射出排斥物质、吸收动能冲击的力场。就是这么简单。",
 
-		WAGSTAFF_ITEM_1 = "奇怪。这手套不是投影。",		--物品名：手套
-		WAGSTAFF_ITEM_2 = "这块剪贴板……是真的。",		--物品名：剪贴板
+		WAGSTAFF_ITEM_1 = "这只手套本不该是实体，但它确实又是。",
+		WAGSTAFF_ITEM_2 = "它不再是投影了。",
 
-        HERMITCRAB_RELOCATION_KIT = "她的新居，会是一只完好的瓶。",		--物品名：隐士迁居套装
+        HERMITCRAB_RELOCATION_KIT = "天啊，是空的。我晚点再试试喵。",
 
         WANDERINGTRADER =
         {
-            REVEALED = "交易过后，我们算不算朋友？",		--物品名：怪皮弗娄牛 检查状态：隐藏商人已经现身
-            GENERIC = "这头牛，长得不太对。",		--物品名：怪皮弗娄牛 检查状态：普通状态
+            REVEALED = "天啊，这位流动摊贩真该洗个澡了。",
+            GENERIC = "它看起来相当不健康。",
         },
 
-        GESTALT_GUARD_EVOLVED = "这些家伙脾气很冲。",		--物品名：敌意虚影
-        FLOTATIONCUSHION = "啊，浮力。喵。",		--物品名：个人漂浮装置
-        LUNAR_SEED = "它曾是某顶冠冕的一部分。",		--物品名：天体珠宝
+        GESTALT_GUARD_EVOLVED = "它们已进化为更具敌意的形态。",
+        FLOTATIONCUSHION = "被动部署的漂浮装置。我认可。",
+        LUNAR_SEED = "必是其头冠上掉下的。",
 
-        WAGBOSS_ROBOT_CONSTRUCTIONSITE = "暂时被盖住了。",		--物品名：战争瓦器人底座
-        WAGBOSS_ROBOT_CONSTRUCTIONSITE_KIT = "大机器被拆成了小包。",		--物品名：战争瓦器人底座套装
-        WAGBOSS_ROBOT_CREATION_PARTS = "碎片散得到处都是。",		--物品名：战争瓦器人零件
-        MOONSTORM_STATIC_CATCHER = "里面什么也没有。",		--物品名：静电约束仪
-        COOLANT = "气泡里满是可能。",		--物品名：核化液
+        -- rifts5.1
+        WAGBOSS_ROBOT_CONSTRUCTIONSITE = "前所未有的技术进步成就，然而却是彻底的野蛮之物。",
+        WAGBOSS_ROBOT_CONSTRUCTIONSITE_KIT = "巨型军用机器人的基础配件喵。",
+        WAGBOSS_ROBOT_CREATION_PARTS = "装备了重武器，必将招致毁灭与死亡。",
+        MOONSTORM_STATIC_CATCHER = "它没有携带电荷喵。",
+        COOLANT = "这种流体呈现出异常特性，毫无疑问，是收到了突变的催化作用。",
 
         FENCE_ELECTRIC = {
-            LINKED = "它接上了。电流通了。",		--物品名：麻刺节点 检查状态：已经与电力网络连接
-            GENERIC = "单用没有用。",		--物品名：麻刺节点 检查状态：普通状态
+            LINKED = "这跟柱子传导的电流强度刚好可以阻绝未绝缘生物体。",      --NOTE: the fence post is fully linked to two other posts
+            GENERIC = "这跟柱子当前并没有导电。",           --NOTE: no links or electricity, just boring ol fence post
         },
-        FENCE_ELECTRIC_ITEM = "不是树，但同样得栽进土里。",		--物品名：麻刺节点
+        FENCE_ELECTRIC_ITEM = "这是一根电栅栏的柱子，使用之前必须先固定在地上喵。",
 
-        MUTATEDBIRD = "该是稀有的鸟。",		--物品名：亮喙鸟
+        MUTATEDBIRD = "它的外型和本性都发生了变异喵。",
 
         BIRDCORPSE =
         {
-            GENERIC  = "只剩一具空壳。",		--物品名：鸟类尸体 检查状态：普通状态
-            BURNING  = "这才是真正的火鸟。",		--物品名：鸟类尸体 检查状态：正在燃烧
-            REVIVING = "它在变成别的物种。",		--物品名：鸟类尸体 检查状态：尸体正在复活
+            GENERIC  = "要是这就是小鸟的尾声该多好喵。", --witnessing the corpse
+            BURNING  = "这其实是在挽救它。", --when its burning
+            REVIVING = "小鸟现在走上了另一条道路……一条可怕的道路。", --when its mutating and being revived
         },
 
         BUZZARDCORPSE = {
-            GENERIC  = "不过是具空壳。",		--物品名：秃鹫尸体 检查状态：普通状态
-            BURNING  = "这才叫火鸟。",		--物品名：秃鹫尸体 检查状态：正在燃烧
-            REVIVING = "它正在变成别的物种。",		--物品名：秃鹫尸体 检查状态：尸体正在复活
+            GENERIC  = "要是这就是秃鹫的结局该多好喵。", --witnessing the corpse
+            BURNING  = "这其实是在挽救它喵。", --when its burning
+            REVIVING = "秃鹫现在走上了另一条道路……一条可怕的道路喵。", --when its mutating and being revived
         },
 
         MUTATEDBUZZARD_GESTALT = {
-            GENERIC = "它对死亡的专注，我欣赏。",		--物品名：水晶冠秃鹫 检查状态：普通状态
-            EATING_CORPSE = "别介意我……尝一口腐肉。",		--物品名：水晶冠秃鹫 检查状态：正在啃食尸体
+            GENERIC = "虽然被复活了，但它食腐的习性依然没变喵。", -- Generic string
+            EATING_CORPSE = "这就是它传播……感染的方式喵。", -- Eating from a fresh corpse (might be from the players kill or another creatures kill)
         },
 
+        -- Rifts 6
 
         SHADOWTHRALL_CENTIPEDE = {
-            HEAD = "头，还是头？",		--物品名：巨荒蜈 检查状态：正在检查头部
-            BODY = "太骇人了。",		--物品名：巨荒蜈 检查状态：正在检查躯干部位
-            FLIPPED = "翻过来了。",		--物品名：巨荒蜈 检查状态：身体已经翻转
+            HEAD = "双头暗影巨兽。真出奇。", --The head segment
+            BODY = "此生物的绝望石护甲展现出近乎不可穿透的特征。", --The body segment
+            FLIPPED = "暗影巨兽已被掀翻。然而，恐怕其失衡状态不会持续太久喵。", --When it's flipped over (either head or body segment)
         },
 
         TREE_ROCK =
 		{
-			BURNING = "树干像是过热了。",		--物品名：巨石枝 检查状态：正在燃烧
-			CHOPPED = "没了支撑。",		--物品名：巨石枝 检查状态：已经砍伐
-			GENERIC = "我看像藤蔓。",		--物品名：巨石枝 检查状态：普通状态
+			BURNING = "燃烧树木支撑结构后，将便于无阻碍地获取矿物。", --It's vines are burning, it will collapse
+			CHOPPED = "巨石已可开采。", --It's 'chopped', so the rock fell
+			GENERIC = "该植物的结构完整性似乎足以承载巨石的重量。", --Rock is still on tree
 		},
 
+        -- NOTE: Unsure about HOT and COLD, just do GENERIC, GAS, MIASMA for now!
         CAVE_VENT_ROCK =
         {
-            GENERIC = "我看不出它朝哪喷。",		--物品名：喷气孔 检查状态：普通状态
-            HOT     = "气氛越来越热。",		--物品名：喷气孔 检查状态：温度很高
-            GAS     = "它在排气。",		--物品名：喷气孔 检查状态：正在排放气体
-            MIASMA  = "我要是哮喘怎么办？",		--物品名：喷气孔 检查状态：正在释放瘴气
+            GENERIC = "喷气孔，可能释放多种气体。最好避开喵。", -- Not ventilating anything
+            HOT     = "不过是地热蒸汽从喷气孔中排出罢了。无需惊慌。", -- Ventiliating hot air, making the area warm
+            GAS     = "这些烟雾吸入有害，会导致易腐物品变质。", -- Ventiliating Toadstools gas fumes and spores
+            MIASMA  = "谨慎起见，应尽量减少接触这种有隐患的蒸汽喵。", -- Ventiliating the shadow rift miasma
         },
-        CAVE_FERN_WITHERED = "一株枯掉的蕨。",		--物品名：枯萎的蕨类
-        FLOWER_CAVE_WITHERED = "黯淡的球茎。喵。",		--物品名：枯萎的荧光花
+        CAVE_FERN_WITHERED = "死得很彻底。",
+        FLOWER_CAVE_WITHERED = "它无法在这种条件下存活喵。",
 
 		ABYSSPILLAR_MINION =
 		{
-			GENERIC = "还好只是尊雕像。",		--物品名：追随者 检查状态：普通状态
-			ACTIVATED = "毫无新意。",		--物品名：追随者 检查状态：已经激活
+			GENERIC = "一尊大型昆虫的雕像喵。", --off, looks like decor/statue
+			ACTIVATED = "它遵循特定的移动规律。", --turned on and hopping over puzzle pillars
 		},
-		ABYSSPILLAR_TRIAL = "那里有个拉杆。",		--物品名：杠杆
+		ABYSSPILLAR_TRIAL = "一条机械杠杆，用于启动一套装置。",
 
         VAULT_TELEPORTER =
         {
-            GENERIC = "想着不如动着。",		--物品名：圣殿路标 检查状态：普通状态
-            BROKEN = "坏了。",		--物品名：圣殿路标 检查状态：已经损坏
-            UNPOWERED = "得给它通电。",		--物品名：圣殿路标 检查状态：尚未供能
+            GENERIC = "它通过粒子传输原理运作。",
+            BROKEN = "该设备需要维修喵。",
+            UNPOWERED = "由于未充能，此装置无法运行。",
         },
-		VAULT_TELEPORTER_UNDERCONSTRUCTION = "“此处为未来内容，正在施工。”",		--物品名：建造中的宝库传送器
-		VAULT_ORB = "但愿它管用。",		--物品名：传送宝珠
-        VAULT_LOBBY_EXIT = "系根绳子，我就能爬出去。",		--物品名：裂口
-		VAULT_CHANDELIER_BROKEN = "光灭了。",		--物品名：圣殿华灯
+VAULT_TELEPORTER_UNDERCONSTRUCTION = "\"This Waymark is under development for a future update.\"",
+		VAULT_ORB = "此球体是粒子传输装置的重要组件喵。",
+        VAULT_LOBBY_EXIT = "用绳索下降或许才是明智之举喵。",
+		VAULT_CHANDELIER_BROKEN = "基本可以断定，工艺不达标导致了这盏枝形吊灯从安装处坠落喵。",
 
-		ANCIENT_HUSK = "这里出过不好的事。",		--物品名：远古遗骸
-		MASK_ANCIENT_HANDMAIDHAT = "我不想惹她。",		--物品名：鞘翅面具
-		MASK_ANCIENT_ARCHITECTHAT = "看不出哪里像。",		--物品名：远见者面具
-		MASK_ANCIENT_MASONHAT = "比其他的重些。",		--物品名：工匠面具
+		ANCIENT_HUSK = "这些远古者中谁是肇事者相当明显喵。",
+		MASK_ANCIENT_HANDMAIDHAT = "此面具的面容表明其前主人地位崇高。",
+		MASK_ANCIENT_ARCHITECTHAT = "此面具曾被一位智者佩戴。",
+		MASK_ANCIENT_MASONHAT = "此面具的主人通过不懈努力完善了自身的技艺。",
 
-        TREE_ROCK_SEED = "一颗种子。喵。",		--物品名：巨石枝种子
-        TREE_ROCK_SAPLING = "坚如石的小苗。",		--物品名：巨石枝树苗
+        TREE_ROCK_SEED = "伟大的巨石枝的种子喵。",
+        TREE_ROCK_SAPLING = "巨石枝逐渐从周围环境中积累矿物质，成熟后便可采收喵。",
 
-        OCEANWHIRLBIGPORTALEXIT = "海上的碎屑。",		--物品名：海洋漂浮物
+        -- Rifts 6.1
+        OCEANWHIRLBIGPORTALEXIT = "这是我们的水上载具留下的残骸和碎屑喵。", -- The flotsam pickable not the waterfall.
 
 		VAULT_TORCH =
 		{
-			GENERIC = "这是灯的开关？",		--物品名：谜之火焰 检查状态：普通状态
-			BROKEN = "开关像是坏了。",		--物品名：谜之火焰 检查状态：已经损坏
+			GENERIC = "工艺精良的远古火炬。",
+			BROKEN = "开关似乎已经损毁。", --the torch still functions, just the lever is broken
 		},
 
         CAVE_VENT_MITE =
 		{
-			DEAD = "没气了。",		--物品名：地热螨 检查状态：已经死亡
-			GENERIC = "这又是什么螨？",		--物品名：地热螨 检查状态：普通状态
-			SLEEPING = "当心，它随时会醒。",		--物品名：地热螨 检查状态：正在睡眠
-            VENTING = "它正喷着怒气。",		--物品名：地热螨 检查状态：正在从通风口涌出
+			DEAD = "这一只已经死去了。",
+			GENERIC = "这种矿物混生物种具备在高压下储存气体的能力。",
+			SLEEPING = "它此刻处于休眠状态。",
+            VENTING = "排气是它的一种攻击手段。", -- in the shield state and venting out gasses
         },
 
+		--Hallowed Nights 2025
 
 		PUMPKINHAT =
 		{
-			GENERIC = "好空的一张脸。喵。",		--物品名：无面南瓜 检查状态：普通状态
-			UNCARVED = "没有脸，我不戴。",		--物品名：无面南瓜 检查状态：尚未雕刻
+			GENERIC = "难免不让人想起伊卡博德的厄运遭遇。",
+			UNCARVED = "这南瓜需要先有张脸才能戴上。",--can't wear it unless it's carved.
 		},
 
         PENGUINCORPSE =
 		{
-            GENERIC  = "只剩一副空壳。",		--物品名：企鸥尸体 检查状态：普通状态
-            BURNING  = "这才算火鸟。",		--物品名：企鸥尸体 检查状态：正在燃烧
-            REVIVING = "它在换一副模样。",		--物品名：企鸥尸体 检查状态：尸体正在复活
+            GENERIC  = "要是这就是小鸟的尾声该多好。", --witnessing the corpse
+            BURNING  = "这其实是在挽救它喵。", --when its burning
+            REVIVING = "小鸟现在走上了另一条道路……一条可怕的道路喵。", --when its mutating and being revived
 		},
         SPIDERCORPSE =
 		{
-			GENERIC = "恶心。",		--物品名：蜘蛛尸体 检查状态：普通状态
-			BURNING = "这下好多了。喵。",		--物品名：蜘蛛尸体 检查状态：正在燃烧
-			REVIVING = "简直大错。",		--物品名：蜘蛛尸体 检查状态：尸体正在复活
+			GENERIC = "这只蜘蛛已经死亡喵。",
+			BURNING = "势在必行喵。",
+			REVIVING = "然后来了……另一只蜘蛛。",
 		},
         SPIDERQUEENCORPSE =
 		{
-			GENERIC = "呃。我觉得恶心。",		--物品名：蜘蛛女王尸体 检查状态：普通状态
-			BURNING = "这下干净了。",		--物品名：蜘蛛女王尸体 检查状态：正在燃烧
-			REVIVING = "这下糟了。",		--物品名：蜘蛛女王尸体 检查状态：尸体正在复活
+			GENERIC = "蛛形纲的女族长就这么倒下了。",
+			BURNING = "实属仁慈之举。",
+			REVIVING = "女王万岁喵。",
 		},
         MERMCORPSE =
 		{
-			GENERIC = "一条鱼人死了。",		--物品名：鱼人尸体 检查状态：普通状态
-			BURNING = "这气味很糟。",		--物品名：鱼人尸体 检查状态：正在燃烧
-			REVIVING = "死鱼人醒了。",		--物品名：鱼人尸体 检查状态：尸体正在复活
+			GENERIC = "这个鱼形双足生物已经死亡喵。",
+			BURNING = "虽不幸但必要喵。",
+			REVIVING = "这生物正以最不自然的方式复活。",
 		},
-        GENERIC_CORPSE =
+        GENERIC_CORPSE = -- A generic set of lines for ANY corpse, until they get their own unique lines at least.
         {
-            GENERIC = "确定死了。",		--物品名：普通生物尸体 检查状态：普通状态
-            BURNING = "不会再回来了。",		--物品名：普通生物尸体 检查状态：正在燃烧
-            REVIVING = "年年有今日。",		--物品名：普通生物尸体 检查状态：尸体正在复活
+            GENERIC = "It appears to be deceased喵.",
+            BURNING = "A necessary precaution.",
+            REVIVING = "It is reviving, unfortunately喵.",
         },
 
+		--Winter's Feast 2025
 
-		W_RADIO = "嗯。科技含量很高。",		--物品名：B.U.D.D.Y.
+		W_RADIO = "有意思……我推断它需要进一步研究。",
 
 		HERMITHOTSPRING  =
         {
-            BOMBED = "放松的完美配方。喵。",		--物品名：珍珠的温泉 检查状态：被沐浴球处理过
-            GENERIC = "能泡一泡这身倦骨就好了。",		--物品名：珍珠的温泉 检查状态：普通状态
-            EMPTY = "水呢？",		--物品名：珍珠的温泉 检查状态：内容为空
+            BOMBED = "这样就很好了喵。",
+            GENERIC = "我这双老脚应该好好泡泡了。",
+            EMPTY = "泉水已经干涸了。",
         },
-		HERMITHOTSPRING_CONSTR = "还在建。",		--物品名：温泉
-		MEATRACK_HERMIT_MULTI =
+		HERMITHOTSPRING_CONSTR = "那块油布盖着的是泡澡用的温泉喵。",
+		MEATRACK_HERMIT_MULTI = --talk to vito; want to reuse MEATRACK, but less meat focused; more fish/tea
         {
-            DONE = "肉干可以吃了。",		--物品名：晾肉巨架 检查状态：处理已经完成
-            DRYING = "风干要时间。",		--物品名：晾肉巨架 检查状态：肉类正在晾晒
-            DRYINGINRAIN = "雨天更慢。",		--物品名：晾肉巨架 检查状态：雨中仍挂着肉类，晾晒暂停
-            GENERIC =  "正是风干的好时候。",		--物品名：晾肉巨架 检查状态：普通状态
-            BURNT = "架子烧了。",		--物品名：晾肉巨架 检查状态：已经烧毁
-            DONE_NOTMEAT = "用实验的说法，这叫“干燥”。",		--物品名：晾肉巨架 检查状态：非肉类晾晒已经完成
-            DRYING_NOTMEAT = "风干算不上学问。",		--物品名：晾肉巨架 检查状态：非肉类正在晾晒
-            DRYINGINRAIN_NOTMEAT = "雨，走开。想下，改日再来。",		--物品名：晾肉巨架 检查状态：雨中仍挂着非肉类，晾晒暂停
-            DONE_SALT = "咸得恰好。",		--物品名：晾肉巨架 检查状态：盐渍晾晒已经完成
-			ABANDONED = "它尽力干过了。",		--物品名：晾肉巨架 检查状态：已被原主人遗弃
+            DONE = "The process has completed.",
+            DRYING = "Dehydration is a slow process.",
+            DRYINGINRAIN = "The rain has temporarily halted the dehydration process喵.",
+            GENERIC =  "This drying rack has a larger capacity喵.",
+            BURNT = "It doesn't seem stable喵.",
+            DONE_NOTMEAT = "The process has completed喵.",
+            DRYING_NOTMEAT = "Dehydration is a slow process喵.",
+            DRYINGINRAIN_NOTMEAT = "The rain has temporarily halted the dehydration process.",
+            DONE_SALT = "The salt is a bi-product of the dehydration process for certain things obtained from the sea喵.",
+			ABANDONED = "What a shame喵.",
         },
-		HERMITHOUSE_ORNAMENT = "多么悦耳。喵。",		--物品名：风铃
-		HERMITHOUSE_LAUNDRY = "该提醒她，还是装作没看见？",		--物品名：寄居蟹隐士的晾衣处
+		HERMITHOUSE_ORNAMENT = "一件适合挂在珍珠居所的迷人装饰物。",
+		HERMITHOUSE_LAUNDRY = "脏衣服喵。",
 
-        PETALS_DRIED = "花瓣干了。收起来。",		--物品名：干花瓣
-        PETALS_EVIL_DRIED = "深色的花瓣，干了也好看。",		--物品名：干深色花瓣
-        FOLIAGE_DRIED = "干蕨叶，可以做书签。",		--物品名：干蕨叶
-        SUCCULENT_PICKED_DRIED = "干多肉，像一枚小标本。",		--物品名：干多肉
-        FIRENETTLES_DRIED = "干火荨麻，碰它要当心。",		--物品名：干火荨麻叶
-        TILLWEED_DRIED = "干透了。收进袋里。",		--物品名：干犁地草
+        PETALS_DRIED = "干燥过程增强了香气喵。",
+        PETALS_EVIL_DRIED = "干燥过程增强了香气喵。",
+        FOLIAGE_DRIED = "干燥过程增强了香气。",
+        SUCCULENT_PICKED_DRIED = "干燥过程增强了香气喵。",
+        FIRENETTLES_DRIED = "干燥过程增强了香气喵。",
+        TILLWEED_DRIED = "干燥过程增强了香气喵。",
+        MOON_TREE_BLOSSOM_DRIED = "干燥过程增强了香气喵。",
+        FORGETMELOTS_DRIED = "干燥过程增强了香气喵。",
 
-        MOON_TREE_BLOSSOM_DRIED = "晒得恰到好处。",		--物品名：干月树花
-        FORGETMELOTS_DRIED = "干透了。忘性倒是还在。",		--物品名：干必忘我
-
-        HERMITCRABTEA_PETALS = "花瓣茶。适合安静的午后。",		--物品名：花瓣茶
-        HERMITCRABTEA_PETALS_EVIL = "深色的那种。入口前请三思。",		--物品名：深色花瓣茶
-        HERMITCRABTEA_FOLIAGE = "蕨叶清苦。不至于让我失态。",		--物品名：蕨叶茶
-        HERMITCRABTEA_SUCCULENT_PICKED = "多肉泡的茶。留着路上喝。",		--物品名：多肉茶
-        HERMITCRABTEA_FIRENETTLES = "该贴一张“小心烫口”的标签。",		--物品名：火荨麻茶
-        HERMITCRABTEA_TILLWEED = "为健康，浅酌一口。",		--物品名：犁地草茶
-        HERMITCRABTEA_MOON_TREE_BLOSSOM = "味道里有一丝蜡。我不点破。",		--物品名：月树花茶
-        HERMITCRABTEA_FORGETMELOTS = "连我的执念，都被它泡软了，喵。",		--物品名：必忘我茶
-        SHELLWEAVER = "盐晶组合机。总算做了点有用的。",		--物品名：盐晶组合机
-        ICESTAFF2 = "附赠一场免费的冻结。",		--物品名：闪冻魔杖
-        ICESTAFF3 = "冻得更彻底，也更体面。",		--物品名：深冻魔杖
-        NONSLIPGRIT = "不吸引眼球，只抓住鞋底。",		--物品名：防滑粉
-        NONSLIPGRITBOOSTED = "这下站稳了。",		--物品名：防滑颗粒
-        DESICCANT = "干燥。彻底的干燥。",		--物品名：小包干燥剂
-        DESICCANTBOOSTED = "干爽得令人满意。",		--物品名：大包干燥剂
-        HERMITCRAB_SHELL = "载我去珍珠那儿一趟。",		--物品名：搬运海螺
-        SALTY_DOGHAT = "附带一条友谊的小船。",		--物品名：咸狗帽
-        SALTY_DOG = "最骄傲的小家伙，是你吗？",		--物品名：咸狗
+        HERMITCRABTEA_PETALS = "镇静效果显著的饮品。",
+        HERMITCRABTEA_PETALS_EVIL = "有时候，适量的疯狂也是可以接受的喵。",
+        HERMITCRABTEA_FOLIAGE = "这是一味用于预防精神错乱的草药喵。",
+        HERMITCRABTEA_SUCCULENT_PICKED = "这种清凉的提神饮品是夏季的理想之选。",
+        HERMITCRABTEA_FIRENETTLES = "此饮品可有效提升体温。",
+        HERMITCRABTEA_TILLWEED = "这是一杯颇具恢复功效的茶饮。",
+        HERMITCRABTEA_MOON_TREE_BLOSSOM = "此茶可使月能实体对我们保持冷漠。",
+        HERMITCRABTEA_FORGETMELOTS = "药效更为猛烈，用于治疗特别严重的精神错乱发作。",
+        SHELLWEAVER = "它能以多种方式利用盐。",
+        ICESTAFF2 = "一件附了魔的制冷器具。",
+        ICESTAFF3 = "它释放出逼人的寒气。",
+        NONSLIPGRIT = "它虽然会增强握持力，但会缩短工具的使用寿命。",
+        NONSLIPGRITBOOSTED = "只要在地面撒上这些，我就无需担心打滑问题了喵。",
+        DESICCANT = "它能帮我去除多余的湿气喵。",
+        DESICCANTBOOSTED = "这应能让我保持舒适干爽喵。",
+        HERMITCRAB_SHELL = "这个装置能将持有者瞬间传送到珍珠的住处喵。",
+        SALTY_DOGHAT = "它让人看起来很有威严。",
+        SALTY_DOG = "我更喜欢猫喵。",
 
         HERMITCRAB_TEASHOP =
         {
-            GENERIC = "店是空的，茶也是。", 		--物品名：珍珠的茶店 检查状态：普通状态
-            ACTIVE = "茶点时间。请坐。", 		--物品名：珍珠的茶店 检查状态：正在运作
-            BREWING = "价钱不低，只为她这一壶。", 		--物品名：珍珠的茶店 检查状态：完成交易后正在沏茶
-            BURNT = "烧得只剩焦壳。", 		--物品名：珍珠的茶店 检查状态：已经烧毁
+            GENERIC = "我真希望她能快点回来。", -- Inactive state, no Pearl inside.
+            ACTIVE = "什么都比不上一杯好茶。", -- Active, Pearl is inside, can buy from her
+            BREWING = "我很乐意支持做小买卖的。", -- A trade just happened and she's brewing the tea!|
+            BURNT = "太可怕了。", -- burnt strings.
         },
 
-        FISHMEAT_DRIED = "这条鱼干得有内容。",		--物品名：鱼肉干
-        FISHMEAT_SMALL_DRIED = "小鱼干。嚼劲尚可。",		--物品名：小鱼干
+        FISHMEAT_DRIED = "虽然有点咸，但还是很令人满意喵。",
+        FISHMEAT_SMALL_DRIED = "虽然有点咸，但还是很令人满意喵。",
 
-        HERMITCRAB_LIGHTPOST = 
+        HERMITCRAB_LIGHTPOST = -- Similar to YOTS_LANTERN_POST
         {
-            GENERIC = "灯亮着，气氛就有了。",		--物品名：珍珠的灯柱 检查状态：普通状态
-            ABANDONED = "被遗弃的灯。我不太想看。",		--物品名：珍珠的灯柱 检查状态：已被原主人遗弃
+            GENERIC = "It illuminates the space nicely喵.",
+            ABANDONED = "The remnants of a lighting apparatus喵.",
         },
-        HERMITCRAB_LIGHTPOST_ITEM = "把这些灯串起来吧。",		--物品名：珍珠的灯柱套装
+        HERMITCRAB_LIGHTPOST_ITEM = "亲爱的珍珠，你希望把它安装在哪里？",
 
+        -- Year of the Clockwork Knight
 
         YOTH_KNIGHTSHRINE =
         {
-            GENERIC = "它已经蓄满了力。", 		--物品名：发条骑士神龛 检查状态：普通状态
-            EMPTY = "没有供品，它便不理人。", 		--物品名：发条骑士神龛 检查状态：内容为空
-            BURNT = "烧成灰，也还是匹马。", 		--物品名：发条骑士神龛 检查状态：已经烧毁
+            GENERIC = "供品已足。", -- Has an offering of either gears, wires or doodad.
+            EMPTY = "它要求指定的供品。", -- No offering. Character should hint at it wanting an offering.
+            BURNT = "神龛已被烧毁。", -- Burnt.
         },
 
-        MASK_PRINCESSHAT = "公主殿下，失礼了。",		--物品名：公主面具
-        COSTUME_PRINCESS_BODY = "事后的议论，不必理会。",		--物品名：公主服
+        MASK_PRINCESSHAT = "她流淌着皇室血脉喵。",
+        COSTUME_PRINCESS_BODY = "这些服饰昭示着皇亲国戚的身份喵。",
 
-        PLAYBILL_THE_PRINCESS_YOTH = "这出戏，你验过了吗？",		--物品名：《我的四骑士与我》 舞台剧
+        PLAYBILL_THE_PRINCESS_YOTH = "其中隐含一个相当黑暗的隐喻喵。",
 
         KNIGHT_YOTH =
         {
-            GENERIC = "别在我面前装糊涂。", 		--物品名：镀金骑士 检查状态：普通状态
-            FOLLOWING = "好骑士。跟紧我。", 		--物品名：镀金骑士 检查状态：正在跟随当前检查角色
-            FOLLOWING_OTHER = "现在谁领头？我很好奇。", 		--物品名：镀金骑士 检查状态：正在跟随其他角色
+            GENERIC = "这无疑是难以驯服的品种！", -- Generic quote. It's aggressive.
+            FOLLOWING = "它之所以跟随我，是因我身着特定装束喵。", -- Following the character examining
+            FOLLOWING_OTHER = "它已向他人立誓效忠。", -- Following another character or mannequin
         },
 
-        YOTH_KNIGHTHAT = "戴上它，我像小马驹吗？",		--物品名：镀金骑士头盔
-        ARMOR_YOTH_KNIGHT = "这些疑问，比马鞍还沉。",		--物品名：镀金骑士胸甲
-        HORSESHOE = "留着吧。好运总不嫌多。",		--物品名：幸运马蹄铁
-        YOTH_LANCE = "别把我认作那位枪不离手的骑士。",		--物品名：冲锋骑枪
+        YOTH_KNIGHTHAT = "此骑士头盔能提供充分的头部保护。",
+        ARMOR_YOTH_KNIGHT = "盔甲上装饰的玫瑰，是制作者的徽记。",
+        HORSESHOE = "此小饰物能带来有利优势，然其效果难以量化。",
+        YOTH_LANCE = "中世纪时期，此类骑枪常用于马上比武喵。",
 
         FLOATINGLANTERN =
         {
-            DEFLATED = "泄了气。可惜。", 		--物品名：天灯 检查状态：已经泄气
-            HELD = "诀窍在于松手。", 		--物品名：天灯 检查状态：正被角色携带
-            GENERIC = "这不就亮了，喵。", 		--物品名：天灯 检查状态：普通状态
+            DEFLATED = "既然热升力消失，它自然也就落下来了。", -- Depleted and on the ground
+            HELD = "部署方式很简单：放手，让它自行上升。", -- In the players inventory
+            GENERIC = "此处并无魔法可言。它之所以漂浮，仅仅是因热空气密度低于周围大气喵。", -- Floating in the sky!
         },
 
-        YOTH_KNIGHTSTICK = "随我驰骋。",		--物品名：滑稽马
-        YOTH_CHAIR_ROCKING_ITEM = "坐上去，颠得厉害。", 		--物品名：摇摇马套装
+        YOTH_KNIGHTSTICK = "它不过是使人步伐更为迅捷罢了喵。",
+        YOTH_CHAIR_ROCKING_ITEM = "这是摇摇马，常见于儿童的育婴室。", -- The chair itself uses WOOD_CHAIR inspect states.
 
+		-- Meta 6
 
-		WX78_DRONE_SCOUT = "飞得够远。很好。",		--物品名：旋翼测绘机
-		WX78_DRONE_DELIVERY = "只担心它会弄丢东西。",		--物品名：便携储存单元
-		WX78_DRONE_ZAP = "电的技术，用得很直接。",		--物品名：电刑机
+		WX78_DRONE_SCOUT = "我们都欠勇敢的小侦察员一份人情。",
+		WX78_DRONE_DELIVERY = "机器人对自己的家当难舍难分。",
+		WX78_DRONE_ZAP = "它允许机器人对敌人发起远程打击。",
 		WX78_DRONE_ZAP_REMOTE =
 		{
-			GENERIC = "远程操控。名副其实。",		--物品名：电刑机控制器 检查状态：普通状态
-			CANUSE = "想电的太多，时间太少。",		--物品名：电刑机控制器 检查状态：当前可以使用
+			GENERIC = "机器人通过信号传输操控飞行装置并释放电击。",
+--fallback to speech_wilson.lua 			CANUSE = "only_used_by_wx78",
 		},
 
-        WX78MODULE_RADAR = "这么小的东西，装下这么多学问。",		--物品名：增程电路
-        WX78MODULE_STACKSIZE = "空间被折叠得妥帖。",		--物品名：空间扩展电路
-        WX78MODULE_DIGESTION = "连消化都替人想好了。",		--物品名：再消化电路
-        WX78MODULE_SCREECH = "声波。吵，但有用。",		--物品名：声波激发电路
-        WX78MODULE_LIGHT2 = "光很足。我不介意。",		--物品名：超级照明电路
-        WX78MODULE_SHIELDING = "格挡，是很体面的防守。",		--物品名：格挡电路
-        WX78MODULE_SPIN = "旋转的周期，算得很准。",		--物品名：旋转周期电路
-		WX78MODULE_CHESS = "棋局已在它心里走完了。",		--物品名：棋圣电路
+        -- All other characters but Wx-78 share one quote.
+        WX78MODULE_RADAR = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_STACKSIZE = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_DIGESTION = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_SCREECH = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+        WX78MODULE_LIGHT2 = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感喵。",
+        WX78MODULE_SHIELDING = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感喵。",
+        WX78MODULE_SPIN = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感。",
+		WX78MODULE_CHESS = "尽管TA不喜欢有机物，但似乎并不反对从它们那里获得灵感喵。",
 
         WX78_INVENTORYCONTAINER =
         {
-            HELD = "空间无限。", 		--物品名：坍缩储存单元 检查状态：正被角色携带
-			NOPOWER = "拒绝访问。电量不足。", 		--物品名：坍缩储存单元 检查状态：没有电力
-            GENERIC = "空间有限。", 		--物品名：坍缩储存单元 检查状态：普通状态
+            HELD = "only_used_by_wx78", -- Held, and working as a container
+--fallback to speech_wilson.lua 			NOPOWER = "only_used_by_wx78", -- Held but can't open due to wx charge level too low
+            GENERIC = "这个曾经的储存器容量一度挑战了物理法则本身。", -- It was dropped, treat it as if its broken down, and is rummagable
         },
 
         WX78_FOODBRICK =
         {
-            WET = "湿着，也得吃。",		--物品名：营养砖 检查状态：处于潮湿状态
-            GENERIC = "硬得难以下口。",		--物品名：营养砖 检查状态：普通状态
+            WET = "机器人把变质食物重新加工成了一块紧实的可食用砖块。",
+            GENERIC = "营养砖在脱水状态下无法食用。",
         },
 
         WX78_BACKUPBODY =
         {
-            GENERIC = "工程学给了它另一种永生。", 		--物品名：备份底盘 检查状态：普通状态
-            UNCLAIMED = "硬件不错。", 		--物品名：备份底盘 检查状态：备用躯体尚未绑定主人
-            VIEWERS_BODY = "可悲的肉体，被困在有机形态里。", 		--物品名：备份底盘 检查状态：这是当前机器人的备用躯体
+            GENERIC = "这是WX的备用底盘之一喵。", -- We are examining a claimed body belonging to a WX. We can use their display name if we want to.
+--fallback to speech_wilson.lua             UNCLAIMED = "only_used_by_wx78", -- We are examining an unclaimed body.
+--fallback to speech_wilson.lua             VIEWERS_BODY = "only_used_by_wx78", -- We (WX) are examining our own body.
         },
 
-        WX78_POSSESSEDBODY = "你近来不太像你自己。",		--物品名：附身底盘
+        WX78_POSSESSEDBODY = "这不过是典型的灵体机械附身现象，仅此而已喵。",
 
-        WX78_GESTALTTRAPPER = "WX是被什么附了身，才做出这个？",		--物品名：灵体传输模块
+        WX78_GESTALTTRAPPER = "经过重新配置后，实体已经可以直接传输进底盘。",
 
-        SHADOW_HEART_VEIN = "一条渴望有用的脉管。",		--物品名：暗影心房卷须
+        SHADOW_HEART_VEIN = "这确实是黑魔法。",
 
-        WX78_SHADOWDRONE_DEBUFFER = "观察得很准。",		--物品名：破绽放大机
-        WX78_SHADOWDRONE_HARVESTER = "WX藏品里的一件收集器。",		--物品名：自动抓取机
+        WX78_SHADOWDRONE_DEBUFFER = "它在研究敌人，并校准WX的攻击参数。",
+        WX78_SHADOWDRONE_HARVESTER = "它是一个相当勤劳的小采集器。",
 
-        STALKER_NPC = "说好了，往事不必再提。",		--物品名：远古织影者
+        -- Rifts 7
+        STALKER_NPC = "你没什么要为自己辩解的吗喵？",
 
         MITEGLAND =
         {
-            GENERIC = "这些螨虫肚子里，确实有点东西。",		--物品名：火腺 检查状态：普通状态
-            COLD = "凉了。",		--物品名：火腺 检查状态：温度较低
+            GENERIC = "它释放着相当可观的热量。",
+            COLD = "看来它的热量储备是有限的喵。",
         },
-        MITEGLAND_COOKED = "熟了。至于吃，我再想想。",		--物品名：熟火腺
+        MITEGLAND_COOKED = "吃这种东西恐怕不太明智。",
 
-        BROKEN_FUMAROLETOOLITEM = "温度够高，我或许能把碎片熔回去。", 		--物品名：损坏的火山工具
+        BROKEN_FUMAROLETOOLITEM = "热量只要足够，应该能让它复原喵。", -- character should comment that they could melt the pieces back together by heating it.
         FUMAROLEAXE =
 		{
-			GENERIC = "又冷又脆。", 		--物品名：炽热斧 检查状态：普通状态
-			LUKEWARM = "它在转凉。", 		--物品名：炽热斧 检查状态：温度微温
-			WARM = "热起来了。", 		--物品名：炽热斧 检查状态：温度较暖
-			HOT = "烫手。请拿稳。", 		--物品名：炽热斧 检查状态：温度很高
+			GENERIC = "它可能很快就需要修理。", -- This is the coldest state, the heat tool is about to break and shatter into the broken state if used a bit more, there are visible cracks.
+			LUKEWARM = "它已大幅度降温。", -- The next state, its lukewarm, no cracks.
+			WARM = "工作时，它能让使用者保持温暖舒适。", -- It's starting to get red hot, it's a bit more efficient in the action it does, and keeps the player cozy.
+			HOT = "它能极大提升工作效率，但前提是使用者要能耐得住高温。", -- SUPER HOT, it's very efficient in the action it does, e.g. the axe fells trees in half the hits needed, keeps the player cozy, maybe too cozy! (e.g. overheat in summer)
 		},
 
         FUMAROLEPICKAXE =
 		{
-			GENERIC = "冷得发脆。", 		--物品名：烈焰鹤嘴锄 检查状态：普通状态
-			LUKEWARM = "渐渐有了温度。", 		--物品名：烈焰鹤嘴锄 检查状态：温度微温
-			WARM = "热意上来了。", 		--物品名：烈焰鹤嘴锄 检查状态：温度较暖
-			HOT = "烫。别徒手碰。", 		--物品名：烈焰鹤嘴锄 检查状态：温度很高
+			GENERIC = "它可能很快就需要修理。", -- This is the coldest state, the heat tool is about to break and shatter into the broken state if used a bit more, there are visible cracks.
+			LUKEWARM = "它已大幅度降温喵。", -- The next state, its lukewarm, no cracks.
+			WARM = "工作时，它能让使用者保持温暖舒适喵。", -- It's starting to get red hot, it's a bit more efficient in the action it does, and keeps the player cozy.
+			HOT = "它能极大提升工作效率，但前提是使用者要能耐得住受高温。", -- SUPER HOT, it's very efficient in the action it does, e.g. the axe fells trees in half the hits needed, keeps the player cozy, maybe too cozy! (e.g. overheat in summer)
 		},
 
         FUMAROLEHAMMER =
 		{
-			GENERIC = "又冷又硬。", 		--物品名：炎头锤 检查状态：普通状态
-			LUKEWARM = "微温而已。", 		--物品名：炎头锤 检查状态：温度微温
-			WARM = "热起来了。", 		--物品名：炎头锤 检查状态：温度较暖
-			HOT = "烫得很。", 		--物品名：炎头锤 检查状态：温度很高
+			GENERIC = "它可能很快就需要修理。", -- This is the coldest state, the heat tool is about to break and shatter into the broken state if used a bit more, there are visible cracks.
+			LUKEWARM = "它已大幅度降温。", -- The next state, its lukewarm, no cracks.
+			WARM = "工作时，它能让使用者保持温暖舒适。", -- It's starting to get red hot, it's a bit more efficient in the action it does, and keeps the player cozy.
+			HOT = "它能极大提升工作效率，但前提是使用者要能耐得住受高温。", -- SUPER HOT, it's very efficient in the action it does, e.g. the axe fells trees in half the hits needed, keeps the player cozy, maybe too cozy! (e.g. overheat in summer)
 		},
 
         FUMAROLESHOVEL =
 		{
-			GENERIC = "冷硬。", 		--物品名：呲啦铲 检查状态：普通状态
-			LUKEWARM = "有些温了。", 		--物品名：呲啦铲 检查状态：温度微温
-			WARM = "热了。", 		--物品名：呲啦铲 检查状态：温度较暖
-			HOT = "烫手。", 		--物品名：呲啦铲 检查状态：温度很高
+			GENERIC = "它可能很快就需要修理。", -- This is the coldest state, the heat tool is about to break and shatter into the broken state if used a bit more, there are visible cracks.
+			LUKEWARM = "它已大幅度降温。", -- The next state, its lukewarm, no cracks.
+			WARM = "工作时，它能让使用者保持温暖舒适。", -- It's starting to get red hot, it's a bit more efficient in the action it does, and keeps the player cozy.
+			HOT = "它能极大提升工作效率，但前提是使用者要能耐得住受高温喵。", -- SUPER HOT, it's very efficient in the action it does, e.g. the axe fells trees in half the hits needed, keeps the player cozy, maybe too cozy! (e.g. overheat in summer)
 		},
 
         FUMAROLE_FARM_HOE =
 		{
-			GENERIC = "冷得干脆。", 		--物品名：烧灼园艺锄 检查状态：普通状态
-			LUKEWARM = "温度在升。", 		--物品名：烧灼园艺锄 检查状态：温度微温
-			WARM = "够热了。", 		--物品名：烧灼园艺锄 检查状态：温度较暖
-			HOT = "烫得厉害。", 		--物品名：烧灼园艺锄 检查状态：温度很高
+			GENERIC = "它可能很快就需要修理。", -- This is the coldest state, the heat tool is about to break and shatter into the broken state if used a bit more, there are visible cracks.
+			LUKEWARM = "它已大幅度降温。", -- The next state, its lukewarm, no cracks.
+			WARM = "工作时，它能让使用者保持温暖舒适喵。", -- It's starting to get red hot, it's a bit more efficient in the action it does, and keeps the player cozy.
+			HOT = "它能极大提升工作效率，但前提是使用者要能耐得住受高温。", -- SUPER HOT, it's very efficient in the action it does, e.g. the axe fells trees in half the hits needed, keeps the player cozy, maybe too cozy! (e.g. overheat in summer)
 		},
 
+        -- This trap is a cluster of rocks gets heated and deals fire damage to creatures (including players!) on top
         TRAP_FUMAROLE =
         {
-            HELD = "口袋要烧穿了。", 		--物品名：煤炭 检查状态：正被角色携带
-            GENERIC = "冷的时候，它们不怎么管用。", 		--物品名：煤炭 检查状态：普通状态
-            WARM = "凉了些，仍能伤人。", 		--物品名：煤炭 检查状态：温度较暖
-            HOT = "我不会踩上去。", 		--物品名：煤炭 检查状态：温度很高
+            HELD = "有备无患，亲爱的喵。", -- When held in the inventory.
+            GENERIC = "石头已经冷却了。现在非常安全。", -- Coldest state, the trap is ineffective.
+            WARM = "它还是相当烫喵。", -- Warm, a bit red hot, it does some damage.
+            HOT = "踩上去会对身体健康造成相当不利的影响喵。", -- Super hot, it's doing full fire damage.
         },
 
-        HEALINGSALVE_FUMAROLE = "以热制热。这方子我认得。",		--物品名：避火膏
+        HEALINGSALVE_FUMAROLE = "即使在高温下，它应该也能提供足够的隔热保护喵。",
 
-		VAULT_PILLAR_GUARD = "刚开始，就遇上绊脚石。",		--物品名：远古戍卫塔
-		VAULT_PILLAR_GUARD_CRAFTED = "谁也别想从它眼皮底下溜过去。",		--物品名：戍卫塔
-		VAULT_PILLAR_GUARD_DORMANT = "一座塔而已。",		--物品名：远古之塔
-		VAULT_PILLAR_GUARD_DORMANT_CRAFTED = "它只差一点灵感的火花。",		--物品名：人工建造的休眠宝库守卫柱
-		VAULT_PILLAR_GUARD_CONSTR = "还缺什么？",		--物品名：戍卫塔基址
-		VAULT_PILLAR_GUARD_CONSTR_PLANS = "得给它找个好位置。",		--物品名：戍卫塔套装
+		VAULT_PILLAR_GUARD = "天呐，难道我启动了一个古老的安保装置？",
+		VAULT_PILLAR_GUARD_CRAFTED = "它会守卫周边区域。",
+		VAULT_PILLAR_GUARD_DORMANT = "乍一看，它不过是一根华丽的立柱喵。",
+		VAULT_PILLAR_GUARD_DORMANT_CRAFTED = "它显然需要一个能量源喵。",
+		VAULT_PILLAR_GUARD_CONSTR = "部分材料尚未到位喵。",
+		VAULT_PILLAR_GUARD_CONSTR_PLANS = "放置位置必须讲究策略。",
 		VAULT_CRAWLER =
 		{
-			GENERIC = "偏在我势不可挡时，它从天而降。",		--物品名：辉光象鼻虫 检查状态：普通状态
-			SOCKETED = "嵌得刚好，像换一只灯泡。",		--物品名：辉光象鼻虫 检查状态：已经嵌入插槽
+			GENERIC = "啊！难题的答案居然自己出现了。",
+			SOCKETED = "自然是完美契合。",
 		},
 
-        VAULT_DECON_DOOR = "拦住里面的东西，还是外面的？",		--物品名：内殿屏障
-        VAULT_DECON_MISTER = "……真神秘。",		--物品名：圣殿净化器
-		VAULT_KEY_ACTIVATOR = "有个念头一闪而过。",		--物品名：脉冲基座
-		VAULT_CRAWLER_LEVER = "一根神秘的拉杆。最坏能怎样？",		--物品名：杠杆
-        VAULT_KEY = "总算找到回去的钥匙了。",		--物品名：钥石
+        VAULT_DECON_DOOR = "这些墙壁必定经过了匠心独运的建造，才得以保持完好如初的状态。",
+        VAULT_DECON_MISTER = "它似乎是为了清除该区域中的污染物而设计的。",
+		VAULT_KEY_ACTIVATOR = "这个小壁龛内衬着某种金属物质，似乎是为了导电……",
+		VAULT_CRAWLER_LEVER = "尽管会发生什么是未知数，但至少结果会为后人提供参考。",
+        VAULT_KEY = "我对它究竟会开启什么仍抱有戒心喵……",
         VAULT_KEY_PEDESTAL =
         {
-            GENERIC = "能解开一切的钥匙，就在那里。", 		--物品名：圣匣 检查状态：普通状态
-            PICKED = "空了。", 		--物品名：圣匣 检查状态：已经采集
+            GENERIC = "通过为保管它而采取的措施推断，这把钥匙极为重要喵。", -- Keystone is on it, ready to take
+            PICKED = "钥匙已被取走喵。", -- No more keystone on it, we already took it, or someone else did.
         },
-        VAULT_ORB_REFINED = "连我也会动心。",		--物品名：传送宝珠碎片
-        VAULT_PILLAR_GUARD_PIECE = "这该是那座行走高塔的要件。",		--物品名：宝库守卫柱部件
-        VAULT_REFINER_PEDESTAL = "何等古老的工艺。",		--物品名：圣殿锻台
+        VAULT_ORB_REFINED = "古人利用宝珠的力量进行传送。",
+        VAULT_PILLAR_GUARD_PIECE = "这一看就是远古安保塔的一个组件。",
+        VAULT_REFINER_PEDESTAL = "古人使用的一种研磨器具喵。",
 
         VAULT_COMPASS =
         {
-            GENERIC = "这仪器，无可比拟。", 		--物品名：路标导航仪 检查状态：普通状态
-            NOTVAULT = "在这里，它似乎不管用。", 		--物品名：路标导航仪 检查状态：指南针未指向宝库目标
-            KEYROOM = "它先前一直把我引向这间屋子。", 		--物品名：路标导航仪 检查状态：指南针正指向宝库钥匙房
+            GENERIC = "它正引导我们前往某个极为重要的目标喵。", -- Pointing us to the teleporters leading to the key room
+            NOTVAULT = "超出了它的有效范围喵。", -- We're not in the vault, so its in an ineffective state.
+            KEYROOM = "看来这便是预设的目的地喵。", -- We're already in the key room! Compass marker is in a success state.
         },
 
-        CEILING_ROPE = "一条攀爬绳。",		--物品名：绳子
-        VAULT_KEY_EXIT = "这里系不了绳。",		--物品名：裂口
+        CEILING_ROPE = "这是一种屡试不爽的逃生手段。",
+        VAULT_KEY_EXIT = "既然无处系绳，也就无法爬上去了喵。",--There's no where to tie a rope. Exit, but no re-entry.
 
+        -- Crow Carnival 2026
 
-        CARNIVALGAME_GOLFGAME_KIT_EASY = "这里的物理规则，应该宽松些。",		--物品名：初学者迷你高尔夫套装
-        CARNIVALGAME_GOLFGAME_KIT_MEDIUM = "我来试一杆。",		--物品名：标准迷你高尔夫套装
-        CARNIVALGAME_GOLFGAME_KIT_HARD = "这需要多算几步。",		--物品名：专家迷你高尔夫套装
-        CARNIVALGAME_GOLFGAME_KIT_DIY = "总该有个公式，能算出完美的球场。",		--物品名：自定义迷你高尔夫套装
+        CARNIVALGAME_GOLFGAME_KIT_EASY = "毫无疑问，是入门级球场。",
+        CARNIVALGAME_GOLFGAME_KIT_MEDIUM = "一个中等难度的球场。",
+        CARNIVALGAME_GOLFGAME_KIT_HARD = "给愿意接受挑战的人。",
+        CARNIVALGAME_GOLFGAME_KIT_DIY = "可以用它来创建一个定制化的、令人愉悦的迷你高尔夫球场。",
 
         CARNIVALGAME_GOLF_TEE =
         {
-            GENERIC = "投一枚代币，这场派对才开始。",  		--物品名：迷你高尔夫落球器 检查状态：普通状态
-            PLAYING = "局已开始。", 		--物品名：迷你高尔夫落球器 检查状态：游戏正在进行
-            INACTIVE = "先看清问题在哪。", 		--物品名：迷你高尔夫落球器 检查状态：当前未激活
+            GENERIC = "必须投入一枚代币，机器才会发球喵。",  -- Ready to take a game token, reference other carnival game strings
+            PLAYING = "代币已投入。比赛开始。", -- The game is active and in play
+            INACTIVE = "迷你高尔夫球场至少需要一个旗洞才能游玩。", -- The game token slot is covered, due to the course not being fully complete (e.g. hole marker isn't placed)
         },
-        CARNIVALGAME_GOLF_HOLE = "球会进那里的。",		--物品名：迷你高尔夫旗洞
+        CARNIVALGAME_GOLF_HOLE = "游戏目标是用尽可能少的杆数将球送入那个洞中。",
 
-        CARNIVALGAME_GOLF_TEE_KIT = "从哪里开始？",		--物品名：迷你高尔夫落球器套装
-        CARNIVALGAME_GOLF_HOLE_KIT = "终点设在哪里？",		--物品名：迷你高尔夫旗洞套装
+        CARNIVALGAME_GOLF_TEE_KIT = "落球器放在哪里，就决定我们从哪里开始比赛。",
+        CARNIVALGAME_GOLF_HOLE_KIT = "旗洞应放在离起点足够远的位置，以提供适当的挑战。",
 
-        CARNIVALGAME_GOLFCLUB = "推杆，准备。",		--物品名：推杆
-        CARNIVALGAME_GOLFBALL = "这颗“圆”该归我。",		--物品名：高尔夫球
+        CARNIVALGAME_GOLFCLUB = "本质上是一种为低速动能传递而优化的工具。",
+        CARNIVALGAME_GOLFBALL = "一个近乎完美的球体，经过优化以实现可预测的滚动力学。",
 
-        CARNIVALGAME_GOLFPROP_FENCE = "这道栅栏绕不过去。",		--物品名：迷你高尔夫边界栅栏
+        CARNIVALGAME_GOLFPROP_FENCE = "它标示了游戏区域喵。",
 
-        CARNIVALGAME_GOLFPROP_SPINNER = "它确实扭转了局面。", 		--物品名：鸦年华迷你高尔夫旋转障碍
-        CARNIVALGAME_GOLFPROP_CUTOUT = "纯粹是挡路。", 		--物品名：鸦年华迷你高尔夫挡板
-        CARNIVALGAME_GOLFPROP_MOVINGWALL = "这堵墙，起落了好几回。", 		--物品名：鸦年华迷你高尔夫移动墙
+        CARNIVALGAME_GOLFPROP_SPINNER = "它的行为很容易描述，却被有意设计得难以适应。", -- All 4 spin plates(size/rotation) use the same inspect
+        CARNIVALGAME_GOLFPROP_CUTOUT = "它既是审美标记，也是对直线玩法的刻意阻碍。", -- All 10 prop wood cutouts use the same inspect
+        CARNIVALGAME_GOLFPROP_MOVINGWALL = "一堵按固定间隔升降的墙。", -- All colored moving walls use this space inspect
 
-        CARNIVALGAME_GOLFPROP_WORMHOLE = "我想弄清两端如何相连。虽然有点恶心。", 		--物品名：迷你虫洞
+        CARNIVALGAME_GOLFPROP_WORMHOLE = "它与球场上的另一个虫洞相连，使两者之间能够瞬时传送。", -- a fake wormhole, that lets the ball travel to another random wormhole
 
-        CARNIVALGAME_GOLFPROP_SPRING = "免费的弹射，也是有的。", 		--物品名：循环定向弹板
+        CARNIVALGAME_GOLFPROP_SPRING = "一个利用储存机械能的受控推进平台喵。", -- spring that pops up to launch the ball
 
-        CARNIVALGAME_GOLFPROP_FAN = "这点风，吹不动我。", 		--物品名：扇风
+        CARNIVALGAME_GOLFPROP_FAN = "必须根据风向调整球的轨迹。", -- fan that blows wind and pushes in a direction
 
+        -- Rifts 8
 
         ROCKY_BOSS =
         {
-            GENERIC = "它倒是直截了当。",		--物品名：石虾首领（测试版暂译） 检查状态：普通状态
-            BOULDER = "比石头还硬气。", 		--物品名：石虾首领（测试版暂译） 检查状态：收缩成岩石状
-            ACID = "它的壳在起变化。",		--物品名：石虾首领（测试版暂译） 检查状态：受到酸液影响
+            GENERIC = "	巨型螯龙虾。避开它的大螯才是明智的做法。",
+            BOULDER = "那可不是普通的巨石。", -- in boulder form
+            ACID = "连这个物种也会受到酸液影响。",
         },
-		ROCKY_BOSS_SHADOW = "那还能算壳吗？",		--物品名：暗影石虾首领（测试版暂译）
+		ROCKY_BOSS_SHADOW = "看来暗影已经穿透了它的护甲。",
         BAT_BOSS =
         {
-            GENERIC = "它的性格，真是耗人。",		--物品名：蝙蝠首领（测试版暂译） 检查状态：普通状态
-            ACID = "看它发光。酸把它逼疯了。",		--物品名：蝙蝠首领（测试版暂译） 检查状态：受到酸液影响
+            GENERIC = "嗜血飞犬喵。",
+            ACID = "它似乎正处于狂暴状态。",
         },
-		BAT_BOSS_SHADOW = "也许这是另一个品种。",		--物品名：暗影蝙蝠首领（测试版暂译）
+		BAT_BOSS_SHADOW = "它如今已被腐化。",
 
         BATBOSSCAVE =
         {
-            GENERIC = "里面似乎有东西。", 		--物品名：蝙蝠首领巢穴（测试版暂译） 检查状态：普通状态
-            VACANT = "没有人在家？", 		--物品名：蝙蝠首领巢穴（测试版暂译） 检查状态：巢穴空置
+            GENERIC = "比寻常的蝙蝠洞更大。这意味着什么，显而易见。", -- boss bat is inside,
+            VACANT = "看上去是空的喵。", -- boss bat is not inside anymore
         },
 
-        WORM_BOSS_SHADOW = "它太大，藏不进阴影里。",		--物品名：暗影蠕虫首领（测试版暂译）
+        WORM_BOSS_SHADOW = "可以断定，这种本就致命的生物，一旦腐化就会危险倍增。",
 
-        ARMOR_ROCKY = "这一带，由我坐镇。",		--物品名：石虾护甲（测试版暂译）
-        BAT_BOSSCORPSEHAT = "戴着它，我很不安。",		--物品名：蝙蝠首领尸骸帽（测试版暂译）
+        ARMOR_ROCKY = "这生物的甲壳，如今也能给我们类似的保护。",
+        BAT_BOSSCORPSEHAT = "我想，戴上它就能获得一部分吸取生命的能力。",
 
         ATRIUM_RITUAL_ORGAN_ROCKY =
         {
-            GENERIC = "这只爪子，不寻常。",		--物品名：中庭仪式石虾祭品（测试版暂译） 检查状态：普通状态
-            IN_RITUAL = "祭品已献上。", 		--物品名：中庭仪式石虾祭品（测试版暂译） 检查状态：已经放入仪式
+            GENERIC = "被腐化的大螯。",
+            IN_RITUAL = "供品已就位。", -- it's floating as part of the ritual circle (can reuse same string for all IN_RITUAL)
         },
         ATRIUM_RITUAL_ORGAN_BAT =
         {
-            GENERIC = "这东西，明目张胆地恶心。",		--物品名：中庭仪式蝙蝠祭品（测试版暂译） 检查状态：普通状态
-            IN_RITUAL = "献祭已经完成。", 		--物品名：中庭仪式蝙蝠祭品（测试版暂译） 检查状态：已经放入仪式
+            GENERIC = "连它的声音也被腐化了喵。",
+            IN_RITUAL = "供品已就位。", -- it's floating as part of the ritual circle (can reuse same string for all IN_RITUAL)
         },
         ATRIUM_RITUAL_ORGAN_WORM =
         {
-            GENERIC = "这堆内脏，很重要。",		--物品名：中庭仪式蠕虫祭品（测试版暂译） 检查状态：普通状态
-            IN_RITUAL = "供物已经放好了。", 		--物品名：中庭仪式蠕虫祭品（测试版暂译） 检查状态：已经放入仪式
+            GENERIC = "鲜有比一条腐化巨虫的肠道更黑暗的地方。",
+            IN_RITUAL = "供品已就位。", -- it's floating as part of the ritual circle (can reuse same string for all IN_RITUAL)
         },
 
-		CHARLIE_BOSS = "情况不妙。",		--物品名：查理（首领战）
+		CHARLIE_BOSS = "三者同流合污，融成了可憎的怪物喵。",
 		SHROUDEN =
 		{
-			GENERIC = "这无法用科学解释。",		--物品名：暗影实体（SHROUDEN，测试版暂译） 检查状态：普通状态
-			PUDDLE = "看来，我该去取那只眼睛。",		--物品名：暗影实体（SHROUDEN，测试版暂译） 检查状态：化作地面的暗影形态
+			GENERIC = "世人对TA有许多不同的称呼。",
+			PUDDLE = "是时候将这个邪恶实体踩碎，彻底解决它了。",
 		},
 
-        CHARLIEARENA_SPIKE = "这岩层，迷人得骇人。",		--物品名：查理竞技场尖刺（测试版暂译）
+        CHARLIEARENA_SPIKE = "这些构造颇似荆棘。",
 
         KING_CANE =
         {
-            GENERIC = "杖上配齐了人手。", 		--物品名：王之手杖（测试版暂译） 检查状态：普通状态
-            EMPTY = "它需要一颗宝石。", 		--物品名：王之手杖（测试版暂译） 检查状态：内容为空
+            GENERIC = "这根魔杖显然曾属于一位远古国王喵。", -- has a gem slotted in
+            EMPTY = "它缺少能量源，也就是宝石。", -- can socket a gem inside (can be heavy on hint)
         },
-        QUEEN_TORCH = "这火焰，颇为奇特。",		--物品名：女王火炬（测试版暂译）
+        QUEEN_TORCH = "这可不是普通的火炬喵。",
+        
+        CHARLIEARENA_TELEPORTER = "进去前先收齐所有东西，才是稳妥之举。",
 
-        CHARLIEARENA_TELEPORTER = "最好把一切都带上。",		--物品名：查理竞技场传送装置（测试版暂译）
+        MASK_CHARLIE_BOSSHAT = "三者合成的可憎怪物留下的诅咒遗物喵。",
+    },
 
-        MASK_CHARLIE_BOSSHAT = "它有多旧了呢。",		--物品名：查理面具（测试版暂译）
+    DESCRIBE_GENERIC = "稀罕的事物。我不知道那是什么喵。",
+    DESCRIBE_TOODARK = "黑暗里我什么都看不见喵。",
+    DESCRIBE_SMOLDERING = "看样子快要因为温度过高而着火了喵。",
 
-	},
+    DESCRIBE_PLANTHAPPY = "农作物看起来健康状况良好喵。",
+    DESCRIBE_PLANTVERYSTRESSED = "它似乎正遭受着相当多的压力。",
+    DESCRIBE_PLANTSTRESSED = "它似乎同时承受着两种不同的压力喵。",
+    DESCRIBE_PLANTSTRESSORKILLJOYS = "我得清除一些麻烦的杂草。",
+    DESCRIBE_PLANTSTRESSORFAMILY = "这些植物周围有同伴时生长的最好喵。",
+    DESCRIBE_PLANTSTRESSOROVERCROWDING = "应降低植物的密度，避免争夺养分喵。",
+    DESCRIBE_PLANTSTRESSORSEASON = "恐怕这株植物不适合在这个季节栽种。",
+    DESCRIBE_PLANTSTRESSORMOISTURE = "它需要补一点水。",
+    DESCRIBE_PLANTSTRESSORNUTRIENTS = "它需要营养更丰富的土壤。",
+    DESCRIBE_PLANTSTRESSORHAPPINESS = "我应该用谈话促进它的成长。",
 
-	DESCRIBE_GENERIC = "嗯……这算什么东西。",		--检查物品描述的缺省值
-	DESCRIBE_TOODARK = "太黑了。我的眼睛还没适应。",		--天太黑
-	DESCRIBE_SMOLDERING = "它在冒烟。再等一下就要起火。",		--冒烟
-	DESCRIBE_SAMECHARACTER = "……是我在看镜子吗？",		--检查与自己相同的角色
+    EAT_FOOD =
+    {
+        TALLBIRDEGG_CRACKED = "很有嚼劲。",
+		WINTERSFEASTFUEL = "好像裹了一条舒服的毯子一样。",
+    },
 
-	DESCRIBE_PLANTHAPPY = "多么快活的一株。",		--检查植物 植物满足
-	DESCRIBE_PLANTVERYSTRESSED = "它快撑不住了。",		--检查植物 植物压力山大(没戴眼镜时检查)
-	DESCRIBE_PLANTSTRESSED = "它有点烦躁。",		--检查植物 植物有压力(没戴眼镜时检查)
-	DESCRIBE_PLANTSTRESSORKILLJOYS = "该清一清杂草了……",		--检查植物 有讨厌的(腐烂的大蔬菜、杂草、土壤杂物碎片)
-	DESCRIBE_PLANTSTRESSORFAMILY = "它很孤单。植物也怕独处。",		--检查植物 同类作物不足
-	DESCRIBE_PLANTSTRESSOROVERCROWDING = "太挤了。每株都该有自己的间距。",		--检查植物 过度拥挤
-	DESCRIBE_PLANTSTRESSORSEASON = "这个季节不合它的性子。",		--检查植物 季节错误
-	DESCRIBE_PLANTSTRESSORMOISTURE = "缺水了。",		--检查植物 缺少水分
-	DESCRIBE_PLANTSTRESSORNUTRIENTS = "它饿着，土壤也饿着。",		--检查植物 缺少养分
-	DESCRIBE_PLANTSTRESSORHAPPINESS = "它想有人陪它说说话。",		--检查植物 没聊天
-
-	EAT_FOOD =
-	{
-		TALLBIRDEGG_CRACKED = "带着鸟喙的味道，倒也不坏。",		--吃孵化的高脚鸟蛋
-		WINTERSFEASTFUEL = "尝起来是节日的味道。",		--吃冬季盛宴食物
-	},
-
-	WENDY_SKILLTREE_EASTEREGG = "是你吗，阿比？",		--温蒂技能树彩蛋台词
+    WENDY_SKILLTREE_EASTEREGG = "only_used_by_wendy",
 }
+
+-- SPECIAL 覆盖 SPEECH：递归合并，只替换同名的末级条目
+local function deepmerge(dst, src)
+	for k, v in pairs(src) do
+		if type(v) == "table" and type(dst[k]) == "table" then
+			deepmerge(dst[k], v)
+		else
+			dst[k] = v
+		end
+	end
+end
+
+deepmerge(SPEECH, SPECIAL)
+
+return SPEECH
