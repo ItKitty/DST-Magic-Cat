@@ -93,6 +93,7 @@ PrefabFiles = {
 	"fx_restriction",
 	"fx_musiclight",
 	"fx_soulstaff_corrupt",
+	"fx_catpaw_lunar",
 
 	-- 角色相关
 	"madeleine",

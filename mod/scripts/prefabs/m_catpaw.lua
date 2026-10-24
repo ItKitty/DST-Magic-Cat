@@ -53,7 +53,7 @@ end
 
 local function add_charged_fx(inst, owner)
 	if not inst._charged_vfx and inst.components.equippable:IsEquipped() then
-		local _charged_vfx = SpawnPrefab("wurt_swampitem_lunar_chargedfx")
+		local _charged_vfx = SpawnPrefab("fx_catpaw_lunar")
 		_charged_vfx.entity:AddFollower()
 		_charged_vfx.entity:SetParent(owner.entity)
 		_charged_vfx.Transform:SetScale(0.6, 0.6, 0.6)
