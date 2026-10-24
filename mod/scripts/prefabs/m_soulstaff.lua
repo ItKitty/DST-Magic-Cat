@@ -7,41 +7,6 @@ local assets = {
 
 local prefabs = {}
 
--- 形态轮盘：和 m_shadow_tool 一样，手持时右键物品打开，用来开关「吸血形态」
-local SPELLBOOK_RADIUS = 100
-local SPELLBOOK_FOCUS_RADIUS = SPELLBOOK_RADIUS + 2
-local ICON_ATLAS = "images/inventoryimages/soulstaff.xml"
-local ICON_IMAGE = "soulstaff.tex"
-local ICON_SCALE = 0.6
-local ICON_RADIUS = 50
-
-local function ToggleRequest(inst, on)
-	SendModRPCToServer(MOD_RPC[modname]["SoulStaffToggle"], inst, on)
-end
-
-local SOULSTAFF_SPELLS = {
-	{
-		label = "开启吸血形态",
-		execute = function(inst)
-			ToggleRequest(inst, true)
-		end,
-		atlas = ICON_ATLAS,
-		normal = ICON_IMAGE,
-		widget_scale = ICON_SCALE,
-		hit_radius = ICON_RADIUS,
-	},
-	{
-		label = "关闭吸血形态",
-		execute = function(inst)
-			ToggleRequest(inst, false)
-		end,
-		atlas = ICON_ATLAS,
-		normal = ICON_IMAGE,
-		widget_scale = ICON_SCALE,
-		hit_radius = ICON_RADIUS,
-	},
-}
-
 -- 吸血闪光特效
 -- 改进后的 sparkle 函数
 local function sparkle(inst)
@@ -316,13 +281,11 @@ local function fn()
 	talker:MakeChatter()
 	talker.chaticon = "npcchatflair_stalker"
 
-	-- 形态轮盘（客户端也要有，所以放在 master 判断之前）
-	inst:AddComponent("spellbook")
-	inst.components.spellbook:SetRadius(SPELLBOOK_RADIUS)
-	inst.components.spellbook:SetFocusRadius(SPELLBOOK_FOCUS_RADIUS)
-	inst.components.spellbook:SetItems(SOULSTAFF_SPELLS)
-	inst.components.spellbook.opensound = "dontstarve/HUD/craft_open"
-	inst.components.spellbook.closesound = "dontstarve/HUD/craft_close"
+	-- 开关状态（右键切换形态用）。客户端也要有，因为右键动作是在客户端收集的，
+	-- 而 machine 挂的 turnedon 标签会同步给客户端，用来决定显示「开启」还是「关闭」
+	inst:AddComponent("machine")
+	inst.components.machine.turnonfn = OnTurnOn
+	inst.components.machine.turnofffn = OnTurnOff
 
 	if not TheWorld.ismastersim then
 		return inst
@@ -366,11 +329,6 @@ local function fn()
 	MakeHauntableLaunch(inst)
 
 	inst:AddComponent("stafftraits")
-
-	-- 添加 machine 组件
-	inst:AddComponent("machine")
-	inst.components.machine.turnonfn = OnTurnOn
-	inst.components.machine.turnofffn = OnTurnOff
 
 	-- 初始化对话冷却系统
 	inst.talkCooldown = {
