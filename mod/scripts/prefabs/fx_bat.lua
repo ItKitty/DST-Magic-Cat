@@ -2,17 +2,9 @@ local assets_bats = {
 	Asset("ANIM", "anim/shadow_bishop.zip"),
 }
 
--- 只要求「能打 + 有血」，不要再要求 locomotor：
--- 食人花（lureplant）、食人花眼球这类不动的目标没有 locomotor，会被漏掉；
--- 下面减速那段本来就有 if v.components.locomotor 判空。
--- 只要求「能打 + 有血」，不要再要求 locomotor：
--- 食人花（lureplant）、食人花眼球这类不动的目标没有 locomotor，会被漏掉；
--- 下面减速那段本来就有 if v.components.locomotor 判空。
+-- 只要求「能打 + 有血」：食人花这类不动的目标没有 locomotor，不能作为筛选条件
 local TARGET_TAGS = { "_combat", "_health" }
--- wall 和 structure 是两套不同的标签，不能互相替代：
---   墙体（walls.lua）挂的是 "wall"（外加 noauradamage / electricdamageimmune）
---   建筑（pighouse、offering_pot 之类）挂的是 "structure"
--- 两个都排除，蝙蝠才既不打墙也不打建筑。
+-- wall 和 structure 是两套不同的标签（墙体挂 wall，建筑挂 structure），两个都要排除
 local TARGET_NOT_TAGS = {
 	"INLIMBO",
 	"wall",
@@ -23,7 +15,6 @@ local TARGET_NOT_TAGS = {
 	"flight",
 	"invisible",
 	"noattack",
-	"hiding",
 	"shadowminion",
 }
 -- 在文件顶部添加一个表来记录所有被减速的目标
@@ -68,22 +59,6 @@ local function DoAoEAttack(inst)
 
 	local x, y, z = inst.Transform:GetWorldPosition()
 	local ents = TheSim:FindEntities(x, y, z, 3, TARGET_TAGS, TARGET_NOT_TAGS)
-
-	-- 目标来自玩家攻击事件，一定是合法敌人；但它可能被排除标签挡掉
-	-- （食人花的状态默认就带 hiding），所以没筛到就手动补进列表。
-	local target = inst._target
-	if target ~= nil and target:IsValid() then
-		local found = false
-		for i = 1, #ents do
-			if ents[i] == target then
-				found = true
-				break
-			end
-		end
-		if not found then
-			table.insert(ents, target)
-		end
-	end
 
 	-- 获取蝙蝠真正的主人（顺着宠物链找到玩家）作为攻击者，
 	-- 伤害的归因就是第一个参数：传玩家，击杀才会算在玩家身上
