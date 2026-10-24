@@ -341,3 +341,38 @@ AddPrefabPostInit("alterguardianhat_projectile", function(inst)
 		end
 	end)
 end)
+
+------------------------- 灵魂法杖轮盘图标黑底 -----------------------------
+-- 轮盘是 widgets/wheel.lua 用 ImageButton 画的，每个图标只有一张图，没有边框层。
+-- 工坊 m_shadow_tool 的「黑框」其实是画在 medal_shadow_tool_icons 贴图里的，
+-- 不能直接套到别的图标上。
+-- 这里给 m_soulstaff 的轮盘图标垫一个黑色圆底（vanilla 的 button_icons/circle.tex），
+-- 视觉上就是图标外圈发黑。两个常量可以按喜好微调。
+local SOULSTAFF_ICON_BG_SCALE = 1.2
+local SOULSTAFF_ICON_BG_ALPHA = 0.85
+
+AddClassPostConstruct("screens/playerhud", function(self)
+	local old_OpenSpellWheel = self.OpenSpellWheel
+	self.OpenSpellWheel = function(this, invobject, items, radius, focus_radius, bgdata)
+		local ret = old_OpenSpellWheel(this, invobject, items, radius, focus_radius, bgdata)
+
+		if invobject ~= nil and invobject.prefab == "m_soulstaff" then
+			local wheel = this.controls ~= nil and this.controls.spellwheel or nil
+			local dataset = wheel ~= nil and wheel.items ~= nil and wheel.items.root or nil
+
+			for _, v in ipairs(dataset or {}) do
+				local icon = v.widget ~= nil and v.widget.image or nil
+				if icon ~= nil then
+					local bg = GLOBAL.Image("images/button_icons.xml", "circle.tex")
+					bg:SetTint(0, 0, 0, SOULSTAFF_ICON_BG_ALPHA)
+					v.widget:AddChild(bg)
+					local w, h = icon:GetSize()
+					bg:ScaleToSize(w * SOULSTAFF_ICON_BG_SCALE, h * SOULSTAFF_ICON_BG_SCALE)
+					bg:MoveToBack()
+				end
+			end
+		end
+
+		return ret
+	end
+end)
