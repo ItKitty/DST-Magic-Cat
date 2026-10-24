@@ -18,6 +18,26 @@ local TARGET_NOT_TAGS = {
 -- 在文件顶部添加一个表来记录所有被减速的目标
 local slowed_targets = {}
 
+-- 找到真正的「玩家」作为攻击者：
+-- 蝙蝠的 leader 可能是宠物，宠物自己又跟着玩家，所以顺着 follower 链往上找
+local function GetRealAttacker(inst)
+	local leader = inst.components.follower ~= nil and inst.components.follower:GetLeader() or nil
+	local guard = 0
+	while leader ~= nil and not leader:HasTag("player") and guard < 5 do
+		local nextleader = leader.components.follower ~= nil and leader.components.follower:GetLeader() or nil
+		if nextleader == nil or nextleader == leader then
+			break
+		end
+		leader = nextleader
+		guard = guard + 1
+	end
+	if leader ~= nil and leader:HasTag("player") then
+		return leader
+	end
+	-- 找不到玩家就只能记在蝙蝠自己头上
+	return inst
+end
+
 local function DoAoEAttack(inst)
 	local leader = inst.components.follower.leader
 
@@ -38,8 +58,9 @@ local function DoAoEAttack(inst)
 	local x, y, z = inst.Transform:GetWorldPosition()
 	local ents = TheSim:FindEntities(x, y, z, 3, TARGET_TAGS, TARGET_NOT_TAGS)
 
-	-- 获取蝙蝠的主人作为真正的攻击者
-	local real_attacker = leader or inst
+	-- 获取蝙蝠真正的主人（顺着宠物链找到玩家）作为攻击者，
+	-- 伤害的归因就是第一个参数：传玩家，击杀才会算在玩家身上
+	local real_attacker = GetRealAttacker(inst)
 
 	for i, v in ipairs(ents) do
 		if
@@ -50,7 +71,7 @@ local function DoAoEAttack(inst)
 			and v.components.combat
 			and v.components.combat:CanBeAttacked()
 		then
-			-- v.components.combat:GetAttacked_Internal(real_attacker, 25, nil, "electric", { planar = 20 })
+			v.components.combat:GetAttacked_Internal(real_attacker, 25, nil, "electric", { planar = 20 })
 
 			-- 攻击减速
 			if v.components.locomotor then
