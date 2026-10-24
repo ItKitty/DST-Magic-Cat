@@ -110,8 +110,24 @@ if ($ToGame) {
     Write-Output '== 还原：仓库 -> 游戏目录 =='
     Write-Output "先把当前游戏文件备份到: $backup"
     Copy-Tree -From $ModDir -To $backup | Out-Null
+
+    # 只保留最近 $KeepBackups 个备份，避免每次同步都堆一份 18MB
+    $KeepBackups = 3
+    $parent = Split-Path -Parent $ModDir
+    $baseName = Split-Path -Leaf $ModDir
+    $oldBackups = @(Get-ChildItem -LiteralPath $parent -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like "$baseName-backup-*" } |
+        Sort-Object CreationTime)
+    if ($oldBackups.Count -gt $KeepBackups) {
+        $removeCount = $oldBackups.Count - $KeepBackups
+        $oldBackups | Select-Object -First $removeCount | ForEach-Object {
+            Write-Output ("清理旧备份: {0}" -f $_.Name)
+            Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     $code = Copy-Tree -From $RepoMod -To $ModDir
-    Write-Output ("完成（robocopy 退出码 {0}）。备份在 {1}，确认没问题后可自行删除。" -f $code, $backup)
+    Write-Output ("完成（robocopy 退出码 {0}）。备份在 {1}（自动只保留最近 {2} 个）" -f $code, $backup, $KeepBackups)
     return
 }
 
