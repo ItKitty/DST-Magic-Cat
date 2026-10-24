@@ -151,7 +151,7 @@ end
 -- 形态关闭时的「驱散暗影」：靠的是原版 queen_torchlight 这个实体本身。
 -- 暗影生物的大脑里会调用 FindClosestQueenTorch，它遍历的是 queen_torchlight 的全局列表 TORCHES，
 -- 只要场上有这盏灯（半径 16 内），它们就会按「10 格开始逃、15 格才停」的规则退避。
--- 所以这里保留实体、但关掉它的灯光和音效——只要驱散功能，不要照明。
+-- 所以保留实体和光照，只关掉火把的循环音效。
 local function RemoveTorchLight(inst)
 	if inst._torchlight ~= nil then
 		if inst._torchlight:IsValid() then
@@ -167,11 +167,7 @@ local function SpawnRepelSource(inst, parent)
 		return nil
 	end
 	light.entity:SetParent(parent)
-	-- 关掉照明
-	if light.Light ~= nil then
-		light.Light:Enable(false)
-	end
-	-- 关掉火把的循环音效
+	-- 关掉火把的循环音效（光照保留）
 	if light.SoundEmitter ~= nil then
 		light.SoundEmitter:KillSound("loop")
 	end
