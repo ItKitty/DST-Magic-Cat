@@ -2,20 +2,11 @@
 -- （AddPrefabPostInit / AddComponentPostInit / AddClassPostConstruct 等）
 
 ---stafflight
--- 矮星只负责照明和取暖，不点火：原版 propagator 的 heatoutput 会让附近可燃物
--- 慢慢烤着（建筑、植物都会被点），这里直接关掉热扩散。
 AddPrefabPostInit("stafflight", function(inst)
 	if not TheWorld.ismastersim then
 		return
 	end
 	inst:AddTag("fire")
-
-	local propagator = inst.components.propagator
-	if propagator ~= nil then
-		propagator.heatoutput = 0
-		propagator:StopSpreading(true)
-		propagator:StopUpdating()
-	end
 end)
 ---staffcoldlight
 AddPrefabPostInit("staffcoldlight", function(inst)
