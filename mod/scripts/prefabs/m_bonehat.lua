@@ -44,7 +44,7 @@ local function OnEquip(inst, owner)
 	-- 反击
 	-- hattraits:SetupRetaliation(inst, owner)
 	-- 启迪特效
-	-- hattraits:alterguardian_onequip(inst, owner)
+	hattraits:alterguardian_onequip(inst, owner)
 end
 
 local function OnUnequip(inst, owner)
@@ -69,7 +69,7 @@ local function OnUnequip(inst, owner)
 	-- 反击
 	-- hattraits:RemoveRetaliation(inst, owner)
 	-- 启迪特效
-	-- hattraits:alterguardian_onunequip(inst, owner)
+	hattraits:alterguardian_onunequip(inst, owner)
 end
 
 -- 特殊伤害处理
