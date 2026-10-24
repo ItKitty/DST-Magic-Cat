@@ -39,14 +39,16 @@ local TOGGLE_RPC = MOD_RPC[modname]["SoulStaffToggle"]
 --   M_SOULSTAFF_CORRUPT(缩放, x, y, z)
 --   M_SOULSTAFF_CORRUPT(0.5, 0, -20, 0)
 -- 偏移单位 1/100 世界单位，y 正数往下、负数往上
-GLOBAL.M_SOULSTAFF_CORRUPT_TUNING = { scale = 0.5, x = 0, y = -20, z = 0 }
-
+-- 注意：不预先建表——只有调用了这个命令才会覆盖 m_soulstaff 里的 CORRUPT_FX_DEFAULT，
+-- 这样直接改 prefab 里的默认值是有效的（重启世界后恢复默认）。
 GLOBAL.M_SOULSTAFF_CORRUPT = function(scale, x, y, z)
+	GLOBAL.M_SOULSTAFF_CORRUPT_TUNING = {
+		scale = scale or 0.5,
+		x = x or 0,
+		y = y or 0,
+		z = z or 0,
+	}
 	local tuning = GLOBAL.M_SOULSTAFF_CORRUPT_TUNING
-	tuning.scale = scale or tuning.scale
-	tuning.x = x or tuning.x
-	tuning.y = y or tuning.y
-	tuning.z = z or tuning.z
 
 	local player = GLOBAL.ThePlayer
 	local inventory = player ~= nil and player.components.inventory or nil

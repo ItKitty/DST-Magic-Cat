@@ -190,7 +190,7 @@ end
 local CORRUPT_FX_DEFAULT = {
 	scale = 0.5,
 	x = 0,
-	y = -20,
+	y = 100,
 	z = 0,
 }
 
