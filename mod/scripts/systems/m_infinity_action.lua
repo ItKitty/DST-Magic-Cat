@@ -6,14 +6,15 @@
 --   · 火堆/燃料  fueled      不再减少（火堆会一直点着）
 -- 动作显示名：无限充能
 --
--- 两条注册路径，覆盖两种操作习惯：
---   1) SCENE  : 碎片放在背包里，直接右键目标 → 自动从背包找碎片
---   2) USEITEM: 把碎片拿在鼠标上再点目标（原版“使用道具”的方式）
--- 只有目标真的带耐久、且没充过，才会出现这个动作，不会和其它动作抢
+-- 交互方式：把启迪碎片「拿在鼠标上」（原版 USEITEM 流程）再点目标才出现，
+-- 和工坊模组 3504310575 的耐久宝石一致。
+-- 目标用标签 m_infinity_chargeable 判定：这个标签由 AddPrefabPostInitAny 在
+-- 服务端给「带 armor / finiteuses / fueled」的实体加上，标签会同步到客户端。
 -- ============================================================================
 
 local SHARD_PREFAB = "alterguardianhatshard"
 local CHARGE_COMPONENT = "m_infinity_charge"
+local CHARGEABLE_TAG = "m_infinity_chargeable"
 
 -- 已经充过的目标不再提示
 local DONE_TAGS = {
@@ -22,61 +23,6 @@ local DONE_TAGS = {
 	"m_infinity_armor",
 	"m_infinity_fueled",
 }
-
--- 目标是否带「耐久」类组件：服务端用 components，客户端用 replica
-local function HasDurability(target)
-	if target == nil then
-		return false
-	end
-
-	local comps = target.components
-	if comps ~= nil and (comps.armor ~= nil or comps.finiteuses ~= nil or comps.fueled ~= nil) then
-		return true
-	end
-
-	local replica = target.replica
-	return replica ~= nil and (replica.armor ~= nil or replica.finiteuses ~= nil or replica.fueled ~= nil)
-end
-
--- 玩家背包里有没有碎片（客户端用 replica，服务端用 components）
-local function DoerHasShard(doer)
-	local replica_inv = doer.replica ~= nil and doer.replica.inventory or nil
-	if replica_inv ~= nil and replica_inv:Has(SHARD_PREFAB, 1) then
-		return true
-	end
-
-	local inv = doer.components ~= nil and doer.components.inventory or nil
-	return inv ~= nil and inv:Has(SHARD_PREFAB, 1) or false
-end
-
--- 服务端执行时真正取出一个碎片
-local function FindShardItem(doer)
-	local inv = doer.components ~= nil and doer.components.inventory or nil
-	if inv == nil then
-		return nil
-	end
-
-	return inv:FindItem(function(item)
-		return item.prefab == SHARD_PREFAB
-	end)
-end
-
-local function CanOfferCharge(target, doer)
-	if doer == nil or doer.prefab ~= "madeleine" then
-		return false
-	end
-	if not HasDurability(target) then
-		return false
-	end
-
-	for _, tag in ipairs(DONE_TAGS) do
-		if target:HasTag(tag) then
-			return false
-		end
-	end
-
-	return DoerHasShard(doer)
-end
 
 -- ---------------------------------------------------------------------------
 -- 动作本体
@@ -90,9 +36,6 @@ local ACTION = AddAction("M_INFINITY_CHARGE", "无限充能", function(act)
 	end
 
 	local shard = act.invobject
-	if shard == nil or shard.prefab ~= SHARD_PREFAB then
-		shard = FindShardItem(act.doer)
-	end
 	if shard == nil or shard.prefab ~= SHARD_PREFAB then
 		return false
 	end
@@ -114,42 +57,42 @@ local ACTION = AddAction("M_INFINITY_CHARGE", "无限充能", function(act)
 	return comp:Charge(act.doer, shard)
 end)
 
-ACTION.distance = 3
+ACTION.distance = 2
 ACTION.mount_valid = true
--- 优先级压低：不要盖掉同一目标上原版的其它动作
-ACTION.priority = 1
+-- 和工坊模组一致：优先级高于同目标上的普通动作，确保拿着碎片点时能看到
+ACTION.priority = 10
 
 -- 动作状态：用原版的短动作，不新增状态
 AddStategraphActionHandler("wilson", ActionHandler(ACTION, "doshortaction"))
 AddStategraphActionHandler("wilson_client", ActionHandler(ACTION, "doshortaction"))
 
 -- ---------------------------------------------------------------------------
--- 路径一：右键世界里的目标（碎片放在背包里就行）
+-- 给「带耐久」的实体打标签（服务端加，标签会同步给客户端）
 -- ---------------------------------------------------------------------------
-local function OnSceneCollect(inst, doer, actions, right)
-	if CanOfferCharge(inst, doer) then
-		table.insert(actions, ACTIONS.M_INFINITY_CHARGE)
+AddPrefabPostInitAny(function(inst)
+	if not TheWorld.ismastersim then
+		return
 	end
-end
 
-AddComponentAction("SCENE", "fueled", OnSceneCollect)
-AddComponentAction("SCENE", "armor", OnSceneCollect)
-AddComponentAction("SCENE", "finiteuses", OnSceneCollect)
-
--- ---------------------------------------------------------------------------
--- 路径二：把碎片拿在鼠标上再点目标（原版 USEITEM 流程）
--- ---------------------------------------------------------------------------
-AddPrefabPostInit(SHARD_PREFAB, function(inst)
-	if inst.components.m_infinity_shard == nil then
-		inst:AddComponent("m_infinity_shard")
+	local comps = inst.components
+	if comps ~= nil and (comps.armor ~= nil or comps.finiteuses ~= nil or comps.fueled ~= nil) then
+		inst:AddTag(CHARGEABLE_TAG)
 	end
 end)
 
-AddComponentAction("USEITEM", "m_infinity_shard", function(inst, doer, target, actions, right)
+-- ---------------------------------------------------------------------------
+-- 拿着碎片点目标时出现「无限充能」
+-- 注册在 inventoryitem 上（每个物品都会有这个动作收集），用 prefab 精确过滤，
+-- 比单独造一个标记组件更稳。
+-- ---------------------------------------------------------------------------
+AddComponentAction("USEITEM", "inventoryitem", function(inst, doer, target, actions, right)
+	if inst.prefab ~= SHARD_PREFAB then
+		return
+	end
 	if doer == nil or doer.prefab ~= "madeleine" then
 		return
 	end
-	if not HasDurability(target) then
+	if target == nil or not target:IsValid() or not target:HasTag(CHARGEABLE_TAG) then
 		return
 	end
 
