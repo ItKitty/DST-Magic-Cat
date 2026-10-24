@@ -6,9 +6,21 @@ local function GetStaff(act)
 	return act.invobject or act.target
 end
 
+-- 只有手持（装备）时才算切换，背包里点它不该改状态
+local function IsStaffHeld(staff)
+	local equippable = staff.replica.equippable
+	return equippable ~= nil and equippable:IsEquipped()
+end
+
 local function DoTurnOn(act)
 	local staff = GetStaff(act)
-	if staff ~= nil and staff.components.machine ~= nil and not staff.components.machine:IsOn() then
+	if
+		staff ~= nil
+		and staff.components.machine ~= nil
+		and staff:HasTag("m_soulstaff")
+		and IsStaffHeld(staff)
+		and not staff.components.machine:IsOn()
+	then
 		staff.components.machine:TurnOn()
 		return true
 	end
@@ -17,7 +29,13 @@ end
 
 local function DoTurnOff(act)
 	local staff = GetStaff(act)
-	if staff ~= nil and staff.components.machine ~= nil and staff.components.machine:IsOn() then
+	if
+		staff ~= nil
+		and staff.components.machine ~= nil
+		and staff:HasTag("m_soulstaff")
+		and IsStaffHeld(staff)
+		and staff.components.machine:IsOn()
+	then
 		staff.components.machine:TurnOff()
 		return true
 	end
@@ -39,9 +57,13 @@ AddStategraphActionHandler("wilson", GLOBAL.ActionHandler(SOULSTAFF_OFF, "doshor
 AddStategraphActionHandler("wilson_client", GLOBAL.ActionHandler(SOULSTAFF_ON, "doshortaction"))
 AddStategraphActionHandler("wilson_client", GLOBAL.ActionHandler(SOULSTAFF_OFF, "doshortaction"))
 
--- 右键背包里 / 手上的法杖直接切换形态（不用打开任何界面）
+-- 右键手持的法杖直接切换形态（背包里不提供这个选项）
 AddComponentAction("INVENTORY", "machine", function(inst, doer, actions, right)
 	if not right or not inst:HasTag("m_soulstaff") then
+		return
+	end
+	-- 背包里右键不该出现开关，只有真正拿在手上（装备槽）才有
+	if not IsStaffHeld(inst) then
 		return
 	end
 	if inst:HasTag("turnedon") then
