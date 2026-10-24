@@ -43,16 +43,6 @@ local TAG_ON_KILL = {
 -- 核心贪婪掉落函数
 local function onkilled(inst, data)
 	local victim = data.victim
-	-- TODO 调试用：确认杀人蜂的击杀事件有没有算到玩家头上
-	if victim ~= nil and victim.prefab == "killerbee" then
-		TheNet:Announce(
-			string.format(
-				"[greed] killed 事件 attacker=%s 有lootdropper=%s",
-				tostring(data.attacker ~= nil and data.attacker.prefab or "nil"),
-				tostring(victim.components.lootdropper ~= nil)
-			)
-		)
-	end
 	if not victim or not victim.components.lootdropper then
 		return
 	end
@@ -98,13 +88,7 @@ local function onkilled(inst, data)
 		-- 根据生物类型决定掉落
 		if is_special then
 			-- 特殊生物：100%掉落指定物品
-			local loot = victim.components.lootdropper:SpawnLootPrefab(SPECIAL_LOOT[victim_prefab])
-			-- TODO 调试用：确认杀人蜂这一路有没有走到
-			if victim_prefab == "killerbee" then
-				TheNet:Announce(
-					string.format("[greed] killerbee special=%s chance=%s 生成=%s", tostring(is_special), tostring(trigger_chance), tostring(loot ~= nil))
-				)
-			end
+			victim.components.lootdropper:SpawnLootPrefab(SPECIAL_LOOT[victim_prefab])
 
 			-- 视觉反馈
 			if inst.components.talker then
