@@ -168,13 +168,34 @@ local function StopEffects(inst)
 	inst:RemoveTag("m_soulstaff_active")
 end
 
--- machine 组件只存「开/关」这个状态，特效的启停交给上面两个函数
-local function OnTurnOn(inst)
-	StartEffects(inst)
+-- 开关状态：只用一个字段存，不再借 machine 组件
+local function SetActive(inst, on)
+	on = on and true or false
+	if (inst.soulstaff_on and true or false) == on then
+		return false
+	end
+	inst.soulstaff_on = on
+	if on then
+		StartEffects(inst)
+	else
+		StopEffects(inst)
+	end
+	return true
 end
 
-local function OnTurnOff(inst)
-	StopEffects(inst)
+-- 存档：只记一个开/关标记
+local function onsave(inst, data)
+	if inst.soulstaff_on then
+		data.soulstaff_on = true
+	end
+end
+
+local function onload(inst, data)
+	if data ~= nil and data.soulstaff_on then
+		inst.soulstaff_on = true
+		-- 读档时多半还没装备，StartEffects 会自己判断；装备时 onequip 会再补一次
+		StartEffects(inst)
+	end
 end
 
 -- 对话管理
@@ -202,7 +223,7 @@ local function onequip(inst, owner)
 	owner.AnimState:Hide("ARM_normal")
 
 	-- 已经开启「吸血形态」时，一上手就恢复吸血与拖影
-	if inst.components.machine:IsOn() then
+	if inst.soulstaff_on then
 		StartEffects(inst)
 	end
 
@@ -372,10 +393,11 @@ local function fn()
 
 	inst:AddComponent("stafftraits")
 
-	-- 添加 machine 组件
-	inst:AddComponent("machine")
-	inst.components.machine.turnonfn = OnTurnOn
-	inst.components.machine.turnofffn = OnTurnOff
+	-- 开关状态与存档：吸血形态只由轮盘控制，状态记在 soulstaff_on 上
+	inst.soulstaff_on = false
+	inst.SetActive = SetActive
+	inst.OnSave = onsave
+	inst.OnLoad = onload
 
 	-- 初始化对话冷却系统
 	inst.talkCooldown = {

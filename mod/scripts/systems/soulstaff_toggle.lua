@@ -17,17 +17,13 @@ AddModRPCHandler(modname, "SoulStaffToggle", function(player, inst, on)
 		return
 	end
 
-	local machine = inst.components.machine
-	if machine == nil then
+	if inst.SetActive == nil then
 		return
 	end
 
-	if on and not machine:IsOn() then
-		machine:TurnOn()
-	elseif not on and machine:IsOn() then
-		machine:TurnOff()
-	else
-		return -- 状态没变，不用再喊一句
+	-- SetActive 会自己处理「状态没变」的情况
+	if not inst.SetActive(inst, on) then
+		return
 	end
 
 	-- 放在背包里切换是没有特效的，用一句话给个反馈
