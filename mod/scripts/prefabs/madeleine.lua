@@ -19,7 +19,7 @@ local GREED_CONFIG = {
 	NORMAL_CHANCE = 0.3, -- 普通生物30%触发几率
 	SPECIAL_CHANCE = 1.0, -- 特殊生物100%触发几率
 	HUNGER_COST = 1, -- 每次消耗3点饥饿
-	TAG = { "INLIMBO", "wall" }, -- 不触发生物标签
+	TAG = { "wall" }, -- 不触发贪婪的标签（原来还有 INLIMBO，会把同 tick 连杀的后几只误跳过）
 }
 
 -- 特殊生物固定掉落表（100%触发）
@@ -46,6 +46,20 @@ local TAG_ON_KILL = {
 -- 核心贪婪掉落函数
 local function onkilled(inst, data)
 	local victim = data.victim
+
+	-- TODO 调试用：放在最前面，任何提前 return 的情况也能看到
+	greed_debug_count = greed_debug_count + 1
+	TheNet:Announce(
+		string.format(
+			"[greed] #%d victim=%s attacker=%s loot=%s inlimbo=%s",
+			greed_debug_count,
+			tostring(victim ~= nil and victim.prefab or "nil"),
+			tostring(data.attacker ~= nil and data.attacker.prefab or "nil"),
+			tostring(victim ~= nil and victim.components.lootdropper ~= nil),
+			tostring(victim ~= nil and victim:HasTag("INLIMBO"))
+		)
+	)
+
 	if not victim or not victim.components.lootdropper then
 		return
 	end
@@ -73,26 +87,14 @@ local function onkilled(inst, data)
 		fx.Transform:SetRotation(inst.Transform:GetRotation())
 	end
 
-	-- 【贪婪掉落逻辑】检查是否应该跳过（带有epic等标签的生物）
+	-- 【贪婪掉落逻辑】检查是否应该跳过（墙体这类非生物）
+	-- 注意：以前这里还有 INLIMBO，同一 tick 连续击杀时后几只可能已经打上 INLIMBO 被误杀
 	if victim:HasAnyTag(GREED_CONFIG.TAG) then
 		return
 	end
 
 	local is_special = SPECIAL_LOOT[victim_prefab] ~= nil
 	local trigger_chance = is_special and GREED_CONFIG.SPECIAL_CHANCE or GREED_CONFIG.NORMAL_CHANCE
-
-	-- TODO 调试用：所有被击杀的生物都报一下，看清到底死了哪些
-	-- 带自增编号，防止多条相同文案被 Announce 去重
-	greed_debug_count = greed_debug_count + 1
-	TheNet:Announce(
-		string.format(
-			"[greed] #%d victim=%s special=%s attacker=%s",
-			greed_debug_count,
-			tostring(victim_prefab),
-			tostring(is_special),
-			tostring(data.attacker ~= nil and data.attacker.prefab or "nil")
-		)
-	)
 
 	-- 检查触发几率
 	if math.random() <= trigger_chance then
