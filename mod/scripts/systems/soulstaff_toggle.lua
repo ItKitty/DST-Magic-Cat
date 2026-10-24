@@ -1,5 +1,5 @@
 -- 灵魂法杖：切换「吸血形态」
--- 客户端点轮盘只发 RPC，真正的状态改动与特效启停都在服务端完成。
+-- 客户端点轮盘只发 RPC，真正的状态改动与特效启停都在服务端完成（m_soulstaff:SetActive）。
 
 AddModRPCHandler(modname, "SoulStaffToggle", function(player, inst, on)
 	if player == nil or not player:IsValid() or player:HasTag("playerghost") then
@@ -32,6 +32,42 @@ AddModRPCHandler(modname, "SoulStaffToggle", function(player, inst, on)
 	end
 end)
 
--- prefab 文件跑在全局环境里，看不到 modname（会触发 strict.lua 报错），
--- 所以在这里把 RPC 表挂到 GLOBAL 上，供 m_soulstaff.lua 使用。
-GLOBAL.M_SOULSTAFF_TOGGLE_RPC = MOD_RPC[modname]["SoulStaffToggle"]
+-- 取 RPC 表必须在 AddModRPCHandler 之后
+local TOGGLE_RPC = MOD_RPC[modname]["SoulStaffToggle"]
+
+local ICON_ATLAS = "images/inventoryimages/soulstaff.xml"
+local ICON_IMAGE = "soulstaff.tex"
+local ICON_SCALE = 0.6
+local ICON_RADIUS = 50
+
+local SOULSTAFF_SPELLS = {
+	{
+		label = "开启吸血形态",
+		execute = function(inst)
+			SendModRPCToServer(TOGGLE_RPC, inst, true)
+		end,
+		atlas = ICON_ATLAS,
+		normal = ICON_IMAGE,
+		widget_scale = ICON_SCALE,
+		hit_radius = ICON_RADIUS,
+	},
+	{
+		label = "关闭吸血形态",
+		execute = function(inst)
+			SendModRPCToServer(TOGGLE_RPC, inst, false)
+		end,
+		atlas = ICON_ATLAS,
+		normal = ICON_IMAGE,
+		widget_scale = ICON_SCALE,
+		hit_radius = ICON_RADIUS,
+	},
+}
+
+-- 轮盘条目在这里塞进 prefab：prefab 文件跑在全局环境，既没有 modname 也没有 GLOBAL，
+-- 直接把发 RPC 的闭包写在 prefab 里会触发 strict.lua 报错。
+AddPrefabPostInit("m_soulstaff", function(inst)
+	local spellbook = inst.components.spellbook
+	if spellbook ~= nil then
+		spellbook:SetItems(SOULSTAFF_SPELLS)
+	end
+end)
