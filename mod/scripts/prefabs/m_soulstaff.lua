@@ -161,28 +161,61 @@ local function RemoveTorchLight(inst)
 	end
 end
 
--- 只有「手持 + 吸血形态关闭」时才挂这个驱散源
+local function SpawnRepelSource(inst, parent)
+	local light = SpawnPrefab("queen_torchlight")
+	if light == nil then
+		return nil
+	end
+	light.entity:SetParent(parent)
+	-- 关掉照明
+	if light.Light ~= nil then
+		light.Light:Enable(false)
+	end
+	-- 关掉火把的循环音效
+	if light.SoundEmitter ~= nil then
+		light.SoundEmitter:KillSound("loop")
+	end
+	return light
+end
+
+-- 手持、或者掉在地上，都挂驱散源；放在背包/容器里不生效（和原版火把一致）
 local function UpdateTorchLight(inst)
-	local owner = inst.components.inventoryitem and inst.components.inventoryitem:GetGrandOwner()
-	if owner == nil or not IsHeld(inst) or inst.soulstaff_on then
+	if inst.soulstaff_on then
 		RemoveTorchLight(inst)
 		return
 	end
-	if inst._torchlight == nil then
-		local light = SpawnPrefab("queen_torchlight")
-		if light ~= nil then
-			light.entity:SetParent(owner.entity)
-			-- 关掉照明
-			if light.Light ~= nil then
-				light.Light:Enable(false)
-			end
-			-- 关掉火把的循环音效
-			if light.SoundEmitter ~= nil then
-				light.SoundEmitter:KillSound("loop")
-			end
-			inst._torchlight = light
-		end
+
+	local inventoryitem = inst.components.inventoryitem
+	local held = IsHeld(inst)
+	local owner = held and inventoryitem and inventoryitem:GetGrandOwner() or nil
+
+	local parent
+	if owner ~= nil then
+		parent = owner.entity
+	elseif inventoryitem ~= nil and inventoryitem.owner == nil and not inst:IsInLimbo() then
+		-- 没有主人 = 在地上
+		parent = inst.entity
 	end
+
+	if parent == nil then
+		RemoveTorchLight(inst)
+		return
+	end
+
+	-- 已经挂在正确的目标上就不动
+	if inst._torchlight ~= nil and inst._torchlight:IsValid() then
+		if inst._torchlight.entity:GetParent() == parent then
+			return
+		end
+		RemoveTorchLight(inst)
+	end
+
+	inst._torchlight = SpawnRepelSource(inst, parent)
+end
+
+-- 物品进出背包/地面时，重新评估驱散源挂在哪
+local function OnInventoryStateChanged(inst)
+	inst:DoTaskInTime(0, UpdateTorchLight)
 end
 
 -- 兜底：0.5 秒查一次，防止「丢地上 / 被强制脱手」时拖影和光效残留
@@ -196,7 +229,8 @@ local function StartEquipWatch(inst)
 		end
 		StopTrail(inst)
 		StopEffects(inst)
-		RemoveTorchLight(inst)
+		-- 如果正好被丢在地上，这里会把它挂到物品身上继续驱散
+		UpdateTorchLight(inst)
 		if inst._equipwatch ~= nil then
 			inst._equipwatch:Cancel()
 			inst._equipwatch = nil
@@ -513,6 +547,10 @@ local function fn()
 	inst.RefreshCorruptFX = RefreshCorruptFX
 	inst.OnSave = onsave
 	inst.OnLoad = onload
+
+	-- 掉地上 / 被捡回背包时，重新决定驱散源挂在哪
+	inst:ListenForEvent("ondropped", OnInventoryStateChanged)
+	inst:ListenForEvent("onputininventory", OnInventoryStateChanged)
 
 	-- 初始化对话冷却系统
 	inst.talkCooldown = {
