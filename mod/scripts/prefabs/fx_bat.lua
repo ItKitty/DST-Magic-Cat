@@ -71,23 +71,27 @@ local function DoAoEAttack(inst)
 	local ents = TheSim:FindEntities(x, y, z, 3, TARGET_TAGS, TARGET_NOT_TAGS)
 
 	-- TODO 调试用：定位「特效出现但没伤害」，定位完删掉
+	-- 用 Announce 是因为服务端 print 不进 client_log，直接打在屏幕上最直观
 	if DEBUG_BAT and not inst._dbgprinted then
 		inst._dbgprinted = true
-		print(
-			"[m_batsfx] tick ents=", #ents,
-			"target=", inst._target ~= nil and inst._target.prefab or "nil",
-			"leader=", leader ~= nil and leader.prefab or "nil"
+		TheNet:Announce(
+			string.format(
+				"[bat] ents=%d target=%s",
+				#ents,
+				tostring(inst._target ~= nil and inst._target.prefab or "nil")
+			)
 		)
 		local all = TheSim:FindEntities(x, y, z, 3, nil, nil)
-		print("[m_batsfx] 半径3内全部实体=", #all)
-		for i = 1, math.min(#all, 10) do
+		for i = 1, math.min(#all, 6) do
 			local v = all[i]
-			print(
-				"   ", v.prefab,
-				"_health=", tostring(v:HasTag("_health")),
-				"_combat=", tostring(v:HasTag("_combat")),
-				"hp=", tostring(v.components.health ~= nil and v.components.health.currenthealth or "-"),
-				"canbe=", tostring(v.components.combat ~= nil and v.components.combat:CanBeAttacked() or "-")
+			TheNet:Announce(
+				string.format(
+					"  %s _h=%s _c=%s hp=%s",
+					v.prefab,
+					tostring(v:HasTag("_health")),
+					tostring(v:HasTag("_combat")),
+					tostring(v.components.health ~= nil and v.components.health.currenthealth or "-")
+				)
 			)
 		end
 	end
