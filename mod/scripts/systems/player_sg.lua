@@ -254,3 +254,41 @@ AddStategraphPostInit("wilson", function(sg)
 	end
 end)
 ---------------------   女武神前摇    --------------------------------
+
+------------------------- 旺达传送门落地动作 --------------------------------
+-- 原版 pocketwatch_portal_land 会检查 pocketwatchcaster 标签：
+--   没有标签 -> 跳 pocketwatch_portal_fallout（翻滚落地，jumpportal2_out）
+--   有标签   -> 播 jumpportal_out，和旺达一样
+-- 玛德琳平时不带这个标签（带了会解锁旺达的怀表武器），所以进这个状态时临时戴上，
+-- 离开状态立刻摘掉，只为了让动画走 land 分支；台词延迟也会随之变成 1.25 秒。
+local function WrapPortalLandState(sg)
+	local state = sg.states ~= nil and sg.states["pocketwatch_portal_land"] or nil
+	if state == nil then
+		return
+	end
+
+	local old_onenter = state.onenter
+	state.onenter = function(inst, ...)
+		if inst.prefab == "madeleine" and not inst:HasTag("pocketwatchcaster") then
+			inst:AddTag("pocketwatchcaster")
+			inst._m_temp_pocketwatchcaster = true
+		end
+		if old_onenter ~= nil then
+			return old_onenter(inst, ...)
+		end
+	end
+
+	local old_onexit = state.onexit
+	state.onexit = function(inst, ...)
+		if inst._m_temp_pocketwatchcaster then
+			inst._m_temp_pocketwatchcaster = nil
+			inst:RemoveTag("pocketwatchcaster")
+		end
+		if old_onexit ~= nil then
+			return old_onexit(inst, ...)
+		end
+	end
+end
+
+AddStategraphPostInit("wilson", WrapPortalLandState)
+AddStategraphPostInit("wilson_client", WrapPortalLandState)
