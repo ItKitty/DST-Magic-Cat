@@ -95,6 +95,9 @@ PrefabFiles = {
 	"fx_soulstaff_corrupt",
 	"fx_catpaw_lunar",
 
+	-- 灵魂法杖召唤的矮星（不点火版本）
+	"m_stafflight",
+
 	-- 角色相关
 	"madeleine",
 	"madeleine_none",

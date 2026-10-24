@@ -136,24 +136,14 @@ end
 
 -- StaffSkill
 -- 唤光
--- 只有「由 m_soulstaff 召唤」的矮星不点火（原版矮星的 propagator 会慢慢烤着
--- 周围的建筑和植物）；星杖等其它来源的矮星保持原版行为。
+-- 火形态用模组自己的 m_stafflight（不点燃周围建筑/植物，照明取暖照旧），
+-- 冷形态仍用原版的 staffcoldlight。
 local function SpawnLight(inst, light, pos)
+	light = light == "stafflight" and "m_stafflight" or light
+
 	local _light = SpawnPrefab(light)
-	if _light == nil then
-		return
-	end
-	_light.Transform:SetPosition(pos:Get())
-
-	if light == "stafflight" then
-		_light:AddTag("m_soulstaff_star")
-
-		local propagator = _light.components.propagator
-		if propagator ~= nil then
-			propagator.heatoutput = 0
-			propagator:StopSpreading(true)
-			propagator:StopUpdating()
-		end
+	if _light ~= nil then
+		_light.Transform:SetPosition(pos:Get())
 	end
 end
 -- 控温
