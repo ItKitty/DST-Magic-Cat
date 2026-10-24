@@ -5,9 +5,7 @@ local assets = {
 	Asset("ANIM", "anim/swap_soulstaff.zip"),
 }
 
-local prefabs = {
-	"king_cane_fx", -- 腐化光效（借用原版国王权杖的 FX）
-}
+local prefabs = {}
 
 -- 轮盘的半径/图标；具体条目（以及发 RPC 的闭包）放在 systems/soulstaff_toggle.lua，
 -- 因为 prefab 文件跑在全局环境里，既没有 modname 也没有 GLOBAL（strict.lua 会报错）。
@@ -183,46 +181,11 @@ local function StaffTalk(inst, talk_type)
 	)
 end
 
--- 国王权杖的腐化光效：搬到灵魂法杖上，固定用最高档（3 档）
--- 原版是跟着宝石腐蚀度动态调等级的，这里直接拉满
-local KING_CANE_FX_LEVEL = 3
-
-local function RemoveKingCaneFX(inst)
-	if inst._kingfx ~= nil then
-		if inst._kingfx:IsValid() then
-			inst._kingfx:Remove()
-		end
-		inst._kingfx = nil
-	end
-end
-
-local function SpawnKingCaneFX(inst, owner)
-	RemoveKingCaneFX(inst)
-
-	local fx = SpawnPrefab("king_cane_fx")
-	if fx == nil then
-		return
-	end
-
-	fx.entity:SetParent(owner.entity)
-	fx.Follower:FollowSymbol(owner.GUID, "swap_object", nil, nil, nil, true)
-	fx:SetFXLevel(KING_CANE_FX_LEVEL)
-	-- 高亮描边跟着当前持有者走，和原版一致
-	if fx.components.highlightchild ~= nil then
-		fx.components.highlightchild:SetOwner(owner)
-	end
-
-	inst._kingfx = fx
-end
-
 -- 装备/卸下
 local function onequip(inst, owner)
 	owner.AnimState:OverrideSymbol("swap_object", "swap_soulstaff", "swap_soulstaff")
 	owner.AnimState:Show("ARM_carry")
 	owner.AnimState:Hide("ARM_normal")
-
-	-- 腐化光效（最高档）
-	SpawnKingCaneFX(inst, owner)
 
 	-- 已经开启「吸血形态」时，一上手就恢复吸血与拖影
 	if inst.soulstaff_on then
@@ -242,8 +205,6 @@ end
 local function onunequip(inst, owner)
 	owner.AnimState:Hide("ARM_carry")
 	owner.AnimState:Show("ARM_normal")
-
-	RemoveKingCaneFX(inst)
 
 	-- 只停特效，开关状态保留；下次手持会接着开
 	StopEffects(inst)
@@ -420,4 +381,4 @@ local function fn()
 	return inst
 end
 
-return Prefab("m_soulstaff", fn, assets, prefabs)
+return Prefab("m_soulstaff", fn, assets)
