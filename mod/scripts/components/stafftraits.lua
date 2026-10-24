@@ -136,45 +136,11 @@ end
 
 -- StaffSkill
 -- 唤光
--- 矮星靠原版 propagator 慢烤，实际很难看到「点着」的效果；
--- 这里额外每秒把范围内的可燃物点着，让它表现得像真正的火源。
-local STAR_IGNITE_RADIUS = 3.5 -- 点燃半径（原版 propagator 的 propagaterange 是 3）
-local STAR_IGNITE_PERIOD = 1 -- 每隔几秒点一次
-local STAR_IGNITE_CANT_TAGS = { "INLIMBO", "player", "fireimmune", "burnt", "NOCLICK" }
-
 local function SpawnLight(inst, light, pos)
 	local _light = SpawnPrefab(light)
-	if _light == nil then
-		return
+	if _light ~= nil then
+		_light.Transform:SetPosition(pos:Get())
 	end
-	_light.Transform:SetPosition(pos:Get())
-
-	-- 只处理热星（矮星），冷星不点火
-	if light ~= "stafflight" then
-		return
-	end
-
-	local ignite_task = _light:DoPeriodicTask(STAR_IGNITE_PERIOD, function(star)
-		if star == nil or not star:IsValid() then
-			return
-		end
-
-		local x, y, z = star.Transform:GetWorldPosition()
-		local ents = TheSim:FindEntities(x, y, z, STAR_IGNITE_RADIUS, { "burnable" }, STAR_IGNITE_CANT_TAGS)
-		for _, v in ipairs(ents) do
-			if v:IsValid() and v.components.burnable ~= nil and not v.components.burnable:IsBurning() then
-				-- 第一个参数 immediate=true：立刻显示火焰，不用等冒烟阶段
-				v.components.burnable:Ignite(true, nil, nil)
-			end
-		end
-	end)
-
-	_light:ListenForEvent("onremove", function()
-		if ignite_task ~= nil then
-			ignite_task:Cancel()
-			ignite_task = nil
-		end
-	end)
 end
 -- 控温
 local function Temperture(inst, caster)
