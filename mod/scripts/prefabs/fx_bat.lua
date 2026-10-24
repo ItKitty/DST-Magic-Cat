@@ -41,6 +41,11 @@ local function GetRealAttacker(inst)
 end
 
 local function DoAoEAttack(inst)
+	-- 只打一次：命中后不再重复结算
+	if inst._didhit then
+		return
+	end
+
 	local leader = inst.components.follower.leader
 
 	-- 如果当前有目标，则朝目标移动
@@ -59,6 +64,11 @@ local function DoAoEAttack(inst)
 
 	local x, y, z = inst.Transform:GetWorldPosition()
 	local ents = TheSim:FindEntities(x, y, z, 3, TARGET_TAGS, TARGET_NOT_TAGS)
+
+	-- 还没飞到目标身边，等下一次 tick 再判定
+	if #ents == 0 then
+		return
+	end
 
 	-- 获取蝙蝠真正的主人（顺着宠物链找到玩家）作为攻击者，
 	-- 伤害的归因就是第一个参数：传玩家，击杀才会算在玩家身上
@@ -97,6 +107,9 @@ local function DoAoEAttack(inst)
 			v:AddDebuff("abigail_vex_debuff", "abigail_vex_shadow_debuff", nil, nil, nil, real_attacker)
 		end
 	end
+
+	-- 这一轮的群体伤害打完就标记，后续 tick 不再结算
+	inst._didhit = true
 
 	local scale = 1
 	local oldscale = inst.cur_scale or 1
@@ -185,8 +198,10 @@ local function bats()
 	inst.DoAoEAttack = DoAoEAttack
 	inst.SetDuration = SetDuration
 
-	inst:SetDuration(3)
-	inst._aoetask = inst:DoPeriodicTask(0.5, DoAoEAttack)
+	-- 只存在 1 秒，期间群体伤害只结算一次（见 DoAoEAttack 里的 _didhit）
+	inst:SetDuration(1)
+	-- 每 0.1 秒判定一次是否飞到了目标旁边；命中后 _didhit 会阻止重复结算
+	inst._aoetask = inst:DoPeriodicTask(0.1, DoAoEAttack)
 	-- inst:DoTaskInTime(9, inst.Remove)
 
 	return inst
