@@ -15,8 +15,13 @@ local ICON_IMAGE = "soulstaff.tex"
 local ICON_SCALE = 0.6
 local ICON_RADIUS = 50
 
+-- 注意：prefab 文件跑在全局环境里，没有 modname（strict.lua 会直接报错），
+-- 所以 RPC 表由 systems/soulstaff_toggle.lua 挂在 GLOBAL.M_SOULSTAFF_TOGGLE_RPC 上。
 local function ToggleRequest(inst, on)
-	SendModRPCToServer(MOD_RPC[modname]["SoulStaffToggle"], inst, on)
+	local rpc = GLOBAL.M_SOULSTAFF_TOGGLE_RPC
+	if rpc ~= nil then
+		SendModRPCToServer(rpc, inst, on)
+	end
 end
 
 local SOULSTAFF_SPELLS = {
