@@ -97,8 +97,6 @@ PrefabFiles = {
 
 	-- 灵魂法杖召唤的矮星（不点火版本）
 	"m_stafflight",
-	-- 无限充能火堆的「伪矮星」光源
-	"m_firepit_light",
 
 	-- 角色相关
 	"madeleine",

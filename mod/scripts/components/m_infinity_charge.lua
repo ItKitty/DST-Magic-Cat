@@ -35,33 +35,28 @@ end
 
 -- ---------------------------------------------------------------------------
 -- 无限充能的火堆：夜里当「伪矮星」用
---   · m_firepit_light 带 lightsource / daylight 标签，农场作物会当成光源继续长
---   · 同时提供暖色照明
+-- 火堆本身的 Light 其实挂在火焰特效上（burnable 的 firefx -> firefx_light），
+-- 所以直接给那盏已有的灯打上 lightsource / daylight 标签即可，
+-- 农场作物会把它当成光源继续生长（prefabs/farm_plants.lua 的 CANGROW_TAGS）。
 -- ---------------------------------------------------------------------------
-local function _EnsureDaylightLight(inst)
-	local light = inst._m_infinity_light
-	if light ~= nil and light:IsValid() then
+local function _TagFireLight(inst)
+	local burnable = inst.components.burnable
+	if burnable == nil or burnable.fxchildren == nil then
 		return
 	end
 
-	light = SpawnPrefab("m_firepit_light")
-	if light == nil then
-		return
-	end
+	for _, fx in ipairs(burnable.fxchildren) do
+		local firefx = fx.components ~= nil and fx.components.firefx or nil
+		local light = firefx ~= nil and firefx.light or nil
 
-	light.follow_target = inst
-	light.Transform:SetPosition(inst.Transform:GetWorldPosition())
-	inst._m_infinity_light = light
-
-	if not inst._m_infinity_light_hooked then
-		inst._m_infinity_light_hooked = true
-		inst:ListenForEvent("onremove", function(inst2)
-			local l = inst2._m_infinity_light
-			if l ~= nil and l:IsValid() then
-				l:Remove()
+		if light ~= nil and light:IsValid() then
+			if not light:HasTag("lightsource") then
+				light:AddTag("lightsource")
 			end
-			inst2._m_infinity_light = nil
-		end)
+			if not light:HasTag("daylight") then
+				light:AddTag("daylight")
+			end
+		end
 	end
 end
 
@@ -75,8 +70,6 @@ local function _RefuelAndIgnite(inst, doer)
 	if inst:HasTag("burnt") then
 		return
 	end
-
-	_EnsureDaylightLight(inst)
 
 	local fueled = inst.components.fueled
 	if fueled ~= nil then
@@ -92,6 +85,9 @@ local function _RefuelAndIgnite(inst, doer)
 	if burnable ~= nil and not burnable:IsBurning() then
 		burnable:Ignite(nil, nil, doer)
 	end
+
+	-- 火焰特效（firefx）在点燃后才存在，所以放到最后给它的灯打标签
+	_TagFireLight(inst)
 end
 
 -- ---------------------------------------------------------------------------
