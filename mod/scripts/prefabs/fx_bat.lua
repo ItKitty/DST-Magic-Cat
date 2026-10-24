@@ -70,6 +70,12 @@ local function DoAoEAttack(inst)
 	local x, y, z = inst.Transform:GetWorldPosition()
 	local ents = TheSim:FindEntities(x, y, z, 3, TARGET_TAGS, TARGET_NOT_TAGS)
 
+	-- 兜底：目标就在旁边却一条都没筛出来时，直接把当前目标当作唯一目标。
+	-- 目标来自玩家攻击事件，本身已经是合法的敌人，这里不用担心误伤。
+	if #ents == 0 and inst._target ~= nil and inst._target:IsValid() then
+		ents = { inst._target }
+	end
+
 	-- TODO 调试用：定位「特效出现但没伤害」，定位完删掉
 	-- 用 Announce 是因为服务端 print 不进 client_log，直接打在屏幕上最直观
 	if DEBUG_BAT and not inst._dbgprinted then
@@ -93,6 +99,19 @@ local function DoAoEAttack(inst)
 					tostring(v.components.health ~= nil and v.components.health.currenthealth or "-")
 				)
 			)
+		end
+
+		-- 二分：只带 MUST 标签、不带排除标签，看能筛出几个
+		local must_only = TheSim:FindEntities(x, y, z, 3, TARGET_TAGS, nil)
+		TheNet:Announce(string.format("[bat] must_only=%d", #must_only))
+		-- 目标身上到底命中了哪条排除规则
+		local target = inst._target
+		if target ~= nil and target:IsValid() then
+			for _, t in ipairs(TARGET_NOT_TAGS) do
+				if target:HasTag(t) then
+					TheNet:Announce("  目标命中排除标签: " .. t)
+				end
+			end
 		end
 	end
 
