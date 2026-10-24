@@ -1,4 +1,5 @@
--- mechanics.lua - 游戏机制修改
+-- vanilla_hooks.lua - 所有对原版代码的挂接修改都放这里
+-- （AddPrefabPostInit / AddComponentPostInit / AddClassPostConstruct 等）
 
 ---stafflight
 AddPrefabPostInit("stafflight", function(inst)
@@ -323,4 +324,21 @@ AddClassPostConstruct("widgets/hoverer", function(self)
 end)
 
 -----------------------------  修改护符hover名字   ----------------------------------------
+
+------------------------- 启迪之冠的 gestalt 击杀归属 -----------------------------
+-- 投射物攻击时 attacker 是它自己，所以 "killed" 事件推在 gestalt 上，玩家收不到。
+-- 这里转发一份给主人，让玩家身上的击杀监听（贪婪掉落等）也能触发。
+AddPrefabPostInit("alterguardianhat_projectile", function(inst)
+	if not TheWorld.ismastersim then
+		return
+	end
+
+	inst:ListenForEvent("killed", function(proxy, data)
+		local follower = proxy.components.follower
+		local leader = follower ~= nil and follower:GetLeader() or nil
+		if leader ~= nil and leader:HasTag("player") then
+			leader:PushEvent("killed", data)
+		end
+	end)
+end)
 

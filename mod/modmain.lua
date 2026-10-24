@@ -40,5 +40,5 @@ modimport("scripts/systems/extinguish_action.lua") -- 熄灭动作
 modimport("scripts/systems/m_skill_winona.lua") -- 薇诺娜技能树兼容
 modimport("scripts/systems/maogugu_text_trail_fx.lua") -- 文本轨迹特效
 
--- 放在最后：对原版机制的 hook
-modimport("scripts/systems/mechanics.lua") -- 游戏机制 HOOK 修改
+-- 放在最后：所有对原版代码的挂接修改（AddPrefabPostInit / AddComponentPostInit / AddClassPostConstruct）
+modimport("scripts/systems/vanilla_hooks.lua")
