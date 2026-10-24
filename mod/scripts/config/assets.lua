@@ -92,6 +92,7 @@ PrefabFiles = {
 	"fx_haste",
 	"fx_restriction",
 	"fx_musiclight",
+	"fx_soulstaff_corrupt",
 
 	-- 角色相关
 	"madeleine",

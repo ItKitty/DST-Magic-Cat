@@ -5,7 +5,9 @@ local assets = {
 	Asset("ANIM", "anim/swap_soulstaff.zip"),
 }
 
-local prefabs = {}
+local prefabs = {
+	"fx_soulstaff_corrupt", -- 腐化光效
+}
 
 -- 轮盘的半径/图标；具体条目（以及发 RPC 的闭包）放在 systems/soulstaff_toggle.lua，
 -- 因为 prefab 文件跑在全局环境里，既没有 modname 也没有 GLOBAL（strict.lua 会报错）。
@@ -181,11 +183,51 @@ local function StaffTalk(inst, talk_type)
 	)
 end
 
+-- 腐化光效（king_cane 的 corrupt_level3，单独做的 FX prefab，不带武器贴图）
+-- 偏移量单位是 1/100 世界单位；y 正数往下、负数往上
+local CORRUPT_FX_SCALE = 1
+local CORRUPT_FX_OFFSET_X = 0
+local CORRUPT_FX_OFFSET_Y = 0
+local CORRUPT_FX_OFFSET_Z = 0
+
+local function RemoveCorruptFX(inst)
+	if inst._corruptfx ~= nil then
+		if inst._corruptfx:IsValid() then
+			inst._corruptfx:Remove()
+		end
+		inst._corruptfx = nil
+	end
+end
+
+local function SpawnCorruptFX(inst, owner)
+	RemoveCorruptFX(inst)
+
+	local fx = SpawnPrefab("fx_soulstaff_corrupt")
+	if fx == nil then
+		return
+	end
+
+	fx.entity:SetParent(owner.entity)
+	fx.Follower:FollowSymbol(
+		owner.GUID,
+		"swap_object",
+		CORRUPT_FX_OFFSET_X,
+		CORRUPT_FX_OFFSET_Y,
+		CORRUPT_FX_OFFSET_Z
+	)
+	fx.Transform:SetScale(CORRUPT_FX_SCALE, CORRUPT_FX_SCALE, CORRUPT_FX_SCALE)
+
+	inst._corruptfx = fx
+end
+
 -- 装备/卸下
 local function onequip(inst, owner)
 	owner.AnimState:OverrideSymbol("swap_object", "swap_soulstaff", "swap_soulstaff")
 	owner.AnimState:Show("ARM_carry")
 	owner.AnimState:Hide("ARM_normal")
+
+	-- 腐化光效
+	SpawnCorruptFX(inst, owner)
 
 	-- 已经开启「吸血形态」时，一上手就恢复吸血与拖影
 	if inst.soulstaff_on then
@@ -205,6 +247,8 @@ end
 local function onunequip(inst, owner)
 	owner.AnimState:Hide("ARM_carry")
 	owner.AnimState:Show("ARM_normal")
+
+	RemoveCorruptFX(inst)
 
 	-- 只停特效，开关状态保留；下次手持会接着开
 	StopEffects(inst)
