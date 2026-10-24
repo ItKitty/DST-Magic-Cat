@@ -315,6 +315,11 @@ local master_postinit = function(inst)
 
 	inst:AddTag("madeleine")
 
+	-- 旺达的怀表体系：只有带这个标签的角色才能施放怀表（传送门 / 第二次机会 / 怀表武器），
+	-- 也是传送落地动画的分支条件——没有它就会走 pocketwatch_portal_fallout（翻滚），
+	-- 有了才和旺达一样走 pocketwatch_portal_land（jumpportal_out）。
+	inst:AddTag("pocketwatchcaster")
+
 	-- 添加薇克巴顿技能
 	AddBookmaker(inst)
 	-- 帽子戏法
