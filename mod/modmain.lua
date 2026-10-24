@@ -29,6 +29,7 @@ modimport("scripts/systems/pet_events.lua") -- 宠物事件
 modimport("scripts/systems/shadowtool_states.lua") -- 暗影工具状态管理
 modimport("scripts/systems/shadowfx.lua") -- 暗影粒子效果与工具函数
 modimport("scripts/systems/hotkeys.lua") -- 技能快捷键与 RPC
+modimport("scripts/systems/soulstaff_toggle.lua") -- 灵魂法杖：吸血形态开关的 RPC
 modimport("scripts/systems/spatialjump_action.lua") -- 空间跳跃动作
 modimport("scripts/systems/amulet_action.lua") -- 护符升级动作
 modimport("scripts/systems/player_sg.lua") -- 玩家状态机动作

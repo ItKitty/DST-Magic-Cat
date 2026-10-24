@@ -7,6 +7,41 @@ local assets = {
 
 local prefabs = {}
 
+-- 形态轮盘：和 m_shadow_tool 一样，手持时右键物品打开，用来开关「吸血形态」
+local SPELLBOOK_RADIUS = 100
+local SPELLBOOK_FOCUS_RADIUS = SPELLBOOK_RADIUS + 2
+local ICON_ATLAS = "images/inventoryimages/soulstaff.xml"
+local ICON_IMAGE = "soulstaff.tex"
+local ICON_SCALE = 0.6
+local ICON_RADIUS = 50
+
+local function ToggleRequest(inst, on)
+	SendModRPCToServer(MOD_RPC[modname]["SoulStaffToggle"], inst, on)
+end
+
+local SOULSTAFF_SPELLS = {
+	{
+		label = "开启吸血形态",
+		execute = function(inst)
+			ToggleRequest(inst, true)
+		end,
+		atlas = ICON_ATLAS,
+		normal = ICON_IMAGE,
+		widget_scale = ICON_SCALE,
+		hit_radius = ICON_RADIUS,
+	},
+	{
+		label = "关闭吸血形态",
+		execute = function(inst)
+			ToggleRequest(inst, false)
+		end,
+		atlas = ICON_ATLAS,
+		normal = ICON_IMAGE,
+		widget_scale = ICON_SCALE,
+		hit_radius = ICON_RADIUS,
+	},
+}
+
 -- 吸血闪光特效
 -- 改进后的 sparkle 函数
 local function sparkle(inst)
@@ -59,25 +94,7 @@ local function sparkle(inst)
 	end
 end
 
--- 修改 OnTurnOn
-local function OnTurnOn(inst)
-	-- 检查是否被装备（手持）
-	local is_equipped = inst.components.equippable and inst.components.equippable:IsEquipped()
-
-	if is_equipped and inst.starvetask == nil then
-		inst.starvetask = inst:DoPeriodicTask(0.5, function()
-			sparkle(inst)
-		end)
-	end
-end
-
-local function OnTurnOff(inst)
-	if inst.starvetask ~= nil then
-		inst.starvetask:Cancel()
-		inst.starvetask = nil
-	end
-end
-
+-- 暗影拖影：只在「吸血形态」开启时出现
 local function staff_do_trail(inst)
 	local owner = inst.components.inventoryitem:GetGrandOwner() or inst
 	if not owner.entity:IsVisible() then
@@ -111,6 +128,50 @@ local function staff_do_trail(inst)
 	end
 end
 
+local function IsHeld(inst)
+	return inst.components.equippable ~= nil and inst.components.equippable:IsEquipped()
+end
+
+-- 开启形态：启动吸血任务 + 拖影任务（只在手持时真正跑，放背包里不生效）
+local function StartEffects(inst)
+	if not IsHeld(inst) then
+		return
+	end
+	local owner = inst.components.inventoryitem and inst.components.inventoryitem:GetGrandOwner()
+	if owner == nil or owner:HasTag("playerghost") then
+		return
+	end
+	if inst.starvetask == nil then
+		inst.starvetask = inst:DoPeriodicTask(0.5, sparkle)
+	end
+	if inst._trailtask == nil then
+		inst._trailtask = inst:DoPeriodicTask(6 * FRAMES, staff_do_trail, 2 * FRAMES)
+	end
+	inst:AddTag("m_soulstaff_active")
+end
+
+-- 关闭形态：停掉两个任务，拖影不再生成，场上已有的会自己播完消失
+local function StopEffects(inst)
+	if inst.starvetask ~= nil then
+		inst.starvetask:Cancel()
+		inst.starvetask = nil
+	end
+	if inst._trailtask ~= nil then
+		inst._trailtask:Cancel()
+		inst._trailtask = nil
+	end
+	inst:RemoveTag("m_soulstaff_active")
+end
+
+-- machine 组件只存「开/关」这个状态，特效的启停交给上面两个函数
+local function OnTurnOn(inst)
+	StartEffects(inst)
+end
+
+local function OnTurnOff(inst)
+	StopEffects(inst)
+end
+
 -- 对话管理
 local function StaffTalk(inst, talk_type)
 	local talk_list = STRINGS.M_SOULSTAFF[talk_type]
@@ -135,16 +196,9 @@ local function onequip(inst, owner)
 	owner.AnimState:Show("ARM_carry")
 	owner.AnimState:Hide("ARM_normal")
 
-	-- 暗影特效
-	if inst._trailtask == nil then
-		inst._trailtask = inst:DoPeriodicTask(6 * FRAMES, staff_do_trail, 2 * FRAMES)
-	end
-
-	-- 吸血特效
-	if inst.components.machine:IsOn() and inst.starvetask == nil then
-		inst.starvetask = inst:DoPeriodicTask(0.5, function()
-			sparkle(inst)
-		end)
+	-- 已经开启「吸血形态」时，一上手就恢复吸血与拖影
+	if inst.components.machine:IsOn() then
+		StartEffects(inst)
 	end
 
 	-- 装备时随机对话
@@ -161,15 +215,8 @@ local function onunequip(inst, owner)
 	owner.AnimState:Hide("ARM_carry")
 	owner.AnimState:Show("ARM_normal")
 
-	if inst._trailtask ~= nil then
-		inst._trailtask:Cancel()
-		inst._trailtask = nil
-	end
-
-	if inst.starvetask ~= nil then
-		inst.starvetask:Cancel()
-		inst.starvetask = nil
-	end
+	-- 只停特效，开关状态保留；下次手持会接着开
+	StopEffects(inst)
 end
 
 -- 攻击相关
@@ -268,6 +315,14 @@ local function fn()
 	talker.symbol = "swap_object"
 	talker:MakeChatter()
 	talker.chaticon = "npcchatflair_stalker"
+
+	-- 形态轮盘（客户端也要有，所以放在 master 判断之前）
+	inst:AddComponent("spellbook")
+	inst.components.spellbook:SetRadius(SPELLBOOK_RADIUS)
+	inst.components.spellbook:SetFocusRadius(SPELLBOOK_FOCUS_RADIUS)
+	inst.components.spellbook:SetItems(SOULSTAFF_SPELLS)
+	inst.components.spellbook.opensound = "dontstarve/HUD/craft_open"
+	inst.components.spellbook.closesound = "dontstarve/HUD/craft_close"
 
 	if not TheWorld.ismastersim then
 		return inst
