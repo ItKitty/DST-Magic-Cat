@@ -263,10 +263,10 @@ local function OnAttackDarkPet(inst, data)
 	-- 	inst.components.health:DeltaPenalty(-0.01)
 	-- end
 
-	-- 50%几率召唤暗影蝙蝠
+	-- 20%几率召唤暗影蝙蝠
 	local target = data.target
 
-	if math.random() < 1 then -- TODO 测试用：原本 0.2，验证完改回来
+	if math.random() < 0.2 then
 		local pt = (target ~= nil and target:IsValid()) and target:GetPosition() or inst:GetPosition()
 		local m_batsfx = SpawnPrefab("m_batsfx")
 		m_batsfx.Transform:SetPosition(pt.x, 0, pt.z)
@@ -297,7 +297,7 @@ local function OnAttackLightPet(inst, data)
 	-- 50%几率发射投射物
 	local target = data.target
 
-	if math.random() < 1 then -- TODO 测试用：原本 0.5，验证完改回来
+	if math.random() < 0.5 then
 		local x, y, z = target.Transform:GetWorldPosition()
 
 		local gestalt = SpawnPrefab("alterguardianhat_projectile")
