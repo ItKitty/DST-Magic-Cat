@@ -8,7 +8,6 @@ local assets_bats = {
 -- 只要求「能打 + 有血」，不要再要求 locomotor：
 -- 食人花（lureplant）、食人花眼球这类不动的目标没有 locomotor，会被漏掉；
 -- 下面减速那段本来就有 if v.components.locomotor 判空。
-local DEBUG_BAT = true -- TODO 调试开关，定位完删掉
 local TARGET_TAGS = { "_combat", "_health" }
 -- wall 和 structure 是两套不同的标签，不能互相替代：
 --   墙体（walls.lua）挂的是 "wall"（外加 noauradamage / electricdamageimmune）
@@ -70,48 +69,19 @@ local function DoAoEAttack(inst)
 	local x, y, z = inst.Transform:GetWorldPosition()
 	local ents = TheSim:FindEntities(x, y, z, 3, TARGET_TAGS, TARGET_NOT_TAGS)
 
-	-- 兜底：目标就在旁边却一条都没筛出来时，直接把当前目标当作唯一目标。
-	-- 目标来自玩家攻击事件，本身已经是合法的敌人，这里不用担心误伤。
-	if #ents == 0 and inst._target ~= nil and inst._target:IsValid() then
-		ents = { inst._target }
-	end
-
-	-- TODO 调试用：定位「特效出现但没伤害」，定位完删掉
-	-- 用 Announce 是因为服务端 print 不进 client_log，直接打在屏幕上最直观
-	if DEBUG_BAT and not inst._dbgprinted then
-		inst._dbgprinted = true
-		TheNet:Announce(
-			string.format(
-				"[bat] ents=%d target=%s",
-				#ents,
-				tostring(inst._target ~= nil and inst._target.prefab or "nil")
-			)
-		)
-		local all = TheSim:FindEntities(x, y, z, 3, nil, nil)
-		for i = 1, math.min(#all, 6) do
-			local v = all[i]
-			TheNet:Announce(
-				string.format(
-					"  %s _h=%s _c=%s hp=%s",
-					v.prefab,
-					tostring(v:HasTag("_health")),
-					tostring(v:HasTag("_combat")),
-					tostring(v.components.health ~= nil and v.components.health.currenthealth or "-")
-				)
-			)
-		end
-
-		-- 二分：只带 MUST 标签、不带排除标签，看能筛出几个
-		local must_only = TheSim:FindEntities(x, y, z, 3, TARGET_TAGS, nil)
-		TheNet:Announce(string.format("[bat] must_only=%d", #must_only))
-		-- 目标身上到底命中了哪条排除规则
-		local target = inst._target
-		if target ~= nil and target:IsValid() then
-			for _, t in ipairs(TARGET_NOT_TAGS) do
-				if target:HasTag(t) then
-					TheNet:Announce("  目标命中排除标签: " .. t)
-				end
+	-- 目标来自玩家攻击事件，一定是合法敌人；但它可能被排除标签挡掉
+	-- （食人花的状态默认就带 hiding），所以没筛到就手动补进列表。
+	local target = inst._target
+	if target ~= nil and target:IsValid() then
+		local found = false
+		for i = 1, #ents do
+			if ents[i] == target then
+				found = true
+				break
 			end
+		end
+		if not found then
+			table.insert(ents, target)
 		end
 	end
 
