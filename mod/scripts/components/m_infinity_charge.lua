@@ -34,6 +34,38 @@ local function _RepairBrokenForged(inst, doer, item)
 end
 
 -- ---------------------------------------------------------------------------
+-- 无限充能的火堆：夜里当「伪矮星」用
+--   · m_firepit_light 带 lightsource / daylight 标签，农场作物会当成光源继续长
+--   · 同时提供暖色照明
+-- ---------------------------------------------------------------------------
+local function _EnsureDaylightLight(inst)
+	local light = inst._m_infinity_light
+	if light ~= nil and light:IsValid() then
+		return
+	end
+
+	light = SpawnPrefab("m_firepit_light")
+	if light == nil then
+		return
+	end
+
+	light.follow_target = inst
+	light.Transform:SetPosition(inst.Transform:GetWorldPosition())
+	inst._m_infinity_light = light
+
+	if not inst._m_infinity_light_hooked then
+		inst._m_infinity_light_hooked = true
+		inst:ListenForEvent("onremove", function(inst2)
+			local l = inst2._m_infinity_light
+			if l ~= nil and l:IsValid() then
+				l:Remove()
+			end
+			inst2._m_infinity_light = nil
+		end)
+	end
+end
+
+-- ---------------------------------------------------------------------------
 -- fueled：火堆类无限燃料
 -- ---------------------------------------------------------------------------
 local function _RefuelAndIgnite(inst, doer)
@@ -43,6 +75,8 @@ local function _RefuelAndIgnite(inst, doer)
 	if inst:HasTag("burnt") then
 		return
 	end
+
+	_EnsureDaylightLight(inst)
 
 	local fueled = inst.components.fueled
 	if fueled ~= nil then
