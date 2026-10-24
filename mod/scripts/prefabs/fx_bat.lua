@@ -2,7 +2,10 @@ local assets_bats = {
 	Asset("ANIM", "anim/shadow_bishop.zip"),
 }
 
-local TARGET_TAGS = { "_combat", "locomotor", "_health" }
+-- 只要求「能打 + 有血」，不要再要求 locomotor：
+-- 食人花（lureplant）、食人花眼球这类不动的目标没有 locomotor，会被漏掉；
+-- 下面减速那段本来就有 if v.components.locomotor 判空。
+local TARGET_TAGS = { "_combat", "_health" }
 local TARGET_NOT_TAGS = {
 	"INLIMBO",
 	"wall",
