@@ -5,6 +5,10 @@ local assets_bats = {
 -- 只要求「能打 + 有血」，不要再要求 locomotor：
 -- 食人花（lureplant）、食人花眼球这类不动的目标没有 locomotor，会被漏掉；
 -- 下面减速那段本来就有 if v.components.locomotor 判空。
+-- 只要求「能打 + 有血」，不要再要求 locomotor：
+-- 食人花（lureplant）、食人花眼球这类不动的目标没有 locomotor，会被漏掉；
+-- 下面减速那段本来就有 if v.components.locomotor 判空。
+local DEBUG_BAT = true -- TODO 调试开关，定位完删掉
 local TARGET_TAGS = { "_combat", "_health" }
 -- wall 和 structure 是两套不同的标签，不能互相替代：
 --   墙体（walls.lua）挂的是 "wall"（外加 noauradamage / electricdamageimmune）
@@ -65,6 +69,28 @@ local function DoAoEAttack(inst)
 
 	local x, y, z = inst.Transform:GetWorldPosition()
 	local ents = TheSim:FindEntities(x, y, z, 3, TARGET_TAGS, TARGET_NOT_TAGS)
+
+	-- TODO 调试用：定位「特效出现但没伤害」，定位完删掉
+	if DEBUG_BAT and not inst._dbgprinted then
+		inst._dbgprinted = true
+		print(
+			"[m_batsfx] tick ents=", #ents,
+			"target=", inst._target ~= nil and inst._target.prefab or "nil",
+			"leader=", leader ~= nil and leader.prefab or "nil"
+		)
+		local all = TheSim:FindEntities(x, y, z, 3, nil, nil)
+		print("[m_batsfx] 半径3内全部实体=", #all)
+		for i = 1, math.min(#all, 10) do
+			local v = all[i]
+			print(
+				"   ", v.prefab,
+				"_health=", tostring(v:HasTag("_health")),
+				"_combat=", tostring(v:HasTag("_combat")),
+				"hp=", tostring(v.components.health ~= nil and v.components.health.currenthealth or "-"),
+				"canbe=", tostring(v.components.combat ~= nil and v.components.combat:CanBeAttacked() or "-")
+			)
+		end
+	end
 
 	-- 获取蝙蝠真正的主人（顺着宠物链找到玩家）作为攻击者，
 	-- 伤害的归因就是第一个参数：传玩家，击杀才会算在玩家身上
