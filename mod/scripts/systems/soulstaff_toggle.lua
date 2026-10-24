@@ -35,6 +35,18 @@ end)
 -- 取 RPC 表必须在 AddModRPCHandler 之后
 local TOGGLE_RPC = MOD_RPC[modname]["SoulStaffToggle"]
 
+-- 右键提示文字：原版 USESPELLBOOK 显示的是「阅读」，这里只把灵魂法杖改成「切换形态」
+local old_stroverridefn = ACTIONS.USESPELLBOOK.stroverridefn
+ACTIONS.USESPELLBOOK.stroverridefn = function(buffaction)
+	local item = buffaction.invobject or buffaction.target
+	if item ~= nil and item:HasTag("m_soulstaff") then
+		return "切换形态"
+	end
+	if old_stroverridefn ~= nil then
+		return old_stroverridefn(buffaction)
+	end
+end
+
 local ICON_ATLAS = "images/inventoryimages/soulstaff.xml"
 local ICON_IMAGE = "soulstaff.tex"
 local ICON_SCALE = 0.6

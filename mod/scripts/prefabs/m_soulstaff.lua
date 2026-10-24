@@ -307,13 +307,17 @@ local function fn()
 	talker:MakeChatter()
 	talker.chaticon = "npcchatflair_stalker"
 
-	-- 形态轮盘（客户端也要有，所以放在 master 判断之前）
 	-- 形态轮盘：条目由 systems/soulstaff_toggle.lua 通过 AddPrefabPostInit 塞进来
 	inst:AddComponent("spellbook")
 	inst.components.spellbook:SetRadius(SPELLBOOK_RADIUS)
 	inst.components.spellbook:SetFocusRadius(SPELLBOOK_FOCUS_RADIUS)
 	inst.components.spellbook.opensound = "dontstarve/HUD/craft_open"
 	inst.components.spellbook.closesound = "dontstarve/HUD/craft_close"
+	-- 只有手持（装备）时才允许打开轮盘，放在背包里右键不会出现这个选项
+	inst.components.spellbook:SetCanUseFn(function(item, user)
+		local equippable = item.replica.equippable
+		return equippable ~= nil and equippable:IsEquipped()
+	end)
 
 	if not TheWorld.ismastersim then
 		return inst
