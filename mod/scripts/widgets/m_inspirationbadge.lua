@@ -99,7 +99,10 @@ function InspirationBadge:OnControl(control, down)
 			else
 				if self.down then
 					self.down = false
-					if self.onclick then
+					-- 刚拖动过就不算点击，避免拖完顺手把音乐开关了
+					if self._drag_moved then
+						self._drag_moved = false
+					elseif self.onclick then
 						self.onclick()
 					end
 				end
@@ -109,6 +112,56 @@ function InspirationBadge:OnControl(control, down)
 	end
 
 	return Badge.OnControl(self, control, down)
+end
+
+-------------------------------------------------------------------------------------------------------
+-- 拖拽：按住左键可以把图标拖到任意位置
+-------------------------------------------------------------------------------------------------------
+local DRAG_THRESHOLD = 4 -- 超过这个位移才算「拖动」，否则仍视为点击
+
+function InspirationBadge:StopDrag()
+	self._dragging = false
+	if self._dragtask ~= nil then
+		self._dragtask:Cancel()
+		self._dragtask = nil
+	end
+end
+
+function InspirationBadge:OnMouseButton(button, down, x, y)
+	if button ~= 0 then
+		return false
+	end
+
+	if down then
+		local mouse = TheInput:GetScreenPosition()
+		local pos = self:GetPosition()
+		self._drag_offset = { x = mouse.x - pos.x, y = mouse.y - pos.y }
+		self._drag_start = { x = mouse.x, y = mouse.y }
+		self._drag_moved = false
+		self._dragging = true
+
+		if self._dragtask == nil then
+			self._dragtask = self.inst:DoPeriodicTask(0, function()
+				if not self._dragging or not self.inst:IsValid() then
+					return
+				end
+				local mx, my = TheInput:GetScreenPosition():Get()
+				if not self._drag_moved then
+					local dx, dy = mx - self._drag_start.x, my - self._drag_start.y
+					if math.abs(dx) > DRAG_THRESHOLD or math.abs(dy) > DRAG_THRESHOLD then
+						self._drag_moved = true
+					end
+				end
+				self:SetPosition(mx - self._drag_offset.x, my - self._drag_offset.y, 0)
+			end)
+		end
+		return true
+	elseif self._dragging then
+		self:StopDrag()
+		return true
+	end
+
+	return false
 end
 
 return InspirationBadge
