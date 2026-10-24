@@ -100,8 +100,8 @@ function InspirationBadge:OnControl(control, down)
 				if self.down then
 					self.down = false
 					-- 刚拖动过就不算点击，避免拖完顺手把音乐开关了
-					if self._drag_moved then
-						self._drag_moved = false
+					if self._last_drag_time ~= nil and GetTime() - self._last_drag_time < 0.3 then
+						self._last_drag_time = nil
 					elseif self.onclick then
 						self.onclick()
 					end
@@ -115,15 +115,42 @@ function InspirationBadge:OnControl(control, down)
 end
 
 -------------------------------------------------------------------------------------------------------
--- 拖拽：按住左键可以把图标拖到任意位置
+-- 拖拽：按住左键可以把图标拖到任意位置，位置会存到本地文件，下次进来还原
 -------------------------------------------------------------------------------------------------------
 local DRAG_THRESHOLD = 4 -- 超过这个位移才算「拖动」，否则仍视为点击
+local SAVE_FILE = "m_inspirationbadge_pos"
+
+function InspirationBadge:SavePosition()
+	local pos = self:GetPosition()
+	TheSim:SetPersistentString(SAVE_FILE, string.format("%.1f,%.1f", pos.x, pos.y), false)
+end
+
+function InspirationBadge:LoadPosition()
+	TheSim:GetPersistentString(SAVE_FILE, function(success, str)
+		if not success or str == nil or str == "" then
+			return
+		end
+		local x, y = str:match("^%s*(%-?[%d%.]+)%s*,%s*(%-?[%d%.]+)%s*$")
+		if x == nil then
+			return
+		end
+		local nx, ny = tonumber(x), tonumber(y)
+		if nx ~= nil and ny ~= nil then
+			self:SetPosition(nx, ny, 0)
+		end
+	end)
+end
 
 function InspirationBadge:StopDrag()
 	self._dragging = false
 	if self._dragtask ~= nil then
 		self._dragtask:Cancel()
 		self._dragtask = nil
+	end
+	-- 只有真的拖动过才保存，单纯点击不动
+	if self._drag_moved then
+		self._last_drag_time = GetTime()
+		self:SavePosition()
 	end
 end
 

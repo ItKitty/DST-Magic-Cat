@@ -22,6 +22,8 @@ AddClassPostConstruct("widgets/statusdisplays", function(self)
 
 		self.owner:DoTaskInTime(0, function()
 			self.m_inspirationbadge:SetPosition(self.stomach:GetPosition() + Vector3(-90, 0, 0))
+			-- 如果玩家拖过，就用存下来的位置覆盖默认位置
+			self.m_inspirationbadge:LoadPosition()
 		end)
 		self.m_inspirationbadge.onclick = function()
 			if ThePlayer and ThePlayer:HasTag("music_buff") then
