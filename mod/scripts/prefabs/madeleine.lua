@@ -89,6 +89,12 @@ local function onkilled(inst, data)
 		if is_special then
 			-- 特殊生物：100%掉落指定物品
 			victim.components.lootdropper:SpawnLootPrefab(SPECIAL_LOOT[victim_prefab])
+			-- TODO 调试用
+			if victim_prefab == "killerbee" then
+				TheNet:Announce(
+					string.format("[greed] killerbee attacker=%s", tostring(data.attacker ~= nil and data.attacker.prefab or "nil"))
+				)
+			end
 
 			-- 视觉反馈
 			if inst.components.talker then

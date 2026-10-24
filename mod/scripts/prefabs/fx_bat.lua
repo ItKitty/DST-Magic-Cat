@@ -98,6 +98,12 @@ local function DoAoEAttack(inst)
 			and v.components.combat
 			and v.components.combat:CanBeAttacked()
 		then
+			-- TODO 调试用：确认蝙蝠的伤害归因
+			if v.prefab == "killerbee" and not inst._dbgkill then
+				inst._dbgkill = true
+				TheNet:Announce("[bat] hit killerbee attacker=" .. tostring(real_attacker.prefab))
+			end
+
 			v.components.combat:GetAttacked_Internal(real_attacker, 25, nil, "electric", { planar = 20 })
 
 			-- 攻击减速
