@@ -37,6 +37,7 @@ modimport("scripts/systems/m_inspirationbadge.lua") -- 激励勋章
 modimport("scripts/systems/chiropteran.lua") -- 变身管理
 modimport("scripts/systems/critter_perishable.lua") -- 宠物饥饿与礼物
 modimport("scripts/systems/extinguish_action.lua") -- 熄灭动作
+modimport("scripts/systems/m_infinity_action.lua") -- 无限充能动作（启迪碎片）
 modimport("scripts/systems/m_skill_winona.lua") -- 薇诺娜技能树兼容
 modimport("scripts/systems/maogugu_text_trail_fx.lua") -- 文本轨迹特效
 
