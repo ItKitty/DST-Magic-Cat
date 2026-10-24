@@ -104,7 +104,24 @@ local function IsHeld(inst)
 	return inst.components.equippable ~= nil and inst.components.equippable:IsEquipped()
 end
 
--- 开启形态：启动吸血任务 + 拖影任务（只在手持时真正跑，放背包里不生效）
+-- 这两个函数在下面才定义（腐化光效那段），这里先声明，方便 StartEffects 里调用
+local SpawnCorruptFX, RemoveCorruptFX
+
+-- 常驻拖影：只要手持就有
+local function StartTrail(inst)
+	if inst._trailtask == nil then
+		inst._trailtask = inst:DoPeriodicTask(6 * FRAMES, staff_do_trail, 2 * FRAMES)
+	end
+end
+
+local function StopTrail(inst)
+	if inst._trailtask ~= nil then
+		inst._trailtask:Cancel()
+		inst._trailtask = nil
+	end
+end
+
+-- 开启形态：吸血任务 + 腐化光效（只在手持时真正跑，放背包里不生效）
 local function StartEffects(inst)
 	if not IsHeld(inst) then
 		return
@@ -116,22 +133,17 @@ local function StartEffects(inst)
 	if inst.starvetask == nil then
 		inst.starvetask = inst:DoPeriodicTask(0.5, sparkle)
 	end
-	if inst._trailtask == nil then
-		inst._trailtask = inst:DoPeriodicTask(6 * FRAMES, staff_do_trail, 2 * FRAMES)
-	end
+	SpawnCorruptFX(inst, owner)
 	inst:AddTag("m_soulstaff_active")
 end
 
--- 关闭形态：停掉两个任务，拖影不再生成，场上已有的会自己播完消失
+-- 关闭形态：停掉吸血任务和腐化光效
 local function StopEffects(inst)
 	if inst.starvetask ~= nil then
 		inst.starvetask:Cancel()
 		inst.starvetask = nil
 	end
-	if inst._trailtask ~= nil then
-		inst._trailtask:Cancel()
-		inst._trailtask = nil
-	end
+	RemoveCorruptFX(inst)
 	inst:RemoveTag("m_soulstaff_active")
 end
 
@@ -184,13 +196,13 @@ local function StaffTalk(inst, talk_type)
 end
 
 -- 腐化光效（king_cane 的 corrupt_level3，单独做的 FX prefab，不带武器贴图）
--- 默认值；游戏内可以用控制台实时调：
---   M_SOULSTAFF_CORRUPT(缩放, x, y, z)    例如 M_SOULSTAFF_CORRUPT(0.5, 0, -20, 0)
+-- 只在「吸血形态」开启时出现；默认值按实测调好的位置
+-- 游戏内仍可用控制台实时调：M_SOULSTAFF_CORRUPT(缩放, x, y, z)
 -- 偏移量单位是 1/100 世界单位；y 正数往下、负数往上
 local CORRUPT_FX_DEFAULT = {
-	scale = 0.5,
+	scale = 0.75,
 	x = 0,
-	y = 100,
+	y = -110,
 	z = 0,
 }
 
@@ -203,7 +215,8 @@ local function GetCorruptTuning()
 	return CORRUPT_FX_DEFAULT
 end
 
-local function RemoveCorruptFX(inst)
+-- 注意：这两个函数在上面用 local 声明过，这里是赋值给那两个局部变量
+function RemoveCorruptFX(inst)
 	if inst._corruptfx ~= nil then
 		if inst._corruptfx:IsValid() then
 			inst._corruptfx:Remove()
@@ -212,7 +225,7 @@ local function RemoveCorruptFX(inst)
 	end
 end
 
-local function SpawnCorruptFX(inst, owner)
+function SpawnCorruptFX(inst, owner)
 	RemoveCorruptFX(inst)
 
 	local fx = SpawnPrefab("fx_soulstaff_corrupt")
@@ -231,6 +244,10 @@ end
 
 -- 控制台调完参数后重新生成一次，不用退出重进
 local function RefreshCorruptFX(inst)
+	if not inst.soulstaff_on then
+		RemoveCorruptFX(inst)
+		return
+	end
 	local owner = inst.components.inventoryitem and inst.components.inventoryitem:GetGrandOwner()
 	if owner ~= nil then
 		SpawnCorruptFX(inst, owner)
@@ -243,10 +260,10 @@ local function onequip(inst, owner)
 	owner.AnimState:Show("ARM_carry")
 	owner.AnimState:Hide("ARM_normal")
 
-	-- 腐化光效
-	SpawnCorruptFX(inst, owner)
+	-- 常驻拖影（只要手持就有）
+	StartTrail(inst)
 
-	-- 已经开启「吸血形态」时，一上手就恢复吸血与拖影
+	-- 已经开启「吸血形态」时，一上手就恢复吸血与腐化光效
 	if inst.soulstaff_on then
 		StartEffects(inst)
 	end
@@ -265,9 +282,10 @@ local function onunequip(inst, owner)
 	owner.AnimState:Hide("ARM_carry")
 	owner.AnimState:Show("ARM_normal")
 
-	RemoveCorruptFX(inst)
+	-- 停掉常驻拖影
+	StopTrail(inst)
 
-	-- 只停特效，开关状态保留；下次手持会接着开
+	-- 只停特效，开关状态保留；下次手持会接着开（StopEffects 里也会收掉腐化光效）
 	StopEffects(inst)
 end
 
