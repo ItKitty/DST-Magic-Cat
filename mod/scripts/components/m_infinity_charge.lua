@@ -217,16 +217,20 @@ function m_infinity_charge:Charge(doer, item)
 	local msg = nil
 
 	if _IsFirepit(inst) then
+		self.charge_type = "firepit"
 		self:ApplyInfiniteFuel(doer)
 		ok = true
 		msg = "火堆被启迪碎片充能，永不熄灭！"
 	elseif inst.components.finiteuses ~= nil then
+		self.charge_type = "finiteuses"
 		ok = _ApplyInfiniteFiniteUses(inst, doer, item)
 		msg = ok and "物品被启迪碎片充能，永不磨损！" or "这个物品无法充能。"
 	elseif inst.components.armor ~= nil then
+		self.charge_type = "armor"
 		ok = _ApplyInfiniteArmor(inst, doer, item)
 		msg = ok and "护甲被启迪碎片充能，永不破损！" or "这个护甲无法充能。"
 	elseif inst.components.fueled ~= nil then
+		self.charge_type = "fueled"
 		ok = _ApplyInfiniteFueled(inst, doer, item)
 		msg = ok and "物品被启迪碎片充能，能源永不枯竭！" or "这个物品无法充能。"
 	end
@@ -388,16 +392,31 @@ function m_infinity_charge:OnLoad(data)
 	self.charge_type = data.charge_type
 
 	local inst = self.inst
+	local charge_type = data.charge_type
 
-	if inst:HasTag("m_infinity_firepit") then
-		inst._m_infinity_firepit = true
+	-- 注意：标签（m_infinity_*）不会存进存档，重载后必须按 charge_type 重新恢复，
+	-- 否则效果会“消失”（尤其是火堆：旧逻辑查的是标签，重载后一定查不到）。
+	if charge_type == "firepit" then
+		inst._m_infinity_firepit = nil
 		self:ApplyInfiniteFuel(nil)
-	elseif inst.components.finiteuses ~= nil then
+	elseif charge_type == "finiteuses" then
 		_ApplyInfiniteFiniteUses(inst, nil, nil)
-	elseif inst.components.armor ~= nil then
+	elseif charge_type == "armor" then
 		_ApplyInfiniteArmor(inst, nil, nil)
-	elseif inst.components.fueled ~= nil then
+	elseif charge_type == "fueled" then
 		_ApplyInfiniteFueled(inst, nil, nil)
+	else
+		-- 兼容没写 charge_type 的旧存档，按组件顺序推断
+		if _IsFirepit(inst) then
+			inst._m_infinity_firepit = nil
+			self:ApplyInfiniteFuel(nil)
+		elseif inst.components.finiteuses ~= nil then
+			_ApplyInfiniteFiniteUses(inst, nil, nil)
+		elseif inst.components.armor ~= nil then
+			_ApplyInfiniteArmor(inst, nil, nil)
+		elseif inst.components.fueled ~= nil then
+			_ApplyInfiniteFueled(inst, nil, nil)
+		end
 	end
 end
 

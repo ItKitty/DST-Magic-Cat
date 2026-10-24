@@ -82,13 +82,17 @@ end)
 
 -- ---------------------------------------------------------------------------
 -- 拿着碎片点目标时出现「无限充能」
--- 注册在 inventoryitem 上（每个物品都会有这个动作收集），用 prefab 精确过滤，
--- 比单独造一个标记组件更稳。
+-- 用碎片专属的标记组件注册，不要注册在 inventoryitem 上：
+-- 同一模组内 AddComponentAction 是按「组件名」做键的，后注册的会覆盖先注册的，
+-- 而护符能力解锁（amulet_action.lua）用的正是 inventoryitem。
 -- ---------------------------------------------------------------------------
-AddComponentAction("USEITEM", "inventoryitem", function(inst, doer, target, actions, right)
-	if inst.prefab ~= SHARD_PREFAB then
-		return
+AddPrefabPostInit(SHARD_PREFAB, function(inst)
+	if inst.components.m_infinity_shard == nil then
+		inst:AddComponent("m_infinity_shard")
 	end
+end)
+
+AddComponentAction("USEITEM", "m_infinity_shard", function(inst, doer, target, actions, right)
 	if doer == nil or doer.prefab ~= "madeleine" then
 		return
 	end
