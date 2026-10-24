@@ -380,6 +380,10 @@ function m_infinity_charge:OnSave()
 	return {
 		charged = self.charged,
 		charge_type = self.charge_type,
+		-- 这个组件是「充能时」才挂到目标身上的，目标 prefab 里并没有它。
+		-- 原版 SetPersistData 只会给「已经存在的组件」调 OnLoad，
+		-- 所以必须带上这个标记，读档时才会按需 AddComponent 再触发 OnLoad。
+		add_component_if_missing = true,
 	}
 end
 
