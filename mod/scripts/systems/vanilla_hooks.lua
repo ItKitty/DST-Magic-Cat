@@ -351,12 +351,12 @@ end)
 --   "circle"  圆底：用 vanilla 的 button_icons/circle.tex 垫一个灰圆
 --   "outline" 描边：把图标自己复制一圈、涂黑淡化，形成贴合武器形状的边
 -- 追求「边缘绝对均匀」用 outline；想要圆形底座用 circle。
-local SOULSTAFF_ICON_FRAME_MODE = "circle"
+local SOULSTAFF_ICON_FRAME_MODE = "outline"
 
 -- circle 模式参数
 local SOULSTAFF_ICON_BG_SCALE = 2 -- 圆框相对图标最长边的倍数
 local SOULSTAFF_ICON_BG_COLOUR = { 0.78, 0.78, 0.78, 0.7 } -- 浅灰
-local SOULSTAFF_ICON_BG_OFFSET = { 0, -6 } -- 圆框微调偏移（贴图里的圆心不一定是正中）
+local SOULSTAFF_ICON_BG_OFFSET = { 0, -12 } -- 圆框微调偏移（贴图里的圆心不一定是正中）
 
 -- outline 模式参数
 local SOULSTAFF_ICON_OUTLINE_ALPHA = 0.5 -- 描边深浅（黑色渐变到灰）
