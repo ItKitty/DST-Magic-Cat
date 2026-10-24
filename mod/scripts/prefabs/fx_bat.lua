@@ -2,50 +2,23 @@ local assets_bats = {
 	Asset("ANIM", "anim/shadow_bishop.zip"),
 }
 
--- 只要求「能打 + 有血」：食人花这类不动的目标没有 locomotor，不能作为筛选条件
-local TARGET_TAGS = { "_combat", "_health" }
--- wall 和 structure 是两套不同的标签（墙体挂 wall，建筑挂 structure），两个都要排除
+local TARGET_TAGS = { "_combat", "locomotor", "_health" }
 local TARGET_NOT_TAGS = {
 	"INLIMBO",
 	"wall",
-	"structure",
 	"notarget",
 	"player",
 	"companion",
 	"flight",
 	"invisible",
 	"noattack",
+	"hiding",
 	"shadowminion",
 }
 -- 在文件顶部添加一个表来记录所有被减速的目标
 local slowed_targets = {}
 
--- 找到真正的「玩家」作为攻击者：
--- 蝙蝠的 leader 可能是宠物，宠物自己又跟着玩家，所以顺着 follower 链往上找
-local function GetRealAttacker(inst)
-	local leader = inst.components.follower ~= nil and inst.components.follower:GetLeader() or nil
-	local guard = 0
-	while leader ~= nil and not leader:HasTag("player") and guard < 5 do
-		local nextleader = leader.components.follower ~= nil and leader.components.follower:GetLeader() or nil
-		if nextleader == nil or nextleader == leader then
-			break
-		end
-		leader = nextleader
-		guard = guard + 1
-	end
-	if leader ~= nil and leader:HasTag("player") then
-		return leader
-	end
-	-- 找不到玩家就只能记在蝙蝠自己头上
-	return inst
-end
-
 local function DoAoEAttack(inst)
-	-- 只打一次：命中后不再重复结算
-	if inst._didhit then
-		return
-	end
-
 	local leader = inst.components.follower.leader
 
 	-- 如果当前有目标，则朝目标移动
@@ -65,14 +38,8 @@ local function DoAoEAttack(inst)
 	local x, y, z = inst.Transform:GetWorldPosition()
 	local ents = TheSim:FindEntities(x, y, z, 3, TARGET_TAGS, TARGET_NOT_TAGS)
 
-	-- 还没飞到目标身边，等下一次 tick 再判定
-	if #ents == 0 then
-		return
-	end
-
-	-- 获取蝙蝠真正的主人（顺着宠物链找到玩家）作为攻击者，
-	-- 伤害的归因就是第一个参数：传玩家，击杀才会算在玩家身上
-	local real_attacker = GetRealAttacker(inst)
+	-- 获取蝙蝠的主人作为真正的攻击者
+	local real_attacker = leader or inst
 
 	for i, v in ipairs(ents) do
 		if
@@ -83,13 +50,7 @@ local function DoAoEAttack(inst)
 			and v.components.combat
 			and v.components.combat:CanBeAttacked()
 		then
-			-- TODO 调试用：确认蝙蝠的伤害归因
-			if v.prefab == "killerbee" and not inst._dbgkill then
-				inst._dbgkill = true
-				TheNet:Announce("[bat] hit killerbee attacker=" .. tostring(real_attacker.prefab))
-			end
-
-			v.components.combat:GetAttacked_Internal(real_attacker, 25, nil, "electric", { planar = 20 })
+			-- v.components.combat:GetAttacked_Internal(real_attacker, 25, nil, "electric", { planar = 20 })
 
 			-- 攻击减速
 			if v.components.locomotor then
@@ -107,9 +68,6 @@ local function DoAoEAttack(inst)
 			v:AddDebuff("abigail_vex_debuff", "abigail_vex_shadow_debuff", nil, nil, nil, real_attacker)
 		end
 	end
-
-	-- 这一轮的群体伤害打完就标记，后续 tick 不再结算
-	inst._didhit = true
 
 	local scale = 1
 	local oldscale = inst.cur_scale or 1
@@ -198,10 +156,8 @@ local function bats()
 	inst.DoAoEAttack = DoAoEAttack
 	inst.SetDuration = SetDuration
 
-	-- 只存在 1 秒，期间群体伤害只结算一次（见 DoAoEAttack 里的 _didhit）
-	inst:SetDuration(1)
-	-- 每 0.1 秒判定一次是否飞到了目标旁边；命中后 _didhit 会阻止重复结算
-	inst._aoetask = inst:DoPeriodicTask(0.1, DoAoEAttack)
+	inst:SetDuration(3)
+	inst._aoetask = inst:DoPeriodicTask(0.5, DoAoEAttack)
 	-- inst:DoTaskInTime(9, inst.Remove)
 
 	return inst

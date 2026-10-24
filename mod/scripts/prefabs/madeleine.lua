@@ -14,12 +14,34 @@ for k, v in pairs(TUNING.GAMEMODE_STARTING_ITEMS) do
 end
 local prefabs = FlattenTree(start_inv, true)
 
+--[[----------------------------
+    Chiropteran Forming
+----------------------------]]
+--
+local function OnDark(inst)
+	inst.components.chiropteran:ForceForm(inst, "dark")
+end
+
+local function OnLight(inst)
+	inst.components.chiropteran:UnforceForm(inst, "dark")
+end
+
+local function OnStarving(inst)
+	inst.components.chiropteran:ForceForm(inst, "bloodcrazed")
+end
+
+local function OnStopStarving(inst)
+	inst.components.chiropteran:UnforceForm(inst, "bloodcrazed")
+end
+
+------------------------------------------------------------------------
+
 -- 【贪婪】能力配置
 local GREED_CONFIG = {
 	NORMAL_CHANCE = 0.3, -- 普通生物30%触发几率
 	SPECIAL_CHANCE = 1.0, -- 特殊生物100%触发几率
 	HUNGER_COST = 1, -- 每次消耗3点饥饿
-	TAG = { "wall" }, -- 不触发贪婪的标签（原来还有 INLIMBO，会把同 tick 连杀的后几只误跳过）
+	TAG = { "INLIMBO", "wall" }, -- 不触发生物标签
 }
 
 -- 特殊生物固定掉落表（100%触发）
@@ -30,9 +52,6 @@ local SPECIAL_LOOT = {
 	lightninggoat = "lightninggoathorn", -- 固定掉落羊角
 	killerbee = "honey", -- 固定掉蜂蜜
 }
-
--- TODO 调试用计数器
-local greed_debug_count = 0
 
 -- 【新增】击杀后100%添加标签的生物列表（不受概率和饥饿影响）
 local TAG_ON_KILL = {
@@ -46,20 +65,6 @@ local TAG_ON_KILL = {
 -- 核心贪婪掉落函数
 local function onkilled(inst, data)
 	local victim = data.victim
-
-	-- TODO 调试用：放在最前面，任何提前 return 的情况也能看到
-	greed_debug_count = greed_debug_count + 1
-	TheNet:Announce(
-		string.format(
-			"[greed] #%d victim=%s attacker=%s loot=%s inlimbo=%s",
-			greed_debug_count,
-			tostring(victim ~= nil and victim.prefab or "nil"),
-			tostring(data.attacker ~= nil and data.attacker.prefab or "nil"),
-			tostring(victim ~= nil and victim.components.lootdropper ~= nil),
-			tostring(victim ~= nil and victim:HasTag("INLIMBO"))
-		)
-	)
-
 	if not victim or not victim.components.lootdropper then
 		return
 	end
@@ -87,8 +92,7 @@ local function onkilled(inst, data)
 		fx.Transform:SetRotation(inst.Transform:GetRotation())
 	end
 
-	-- 【贪婪掉落逻辑】检查是否应该跳过（墙体这类非生物）
-	-- 注意：以前这里还有 INLIMBO，同一 tick 连续击杀时后几只可能已经打上 INLIMBO 被误杀
+	-- 【贪婪掉落逻辑】检查是否应该跳过（带有epic等标签的生物）
 	if victim:HasAnyTag(GREED_CONFIG.TAG) then
 		return
 	end
@@ -344,21 +348,22 @@ local master_postinit = function(inst)
 	-- inst.components.luckuser:SetLuckSource(3, "madeleine_fortune")
 
 	-- 变身
-	inst:AddComponent("chiropteran")
-
 	inst:DoPeriodicTask(1, function()
 		if inst.components.chiropteran.transformed then
 			inst.components.sanity:DoDelta(-1, true)
 		end
 	end)
-	-- 理智归零时自动解除变身（注意是组件值，不是 replica）
 	inst:DoPeriodicTask(0.5, function()
-		local chiropteran = inst.components.chiropteran
-		if chiropteran.transformed and not chiropteran.forceformed and inst.components.sanity.current <= 0 then
-			chiropteran:ChiropteraStop(inst)
+		if
+			inst.components.chiropteran.transformed
+			and not inst.components.chiropteran.forceformed
+			and inst.replica.sanity == 0
+		then
+			inst.components.chiropteran:ChiropteraStop(inst)
 		end
 	end)
 
+	inst:AddComponent("chiropteran")
 	inst:ListenForEvent("death", function()
 		inst.components.chiropteran:ChiropteraStop(inst)
 	end)
