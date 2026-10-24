@@ -388,8 +388,9 @@ local function AddOutlineFrame(v, icon)
 	for i = 1, SOULSTAFF_ICON_OUTLINE_DIRS do
 		local angle = (i - 1) / SOULSTAFF_ICON_OUTLINE_DIRS * 2 * math.pi
 		local ghost = GLOBAL.Image(v.atlas, v.normal)
-		ghost:SetTint(0, 0, 0, 1) -- 乘黑：不管武器原色是什么，边缘都是纯黑
-		ghost:SetAlpha(SOULSTAFF_ICON_OUTLINE_ALPHA) -- 再整体淡化 -> 灰边
+		-- 乘黑：不管武器原色是什么，边缘都是黑；alpha 直接用 tint 的第四位，
+		-- Image 没有 SetAlpha 方法（会报 attempt to call method 'SetAlpha'）
+		ghost:SetTint(0, 0, 0, SOULSTAFF_ICON_OUTLINE_ALPHA)
 		v.widget:AddChild(ghost)
 		ghost:ScaleToSize(w, h)
 		ghost:SetPosition(math.cos(angle) * radius, math.sin(angle) * radius)
