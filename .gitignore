@@ -21,3 +21,6 @@ mod-backup-*/
 # 本地开发工具（Lua 语法检查用的 node 依赖，不属于模组内容）
 tools/
 .pnpm-store/
+
+# 提交信息临时文件
+.commit-msg.txt
