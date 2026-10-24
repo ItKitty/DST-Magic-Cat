@@ -147,6 +147,24 @@ local function StopEffects(inst)
 	inst:RemoveTag("m_soulstaff_active")
 end
 
+-- 兜底：0.5 秒查一次，防止「丢地上 / 被强制脱手」时拖影和光效残留
+local function StartEquipWatch(inst)
+	if inst._equipwatch ~= nil then
+		return
+	end
+	inst._equipwatch = inst:DoPeriodicTask(0.5, function()
+		if IsHeld(inst) then
+			return
+		end
+		StopTrail(inst)
+		StopEffects(inst)
+		if inst._equipwatch ~= nil then
+			inst._equipwatch:Cancel()
+			inst._equipwatch = nil
+		end
+	end)
+end
+
 -- 开关状态：只用一个字段存，不再借 machine 组件
 local function SetActive(inst, on)
 	on = on and true or false
@@ -262,6 +280,7 @@ local function onequip(inst, owner)
 
 	-- 常驻拖影（只要手持就有）
 	StartTrail(inst)
+	StartEquipWatch(inst)
 
 	-- 已经开启「吸血形态」时，一上手就恢复吸血与腐化光效
 	if inst.soulstaff_on then
