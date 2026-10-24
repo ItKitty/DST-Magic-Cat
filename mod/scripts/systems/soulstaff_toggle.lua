@@ -35,6 +35,29 @@ end)
 -- 取 RPC 表必须在 AddModRPCHandler 之后
 local TOGGLE_RPC = MOD_RPC[modname]["SoulStaffToggle"]
 
+-- 灵魂法杖腐化光效的实时调参（控制台用，不用退出重进）：
+--   M_SOULSTAFF_CORRUPT(缩放, x, y, z)
+--   M_SOULSTAFF_CORRUPT(0.5, 0, -20, 0)
+-- 偏移单位 1/100 世界单位，y 正数往下、负数往上
+GLOBAL.M_SOULSTAFF_CORRUPT_TUNING = { scale = 0.5, x = 0, y = -20, z = 0 }
+
+GLOBAL.M_SOULSTAFF_CORRUPT = function(scale, x, y, z)
+	local tuning = GLOBAL.M_SOULSTAFF_CORRUPT_TUNING
+	tuning.scale = scale or tuning.scale
+	tuning.x = x or tuning.x
+	tuning.y = y or tuning.y
+	tuning.z = z or tuning.z
+
+	local player = GLOBAL.ThePlayer
+	local inventory = player ~= nil and player.components.inventory or nil
+	local staff = inventory ~= nil and inventory:GetEquippedItem(GLOBAL.EQUIPSLOTS.HAND) or nil
+	if staff ~= nil and staff.RefreshCorruptFX ~= nil then
+		staff:RefreshCorruptFX()
+	end
+
+	print(string.format("[soulstaff] fx scale=%.2f x=%s y=%s z=%s", tuning.scale, tostring(tuning.x), tostring(tuning.y), tostring(tuning.z)))
+end
+
 -- 右键提示文字：原版 USESPELLBOOK 显示的是「阅读」，这里只把灵魂法杖改成「切换形态」
 local old_stroverridefn = ACTIONS.USESPELLBOOK.stroverridefn
 ACTIONS.USESPELLBOOK.stroverridefn = function(buffaction)

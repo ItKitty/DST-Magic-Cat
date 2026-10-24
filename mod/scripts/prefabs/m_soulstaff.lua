@@ -184,11 +184,24 @@ local function StaffTalk(inst, talk_type)
 end
 
 -- 腐化光效（king_cane 的 corrupt_level3，单独做的 FX prefab，不带武器贴图）
+-- 默认值；游戏内可以用控制台实时调：
+--   M_SOULSTAFF_CORRUPT(缩放, x, y, z)    例如 M_SOULSTAFF_CORRUPT(0.5, 0, -20, 0)
 -- 偏移量单位是 1/100 世界单位；y 正数往下、负数往上
-local CORRUPT_FX_SCALE = 1
-local CORRUPT_FX_OFFSET_X = 0
-local CORRUPT_FX_OFFSET_Y = 0
-local CORRUPT_FX_OFFSET_Z = 0
+local CORRUPT_FX_DEFAULT = {
+	scale = 0.5,
+	x = 0,
+	y = -20,
+	z = 0,
+}
+
+local function GetCorruptTuning()
+	-- rawget 绕过 strict：这个全局由 systems/soulstaff_toggle.lua 创建
+	local tuning = rawget(_G, "M_SOULSTAFF_CORRUPT_TUNING")
+	if type(tuning) == "table" then
+		return tuning
+	end
+	return CORRUPT_FX_DEFAULT
+end
 
 local function RemoveCorruptFX(inst)
 	if inst._corruptfx ~= nil then
@@ -207,17 +220,21 @@ local function SpawnCorruptFX(inst, owner)
 		return
 	end
 
+	local tuning = GetCorruptTuning()
+
 	fx.entity:SetParent(owner.entity)
-	fx.Follower:FollowSymbol(
-		owner.GUID,
-		"swap_object",
-		CORRUPT_FX_OFFSET_X,
-		CORRUPT_FX_OFFSET_Y,
-		CORRUPT_FX_OFFSET_Z
-	)
-	fx.Transform:SetScale(CORRUPT_FX_SCALE, CORRUPT_FX_SCALE, CORRUPT_FX_SCALE)
+	fx.Follower:FollowSymbol(owner.GUID, "swap_object", tuning.x, tuning.y, tuning.z)
+	fx.Transform:SetScale(tuning.scale, tuning.scale, tuning.scale)
 
 	inst._corruptfx = fx
+end
+
+-- 控制台调完参数后重新生成一次，不用退出重进
+local function RefreshCorruptFX(inst)
+	local owner = inst.components.inventoryitem and inst.components.inventoryitem:GetGrandOwner()
+	if owner ~= nil then
+		SpawnCorruptFX(inst, owner)
+	end
 end
 
 -- 装备/卸下
@@ -409,6 +426,7 @@ local function fn()
 	-- 开关状态与存档：吸血形态只由轮盘控制，状态记在 soulstaff_on 上
 	inst.soulstaff_on = false
 	inst.SetActive = SetActive
+	inst.RefreshCorruptFX = RefreshCorruptFX
 	inst.OnSave = onsave
 	inst.OnLoad = onload
 

@@ -22,6 +22,8 @@ local function fn()
 	inst.AnimState:SetBank("king_cane")
 	inst.AnimState:SetBuild("king_cane")
 	inst.AnimState:PlayAnimation("corrupt_level3", true)
+	-- 层级：负数往武器后面排，避免光效把整把武器糊住
+	inst.AnimState:SetFinalOffset(-1)
 
 	inst.Transform:SetNoFaced()
 
