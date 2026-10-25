@@ -12,15 +12,14 @@ local brain = require("brains/m_kitcoonbrain")
 local WAKE_TO_FOLLOW_DISTANCE = 6
 local SLEEP_NEAR_LEADER_DISTANCE = 5
 
-local KITCOON_BANK = "kitcoon"
-local KITCOON_BUILD = "kitcoon_forest_build"
+-- 外观：浣猫（catcoon）的骨架 + ticoon_build 贴图
+local KITCOON_BANK = "catcoon"
+local KITCOON_BUILD = "ticoon_build"
 
 local assets = {
-	Asset("ANIM", "anim/kitcoon_basic.zip"),
-	Asset("ANIM", "anim/kitcoon_emotes.zip"),
-	Asset("ANIM", "anim/kitcoon_traits.zip"),
-	Asset("ANIM", "anim/kitcoon_jump.zip"),
-	Asset("ANIM", "anim/" .. KITCOON_BUILD .. ".zip"),
+	Asset("ANIM", "anim/catcoon_basic.zip"),
+	Asset("ANIM", "anim/catcoon_actions.zip"),
+	Asset("ANIM", "anim/ticoon_build.zip"),
 }
 
 local function IsLeaderSleeping(inst)
