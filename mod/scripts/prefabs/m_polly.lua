@@ -65,6 +65,22 @@ local function fn()
 	inst:SetStateGraph("SGm_polly")
 	inst:SetBrain(brain)
 
+	-- 登场：从空中落下
+	inst.PlaySummonAppear = function(inst2)
+		if inst2.sg ~= nil then
+			inst2.sg:GoToState("summon_land")
+		end
+	end
+
+	-- 收回：垂直飞走，播完自己消失
+	inst.PlaySummonDespawn = function(inst2)
+		if inst2.sg ~= nil then
+			inst2.sg:GoToState("despawn_fly")
+		else
+			inst2:Remove()
+		end
+	end
+
 	return inst
 end
 

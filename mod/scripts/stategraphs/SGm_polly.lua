@@ -23,6 +23,52 @@ local events =
 
 local states =
 {
+	-- 召唤登场：从空中落下来
+	State{
+		name = "summon_land",
+		tags = { "busy" },
+
+		onenter = function(inst)
+			inst.components.locomotor:StopMoving()
+			inst.AnimState:PlayAnimation("land")
+		end,
+
+		events =
+		{
+			EventHandler("animover", function(inst)
+				inst.sg:GoToState("idle")
+			end),
+		},
+	},
+
+	-- 收回：垂直飞走，播完再删除自己
+	State{
+		name = "despawn_fly",
+		tags = { "busy" },
+
+		onenter = function(inst)
+			inst.components.locomotor:Stop()
+			inst.AnimState:PlayAnimation("takeoff_vertical_pre")
+			-- 兜底：万一动画播不完也不会永远留着
+			inst.sg:SetTimeout(1.2)
+		end,
+
+		ontimeout = function(inst)
+			if inst:IsValid() then
+				inst:Remove()
+			end
+		end,
+
+		events =
+		{
+			EventHandler("animover", function(inst)
+				if inst:IsValid() then
+					inst:Remove()
+				end
+			end),
+		},
+	},
+
 	State{
 		name = "idle",
 		tags = { "idle", "canrotate" },

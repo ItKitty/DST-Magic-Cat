@@ -24,7 +24,12 @@ local function RemoveSummonedPets(inst)
 			if pet.components.inventory ~= nil then
 				pet.components.inventory:DropEverything()
 			end
-			pet:Remove()
+			-- 各自播自己的退场（鹦鹉飞走 / 盐狗水花），没有就用直接删除兜底
+			if pet.PlaySummonDespawn ~= nil then
+				pet:PlaySummonDespawn()
+			else
+				pet:Remove()
+			end
 		end
 	end
 
@@ -57,6 +62,11 @@ local function SpawnSummonedPets(inst, owner)
 				)
 				if pet.components.follower ~= nil then
 					pet.components.follower:SetLeader(owner)
+				end
+
+				-- 登场表现（鹦鹉落下 / 盐狗水花）
+				if pet.PlaySummonAppear ~= nil then
+					pet:PlaySummonAppear()
 				end
 
 				inst.m_summoned_pets[prefab] = pet

@@ -144,6 +144,8 @@ local function fn()
 	inst.components.locomotor.runspeed = TUNING.POLLY_ROGERS_RUN_SPEED
 	inst.components.locomotor:SetTriggersCreep(false)
 	inst.components.locomotor:SetAllowPlatformHopping(true)
+	-- 允许把海面当路径（原版 polly/salty dog 都这么设），否则它永远走不进水
+	inst.components.locomotor.pathcaps = { allowocean = true }
 
 	inst:AddComponent("inventory")
 	inst.components.inventory.maxslots = 1
@@ -169,6 +171,27 @@ local function fn()
 
 	inst:SetStateGraph("SGm_salty_dog")
 	inst:SetBrain(brain)
+
+	-- 出现 / 消失都带水花
+	local function PlaySplash(inst2)
+		local fx = SpawnPrefab("splash_green")
+		if fx ~= nil then
+			fx.Transform:SetPosition(inst2.Transform:GetWorldPosition())
+		end
+	end
+
+	inst.PlaySummonAppear = function(inst2)
+		PlaySplash(inst2)
+	end
+
+	inst.PlaySummonDespawn = function(inst2)
+		PlaySplash(inst2)
+		inst2:DoTaskInTime(0.1, function(inst3)
+			if inst3:IsValid() then
+				inst3:Remove()
+			end
+		end)
+	end
 
 	StartSaltTimer(inst)
 
