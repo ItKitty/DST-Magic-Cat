@@ -130,7 +130,7 @@ local function fn()
 	inst.components.preserver:SetPerishRateMultiplier(0)
 
 	inst:AddComponent("locomotor")
-	inst.components.locomotor.walkspeed = TUNING.TICOON_SPEED
+	inst.components.locomotor.walkspeed = TUNING.TICOON_SPEED * 2
 	inst.components.locomotor:SetAllowPlatformHopping(true)
 
 	inst:AddComponent("embarker")
