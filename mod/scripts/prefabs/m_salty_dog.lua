@@ -147,6 +147,10 @@ local function fn()
 	-- 允许把海面当路径（原版 polly/salty dog 都这么设），否则它永远走不进水
 	inst.components.locomotor.pathcaps = { allowocean = true }
 
+	-- 上下水的 hop_pre 状态会直接读 components.embarker（commonstates.lua:1039）
+	inst:AddComponent("embarker")
+	inst.components.embarker.embark_speed = inst.components.locomotor.runspeed
+
 	inst:AddComponent("inventory")
 	inst.components.inventory.maxslots = 1
 
