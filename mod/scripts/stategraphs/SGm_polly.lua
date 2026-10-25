@@ -69,15 +69,24 @@ local states =
 		},
 	},
 
+	-- 常态：一直悬停飞行（对照原版 SGpolly_rogers 的 "idle" 状态）
 	State{
 		name = "idle",
-		tags = { "idle", "canrotate" },
+		tags = { "idle", "canrotate", "flying" },
 
 		onenter = function(inst)
 			inst.components.locomotor:StopMoving()
-			if not inst.AnimState:IsCurrentAnimation("idle_ground") then
-				inst.AnimState:PlayAnimation("idle_ground", true)
+			inst:AddTag("flying")
+			if not inst.AnimState:IsCurrentAnimation("idle") then
+				inst.AnimState:PlayAnimation("idle", true)
 			end
+			if not inst.SoundEmitter:PlayingSound("fly_lp") then
+				inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/flap_lp", "fly_lp")
+			end
+		end,
+
+		onexit = function(inst)
+			inst.SoundEmitter:KillSound("fly_lp")
 		end,
 	},
 
@@ -85,27 +94,29 @@ local states =
 		name = "walk_start",
 		tags = { "moving", "canrotate" },
 
+		-- 一直飞着：不走地面那套 walk_pre，直接接飞行循环
 		onenter = function(inst)
-			inst.AnimState:PlayAnimation("walk_pre")
+			inst.sg:GoToState("walk")
 		end,
-
-		events =
-		{
-			EventHandler("animover", function(inst)
-				inst.sg:GoToState("walk")
-			end),
-		},
 	},
 
 	State{
 		name = "walk",
-		tags = { "moving", "canrotate" },
+		tags = { "moving", "canrotate", "flying" },
 
 		onenter = function(inst)
+			inst:AddTag("flying")
 			inst.components.locomotor:WalkForward()
-			if not inst.AnimState:IsCurrentAnimation("walk_loop") then
-				inst.AnimState:PlayAnimation("walk_loop", true)
+			if not inst.AnimState:IsCurrentAnimation("glide") then
+				inst.AnimState:PlayAnimation("glide", true)
 			end
+			if not inst.SoundEmitter:PlayingSound("fly_lp") then
+				inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/flap_lp", "fly_lp")
+			end
+		end,
+
+		onexit = function(inst)
+			inst.SoundEmitter:KillSound("fly_lp")
 		end,
 	},
 
@@ -113,17 +124,11 @@ local states =
 		name = "walk_stop",
 		tags = { "canrotate" },
 
+		-- 停下就直接回悬停
 		onenter = function(inst)
 			inst.components.locomotor:StopMoving()
-			inst.AnimState:PlayAnimation("walk_pst")
+			inst.sg:GoToState("idle")
 		end,
-
-		events =
-		{
-			EventHandler("animover", function(inst)
-				inst.sg:GoToState("idle")
-			end),
-		},
 	},
 
 	-- 捡东西
