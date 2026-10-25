@@ -1,12 +1,13 @@
 -- This information tells other players more about the mod
 name = "[DST]Magic Cat"
 author = "NONTAN (Edited BY WYF)"
-version = "2.193"
+version = "2.121"
 description = "当前[版本󰀝]："
 	.. version
 	.. "\n󰀒【一旦接受了自己的软弱，那么我就是无敌的！】󰀒"
 
--- 2.12 增加了启迪碎片给火堆充能无限耐久有bug，添加特效
+-- 2.121 爱的力量，增加了一些原本的设想
+-- 2.12 爱的力量
 -- 2.19 增加了启迪碎片给火堆充能无限耐久
 -- 2.182 增加了抚摸宠物给礼物
 -- 2.181 增加了小恶魔待机动画
