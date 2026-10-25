@@ -68,6 +68,9 @@ end
 
 -- 身上盐满了，在岸上就抖一抖
 local function ShouldShakeSalt(inst)
+	if inst == nil then
+		return false
+	end
 	if inst.components.counter == nil or inst.IsInWater == nil then
 		return false
 	end
@@ -106,7 +109,10 @@ function SaltDogBrain:OnStart()
 				local leader = GetLeader(self.inst)
 				return leader ~= nil and leader:IsValid()
 			end, "has leader", PriorityNode({
-				IfNode(ShouldShakeSalt, "shake salt", ActionNode(function()
+				-- 注意：IfNode 的条件函数是不带参数的，必须用闭包把 self.inst 带进去
+				IfNode(function()
+					return ShouldShakeSalt(self.inst)
+				end, "shake salt", ActionNode(function()
 					self.inst:PushEvent("saltshake")
 				end)),
 				DoAction(self.inst, PickSaltAction, "pick up salt"),
