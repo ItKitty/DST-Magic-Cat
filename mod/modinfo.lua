@@ -1,13 +1,14 @@
 -- This information tells other players more about the mod
 name = "[DST]Magic Cat"
 author = "NONTAN (Edited BY WYF)"
-version = "2.121"
+version = "2.22"
 description = "当前[版本󰀝]："
 	.. version
 	.. "\n󰀒【一旦接受了自己的软弱，那么我就是无敌的！】󰀒"
 
--- 2.121 爱的力量，增加了一些原本的设想
--- 2.12 爱的力量
+-- 2.22 爱的力量，增加了箱子猫，后续考虑盐狗，鹦鹉也添加进来
+-- 2.21 爱的力量，增加了一些原本的设想
+-- 2.2 爱的力量
 -- 2.19 增加了启迪碎片给火堆充能无限耐久
 -- 2.182 增加了抚摸宠物给礼物
 -- 2.181 增加了小恶魔待机动画

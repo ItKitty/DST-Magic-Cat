@@ -13,8 +13,7 @@
 
 require("stategraphs/commonstates")
 
-local events =
-{
+local events = {
 	CommonHandlers.OnSleep(),
 	CommonHandlers.OnFreeze(),
 	CommonHandlers.OnElectrocute(),
@@ -28,17 +27,14 @@ local events =
 
 	-- 喂食：吃到东西时播 eat 动作
 	EventHandler("oneat", function(inst)
-		if inst.components.health == nil
-			or (not inst.components.health:IsDead() and not inst:HasTag("busy"))
-		then
+		if inst.components.health == nil or (not inst.components.health:IsDead() and not inst:HasTag("busy")) then
 			inst.sg:GoToState("eat")
 		end
 	end),
 }
 
-local states =
-{
-	State{
+local states = {
+	State({
 		name = "idle",
 		tags = { "idle", "canrotate" },
 
@@ -47,22 +43,20 @@ local states =
 			inst.AnimState:PlayAnimation("idle_loop")
 		end,
 
-		timeline =
-		{
+		timeline = {
 			TimeEvent(25 * FRAMES, function(inst)
-				inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/swipe_tail")
+				-- inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/swipe_tail")
 			end),
 		},
 
-		events =
-		{
+		events = {
 			EventHandler("animover", function(inst)
 				inst.sg:GoToState("idle")
 			end),
 		},
-	},
+	}),
 
-	State{
+	State({
 		name = "walk_start",
 		tags = { "moving", "canrotate" },
 
@@ -70,15 +64,14 @@ local states =
 			inst.AnimState:PlayAnimation("walk_pre")
 		end,
 
-		events =
-		{
+		events = {
 			EventHandler("animover", function(inst)
 				inst.sg:GoToState("walk")
 			end),
 		},
-	},
+	}),
 
-	State{
+	State({
 		name = "walk",
 		tags = { "moving", "canrotate" },
 
@@ -87,23 +80,29 @@ local states =
 			inst.AnimState:PlayAnimation("walk_loop")
 		end,
 
-		events =
-		{
+		events = {
 			EventHandler("animover", function(inst)
 				inst.sg:GoToState("walk")
 			end),
 		},
 
-		timeline =
-		{
-			TimeEvent(FRAMES, function(inst) PlayFootstep(inst) end),
-			TimeEvent(8 * FRAMES, function(inst) PlayFootstep(inst) end),
-			TimeEvent(15 * FRAMES, function(inst) PlayFootstep(inst) end),
-			TimeEvent(23 * FRAMES, function(inst) PlayFootstep(inst) end),
+		timeline = {
+			TimeEvent(FRAMES, function(inst)
+				PlayFootstep(inst)
+			end),
+			TimeEvent(8 * FRAMES, function(inst)
+				PlayFootstep(inst)
+			end),
+			TimeEvent(15 * FRAMES, function(inst)
+				PlayFootstep(inst)
+			end),
+			TimeEvent(23 * FRAMES, function(inst)
+				PlayFootstep(inst)
+			end),
 		},
-	},
+	}),
 
-	State{
+	State({
 		name = "walk_stop",
 		tags = { "canrotate" },
 
@@ -112,15 +111,14 @@ local states =
 			inst.AnimState:PlayAnimation("walk_pst")
 		end,
 
-		events =
-		{
+		events = {
 			EventHandler("animover", function(inst)
 				inst.sg:GoToState("idle")
 			end),
 		},
-	},
+	}),
 
-	State{
+	State({
 		name = "eat",
 		tags = { "busy" },
 
@@ -130,36 +128,44 @@ local states =
 			inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/pickup")
 		end,
 
-		timeline =
-		{
-			TimeEvent(6 * FRAMES, function(inst) PlayFootstep(inst) end),
-			TimeEvent(13 * FRAMES, function(inst) PlayFootstep(inst) end),
-			TimeEvent(20 * FRAMES, function(inst) PlayFootstep(inst) end),
-			TimeEvent(27 * FRAMES, function(inst) PlayFootstep(inst) end),
-			TimeEvent(34 * FRAMES, function(inst) PlayFootstep(inst) end),
-			TimeEvent(42 * FRAMES, function(inst) PlayFootstep(inst) end),
+		timeline = {
+			TimeEvent(6 * FRAMES, function(inst)
+				PlayFootstep(inst)
+			end),
+			TimeEvent(13 * FRAMES, function(inst)
+				PlayFootstep(inst)
+			end),
+			TimeEvent(20 * FRAMES, function(inst)
+				PlayFootstep(inst)
+			end),
+			TimeEvent(27 * FRAMES, function(inst)
+				PlayFootstep(inst)
+			end),
+			TimeEvent(34 * FRAMES, function(inst)
+				PlayFootstep(inst)
+			end),
+			TimeEvent(42 * FRAMES, function(inst)
+				PlayFootstep(inst)
+			end),
 		},
 
-		events =
-		{
+		events = {
 			EventHandler("animover", function(inst)
 				inst.sg:GoToState("idle")
 			end),
 		},
-	},
+	}),
 }
 
 -- 受击 / 攻击 / 死亡：宠物没有 combat 和 health，这两套状态实际上进不去，
 -- 保留定义只是为了别的事件意外推过来时不至于找不到状态。
 -- 攻击时间轴留空，避免在没有 combat 组件时被调用。
-CommonStates.AddCombatStates(states,
-{
+CommonStates.AddCombatStates(states, {
 	hittimeline = {},
 
 	attacktimeline = {},
 
-	deathtimeline =
-	{
+	deathtimeline = {
 		TimeEvent(1 * FRAMES, function(inst)
 			inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/death")
 		end),
@@ -167,24 +173,20 @@ CommonStates.AddCombatStates(states,
 })
 
 -- 睡觉（配合 sleeper 组件）
-CommonStates.AddSleepStates(states,
-{
-	starttimeline =
-	{
+CommonStates.AddSleepStates(states, {
+	starttimeline = {
 		TimeEvent(26 * FRAMES, function(inst)
 			inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/yawn")
 		end),
 	},
 
-	sleeptimeline =
-	{
+	sleeptimeline = {
 		TimeEvent(37 * FRAMES, function(inst)
 			inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/sleep")
 		end),
 	},
 
-	waketimeline =
-	{
+	waketimeline = {
 		TimeEvent(31 * FRAMES, function(inst)
 			inst.SoundEmitter:PlaySound("dontstarve_DLC001/creatures/catcoon/pickup")
 		end),

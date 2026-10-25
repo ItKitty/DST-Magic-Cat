@@ -139,26 +139,12 @@ local function fn()
 	inst:AddComponent("drownable")
 	inst.components.drownable.enabled = false
 
-	inst:AddComponent("timer")
-
 	-- 不给 health / combat：这只宠物不参战、也不会死，
 	-- 免得肚子里的东西跟着一起没了。战斗中由大脑的 RunAway 自己躲开。
 	-- 状态机用自己裁的 SGm_kitcoon（不读 combat，也不会有 despawn 逻辑）
 
 	inst:SetBrain(brain)
 	inst:SetStateGraph("SGm_kitcoon")
-
-	-- 兜底保鲜：每 10 秒把格子里的食物新鲜度往回补 1%
-	inst:DoPeriodicTask(10, function(inst2)
-		if inst2.components.container == nil then
-			return
-		end
-		for _, item in pairs(inst2.components.container.slots) do
-			if item.components.perishable ~= nil then
-				item.components.perishable:ReducePercent(-0.01)
-			end
-		end
-	end)
 
 	-- 固定名字「猪咪」：稍微延后一点，确保读档时名字组件的 OnLoad 已经跑完
 	inst:DoTaskInTime(0.1, function(inst2)
