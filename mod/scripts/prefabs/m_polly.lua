@@ -17,9 +17,14 @@ local function fn()
 	inst.entity:AddDynamicShadow()
 	inst.entity:AddNetwork()
 
-	-- 无碰撞体积：幽灵物理 + 去掉碰撞体（和小动物一样的做法）
-	MakeGhostPhysics(inst, 1, .1)
-	RemovePhysicsColliders(inst)
+	-- 物理对照原版 prefabs/polly_rogers.lua:40-48 的「飞行」分支：
+	-- 用真实动态刚体（这样 Physics:SetMotorVel 才推得动），
+	-- 但碰撞掩码只给 GROUND，不会和玩家/生物互推 —— 依旧无碰撞体积。
+	inst.entity:AddPhysics()
+	inst.Physics:SetCollisionGroup(COLLISION.CHARACTERS)
+	inst.Physics:SetCollisionMask(COLLISION.GROUND)
+	inst.Physics:SetMass(1)
+	inst.Physics:SetSphere(1)
 
 	inst.DynamicShadow:SetSize(1, .75)
 	inst.Transform:SetFourFaced()
