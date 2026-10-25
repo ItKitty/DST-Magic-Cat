@@ -29,6 +29,9 @@ local events =
 local states =
 {
 	-- 出场：从高空俯冲下来，落地后再升起悬停
+	-- 注意：这里不依赖 Physics:SetMotorVel —— 我们的宠物用的是幽灵物理（无碰撞），
+	-- motorvel 在它身上不生效，鹦鹉会一直卡在 y = 15 只剩个影子。
+	-- 改成每帧直接 Teleport 下降，稳定可控。
 	State{
 		name = "glide",
 		tags = { "busy", "flight" },
@@ -37,23 +40,37 @@ local states =
 			inst:AddTag("NOCLICK")
 			inst.AnimState:PlayAnimation("glide", true)
 			inst.SoundEmitter:PlaySound("dontstarve/birds/flyin")
-			-- 向下冲：原版是 -20 ~ -10
-			inst.Physics:SetMotorVel(0, math.random() * 10 - 20, 0)
+			inst.Physics:Stop()
+			-- 兜底：5 秒还没落地就强行落地
+			inst.sg:SetTimeout(5)
 		end,
 
-		onupdate = function(inst)
-			local x, y, z = inst.Transform:GetWorldPosition()
-
-			if y < 2 then
-				inst.Physics:SetMotorVel(0, 0, 0)
+		onupdate = function(inst, dt)
+			if inst.sg.statemem.landed then
+				return
 			end
 
-			if y <= 0.5 then
+			local x, y, z = inst.Transform:GetWorldPosition()
+			local newy = y - 9 * dt
+			if newy > 0 then
+				inst.Physics:Teleport(x, newy, z)
+			else
 				inst.Physics:Stop()
 				inst.Physics:Teleport(x, 0, z)
 				inst.AnimState:PlayAnimation("land")
 				inst.DynamicShadow:Enable(true)
 				inst.sg.statemem.landed = true
+			end
+		end,
+
+		ontimeout = function(inst)
+			if not inst.sg.statemem.landed then
+				local x, _, z = inst.Transform:GetWorldPosition()
+				inst.Physics:Stop()
+				inst.Physics:Teleport(x, 0, z)
+				inst.DynamicShadow:Enable(true)
+				inst.sg.statemem.landed = true
+				inst.AnimState:PlayAnimation("land")
 			end
 		end,
 
@@ -100,19 +117,22 @@ local states =
 			inst.sg:SetTimeout(0.1 + math.random() * 0.2)
 		end,
 
+		-- 上升同样不用 motorvel，直接每帧 Teleport（幽灵物理不吃 motorvel）
 		ontimeout = function(inst)
-			if inst.sg.statemem.vert then
-				inst.Physics:SetMotorVel(math.random() * 4 - 2, math.random() * 5 + 15, math.random() * 4 - 2)
-			else
-				inst.Physics:SetMotorVel(math.random() * 8 + 8, math.random() * 5 + 15, math.random() * 4 - 2)
-			end
-
-			-- 原版这里是 GoHome 收回帽子；我们没有帽子，让它升起来再删掉
-			inst:DoTaskInTime(0.4, function(inst2)
+			inst.sg.statemem.rising = true
+			-- 原版这里是 GoHome 收回帽子；我们没有帽子，升起来后删掉
+			inst:DoTaskInTime(0.45, function(inst2)
 				if inst2:IsValid() then
 					inst2:Remove()
 				end
 			end)
+		end,
+
+		onupdate = function(inst, dt)
+			if inst.sg.statemem.rising then
+				local x, y, z = inst.Transform:GetWorldPosition()
+				inst.Physics:Teleport(x, y + 14 * dt, z)
+			end
 		end,
 	},
 

@@ -86,7 +86,7 @@ local function ShouldShakeSalt(inst)
 	return not inst:IsInWater()
 end
 
--- 找附近的海面：主人 8 格内找一圈，找到就过去泡着
+-- 找附近的海面（对照原版 pollyrogerbrain.lua:68-88 的 FindNearbyOceanPos）
 local function FindNearbyOceanPos(inst)
 	local leaderorself = GetLeader(inst) or inst
 	local x, _, z = leaderorself.Transform:GetWorldPosition()
@@ -100,6 +100,30 @@ local function FindNearbyOceanPos(inst)
 		end
 	end
 	return nil
+end
+
+-- 原版关键点（pollyrogerbrain.lua:133-146）：
+-- 主人离「找到的海面点」足够近时，Follow 的目标返回 nil，
+-- 这样大脑才会往下走到 Wander 节点，主动去水里泡着。
+-- 之前我一直直接 Follow 主人，所以永远轮不到 Wander，自然不下水。
+local MAX_SALT_IDLE_DIST_SQ = 16 * 16
+local nearbyoceanpoint = nil
+
+local function FollowTarget(inst)
+	local leader = GetLeader(inst)
+	if leader == nil or not leader:IsValid() then
+		return nil
+	end
+	if nearbyoceanpoint ~= nil
+		and leader:GetDistanceSqToPoint(nearbyoceanpoint:Get()) < MAX_SALT_IDLE_DIST_SQ
+	then
+		return nil
+	end
+	return leader
+end
+
+local function IsOceanPoint(pt)
+	return pt ~= nil and TheWorld.Map:IsOceanAtPoint(pt.x, pt.y, pt.z)
 end
 
 local SaltDogBrain = Class(Brain, function(self, inst)
@@ -123,9 +147,12 @@ function SaltDogBrain:OnStart()
 				end)),
 				DoAction(self.inst, PickSaltAction, "pick up salt"),
 				DoAction(self.inst, GiveAction, "give salt to leader"),
-				Follow(self.inst, GetLeader, 0, 4, 6),
+				Follow(self.inst, FollowTarget, 0, 4, 6),
 				FaceEntity(self.inst, GetLeader, KeepFaceTargetFn),
-				Wander(self.inst, FindNearbyOceanPos, MAX_WANDER, WANDER_TIMING),
+				Wander(self.inst, function(inst)
+					nearbyoceanpoint = FindNearbyOceanPos(inst)
+					return nearbyoceanpoint
+				end, MAX_WANDER, WANDER_TIMING, nil, nil, IsOceanPoint),
 				StandStill(self.inst),
 			}, 0.25))),
 			StandStill(self.inst),

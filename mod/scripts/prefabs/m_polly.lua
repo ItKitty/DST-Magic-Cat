@@ -70,6 +70,15 @@ local function fn()
 		if inst2.sg ~= nil then
 			inst2.sg:GoToState("glide")
 		end
+		-- 兜底：万一状态没进对，6 秒后强制把它拉回地面，避免只剩一个影子挂在天上
+		inst2:DoTaskInTime(6, function(inst3)
+			if inst3:IsValid() then
+				local x, y, z = inst3.Transform:GetWorldPosition()
+				if y > 1 then
+					inst3.Physics:Teleport(x, 0, z)
+				end
+			end
+		end)
 	end
 
 	-- 收回：flyaway 状态向上飞走，状态里会自己 Remove
