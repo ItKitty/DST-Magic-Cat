@@ -4,6 +4,73 @@ local assets = {
 
 local prefabs = {}
 
+--------------------------------------------------------------------------
+-- 护符召唤物：带对应材料时召唤，脱下护符就消失
+--   龙鳞（dragon_scales）      -> 鹦鹉 m_polly
+--   巨鹿眼球（deerclops_eyeball）-> 盐狗 m_salty_dog
+--------------------------------------------------------------------------
+local SUMMONED_PETS = {
+	dragon_scales = "m_polly",
+	deerclops_eyeball = "m_salty_dog",
+}
+
+local function RemoveSummonedPets(inst)
+	if inst.m_summoned_pets == nil then
+		return
+	end
+
+	for _, pet in pairs(inst.m_summoned_pets) do
+		if pet:IsValid() then
+			if pet.components.inventory ~= nil then
+				pet.components.inventory:DropEverything()
+			end
+			pet:Remove()
+		end
+	end
+
+	inst.m_summoned_pets = nil
+end
+
+local function SpawnSummonedPets(inst, owner)
+	if owner == nil or not owner:IsValid() then
+		return
+	end
+
+	local traits = inst.components.amulettraits
+	if traits == nil then
+		return
+	end
+
+	inst.m_summoned_pets = inst.m_summoned_pets or {}
+
+	for skill, prefab in pairs(SUMMONED_PETS) do
+		local pet = inst.m_summoned_pets[prefab]
+		if traits:HasSkill(skill) and (pet == nil or not pet:IsValid()) then
+			pet = SpawnPrefab(prefab)
+			if pet ~= nil then
+				local pt = owner:GetPosition()
+				local offset = FindWalkableOffset(pt, math.random() * TWOPI, 2, 6, true, true)
+				pet.Transform:SetPosition(
+					pt.x + (offset ~= nil and offset.x or 0),
+					0,
+					pt.z + (offset ~= nil and offset.z or 0)
+				)
+				if pet.components.follower ~= nil then
+					pet.components.follower:SetLeader(owner)
+				end
+
+				inst.m_summoned_pets[prefab] = pet
+				inst:ListenForEvent("onremove", function()
+					if inst.m_summoned_pets ~= nil then
+						inst.m_summoned_pets[prefab] = nil
+					end
+				end, pet)
+			end
+		end
+	end
+end
+
+
 local function onequip(inst, owner)
 	-- 处理皮肤和动画
 	-- local skin_build = inst:GetSkinBuild()
@@ -54,9 +121,14 @@ local function onequip(inst, owner)
 	amulettraits:onequip_protect(inst, owner)
 	-- 骨甲
 	amulettraits:InitializeDefenseSystem()
+	-- 召唤物（龙鳞 -> 鹦鹉，巨鹿眼球 -> 盐狗）
+	SpawnSummonedPets(inst, owner)
 end
 
 local function onunequip(inst, owner)
+	-- 先收回召唤物，避免它们留在世界上
+	RemoveSummonedPets(inst)
+
 	-- if owner.sg == nil or owner.sg.currentstate.name ~= "amulet_rebirth" then
 	-- 	owner.AnimState:ClearOverrideSymbol("swap_body")
 	-- end
@@ -213,6 +285,11 @@ local function fn()
 	-- 地面效果
 	if not inst:IsInLimbo() then
 		ShowGroundFX(inst)
+	end
+
+	-- 护符本身被移除/销毁时，一并收回召唤物
+	inst.OnRemoveEntity = function(inst2)
+		RemoveSummonedPets(inst2)
 	end
 
 	return inst

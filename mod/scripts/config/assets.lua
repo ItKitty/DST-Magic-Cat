@@ -101,6 +101,10 @@ PrefabFiles = {
 	-- 玛德琳的专属宠物（浣猫崽）
 	"m_kitcoon",
 
+	-- 护符召唤物：鹦鹉 / 盐狗
+	"m_polly",
+	"m_salty_dog",
+
 	-- 角色相关
 	"madeleine",
 	"madeleine_none",
