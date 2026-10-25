@@ -143,10 +143,10 @@ local function fn()
 
 	-- 不给 health / combat：这只宠物不参战、也不会死，
 	-- 免得肚子里的东西跟着一起没了。战斗中由大脑的 RunAway 自己躲开。
-	-- （SGticoon 的 idle 状态会读 combat，已在 vanilla_hooks 里对 m_kitcoon 打过补丁）
+	-- 状态机用自己裁的 SGm_kitcoon（不读 combat，也不会有 despawn 逻辑）
 
 	inst:SetBrain(brain)
-	inst:SetStateGraph("SGticoon")
+	inst:SetStateGraph("SGm_kitcoon")
 
 	-- 兜底保鲜：每 10 秒把格子里的食物新鲜度往回补 1%
 	inst:DoPeriodicTask(10, function(inst2)
