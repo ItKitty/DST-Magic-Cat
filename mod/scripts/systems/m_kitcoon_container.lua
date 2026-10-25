@@ -39,42 +39,8 @@ local function GetPet(player)
 end
 
 --------------------------------------------------------------------------
--- /petname <名字>：给宠物改名
+-- 名字固定为「猪咪」，不再提供改名命令
 --------------------------------------------------------------------------
-AddModUserCommand("petname", "petname", {
-	prettyname = function()
-		return "改名"
-	end,
-	desc = function()
-		return "给玛德琳的浣猫崽改名字，例：/petname 团子"
-	end,
-	permission = "USER",
-	params = { "name" },
-	slash = true,
-	usermenu = false,
-	servermenu = false,
-	vote = false,
-
-	serverfn = function(params_, caller)
-		local player = UserToPlayer(caller.userid)
-		local pet = GetPet(player)
-		if pet == nil then
-			if player ~= nil and player.components.talker ~= nil then
-				player.components.talker:Say("我的小猫不在身边。")
-			end
-			return
-		end
-
-		local name = params_ ~= nil and params_[1] or nil
-		if name == nil or name == "" then
-			return
-		end
-
-		if pet.components.named ~= nil then
-			pet.components.named:SetName(name, player)
-		end
-	end,
-})
 
 --------------------------------------------------------------------------
 -- /petskin <皮肤>：换皮肤（base / forest / savanna / deciduous / marsh /

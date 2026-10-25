@@ -129,23 +129,8 @@ STRINGS.NAMES.M_STAFFLIGHT = "星星之火"
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.M_STAFFLIGHT = "我的火只温暖自己人，烧不到你的花草。"
 STRINGS.CHARACTERS.MADELEINE.DESCRIBE.M_STAFFLIGHT = "借来的火，只负责亮着和暖着。"
 
--- 专属宠物：浣猫崽
-STRINGS.NAMES.M_KITCOON = "浣猫崽"
+-- 专属宠物：浣猫崽（名字固定）
+STRINGS.M_KITCOON_NAME = "猪咪"
+STRINGS.NAMES.M_KITCOON = "猪咪"
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.M_KITCOON = "肚皮鼓鼓的，里面装了不少好东西。"
 STRINGS.CHARACTERS.MADELEINE.DESCRIBE.M_KITCOON = "我的小仓库，也是我的小跟班。"
-
--- 随机名字池（生成时抽一个，之后可以用 /petname 改）
-STRINGS.M_KITCOON_NAMES = {
-	"团子",
-	"芝麻",
-	"汤圆",
-	"煤球",
-	"糯米",
-	"花卷",
-	"豆沙",
-	"橘子",
-	"布丁",
-	"麻薯",
-	"栗子",
-	"奶糖",
-}

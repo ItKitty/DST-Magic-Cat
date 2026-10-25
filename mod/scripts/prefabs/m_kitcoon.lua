@@ -147,9 +147,8 @@ local function fn()
 		return inst
 	end
 
-	-- 起名
+	-- 起名（名字固定，见下面的 SetName）
 	inst:AddComponent("named")
-	inst.components.named.possiblenames = STRINGS.M_KITCOON_NAMES
 
 	inst:AddComponent("inspectable")
 
@@ -222,10 +221,10 @@ local function fn()
 		end
 	end)
 
-	-- 首次生成时随机起个名字
-	inst:DoTaskInTime(0, function(inst2)
-		if inst2.components.named ~= nil and inst2.name == nil then
-			inst2.components.named:PickNewName()
+	-- 固定名字「猪咪」：稍微延后一点，确保读档时名字组件的 OnLoad 已经跑完
+	inst:DoTaskInTime(0.1, function(inst2)
+		if inst2.components.named ~= nil then
+			inst2.components.named:SetName(STRINGS.M_KITCOON_NAME)
 		end
 	end)
 
