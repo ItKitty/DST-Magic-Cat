@@ -19,6 +19,12 @@ local function GetLeader(inst)
 	return inst.components.follower ~= nil and inst.components.follower:GetLeader() or nil
 end
 
+-- FaceEntity 的第三个参数 keepfn 是必填的（behaviours/faceentity.lua:48 会直接调用），
+-- 少了它会在 Visit 里报 "attempt to call field 'keepfn' (a nil value)"
+local function KeepFaceTargetFn(inst, target)
+	return GetLeader(inst) == target
+end
+
 local function IsSalt(item)
 	if item == nil or not item:IsValid() then
 		return false
@@ -118,7 +124,7 @@ function SaltDogBrain:OnStart()
 				DoAction(self.inst, PickSaltAction, "pick up salt"),
 				DoAction(self.inst, GiveAction, "give salt to leader"),
 				Follow(self.inst, GetLeader, 0, 4, 6),
-				FaceEntity(self.inst, GetLeader),
+				FaceEntity(self.inst, GetLeader, KeepFaceTargetFn),
 				Wander(self.inst, FindNearbyOceanPos, MAX_WANDER, WANDER_TIMING),
 				StandStill(self.inst),
 			}, 0.25))),

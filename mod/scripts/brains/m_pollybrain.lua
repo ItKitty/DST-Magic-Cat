@@ -13,6 +13,12 @@ local function GetLeader(inst)
 	return inst.components.follower ~= nil and inst.components.follower:GetLeader() or nil
 end
 
+-- FaceEntity 的第三个参数 keepfn 是必填的（behaviours/faceentity.lua:48 会直接调用），
+-- 少了它会在 Visit 里报 "attempt to call field 'keepfn' (a nil value)"
+local function KeepFaceTargetFn(inst, target)
+	return GetLeader(inst) == target
+end
+
 local function IsSeed(item)
 	if item == nil or not item:IsValid() then
 		return false
@@ -80,7 +86,7 @@ function PollyBrain:OnStart()
 				DoAction(self.inst, PickSeedAction, "pick up seeds"),
 				DoAction(self.inst, GiveAction, "give seeds to leader"),
 				Follow(self.inst, GetLeader, 0, 4, 6),
-				FaceEntity(self.inst, GetLeader),
+				FaceEntity(self.inst, GetLeader, KeepFaceTargetFn),
 				StandStill(self.inst),
 			}, 0.25))),
 			StandStill(self.inst),
