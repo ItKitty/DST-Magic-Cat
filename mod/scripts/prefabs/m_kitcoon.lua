@@ -16,10 +16,6 @@ local SLEEP_NEAR_LEADER_DISTANCE = 5
 local KITCOON_BANK = "catcoon"
 local KITCOON_BUILD = "ticoon_build"
 
--- 黑色外观：原版没有黑色 catcoon 的 build，用颜色乘法把贴图压暗
--- （0.22 左右是「看着是黑猫但还能看出轮廓」的值，太低会变成一团黑影）
-local KITCOON_TINT = { 0.22, 0.22, 0.26, 1 }
-
 local assets = {
 	Asset("ANIM", "anim/catcoon_basic.zip"),
 	Asset("ANIM", "anim/catcoon_actions.zip"),
@@ -71,7 +67,6 @@ local function fn()
 
 	inst.AnimState:SetBank(KITCOON_BANK)
 	inst.AnimState:SetBuild(KITCOON_BUILD)
-	inst.AnimState:SetMultColour(KITCOON_TINT[1], KITCOON_TINT[2], KITCOON_TINT[3], KITCOON_TINT[4])
 	inst.AnimState:PlayAnimation("idle_loop")
 
 	MakeCharacterPhysics(inst, 1, 0.5)
@@ -135,7 +130,7 @@ local function fn()
 	inst.components.preserver:SetPerishRateMultiplier(0)
 
 	inst:AddComponent("locomotor")
-	inst.components.locomotor.walkspeed = TUNING.TICOON_SPEED * 2
+	inst.components.locomotor.walkspeed = TUNING.TICOON_SPEED * 1.5
 	inst.components.locomotor:SetAllowPlatformHopping(true)
 
 	inst:AddComponent("embarker")
