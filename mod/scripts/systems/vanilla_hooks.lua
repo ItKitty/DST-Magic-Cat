@@ -422,3 +422,49 @@ AddClassPostConstruct("screens/playerhud", function(self)
 		return ret
 	end
 end)
+--------------------------------------------------------------------------
+-- 浣猫崽（m_kitcoon）：SGticoon 的兼容补丁
+-- 原版 SGticoon 是给「任务浣猫崽」写的，两处逻辑对我们的宠物不适用：
+--   1) idle 状态：persists == false 时会进 despawn（我们的宠物由 m_petleash 存档，
+--      本来就是 persists = false），而且它直接读 inst.components.combat.target
+--   2) walk_stop：animover 时会读 inst.components.entitytracker / questowner
+--      （找小浣猫任务那套，我们不用）
+-- 这里只对 m_kitcoon 短路这两段，其它生物/原版浣猫崽仍走原逻辑。
+--------------------------------------------------------------------------
+
+local function HookTicoonStateForPet(sgname)
+	AddStategraphPostInit(sgname, function(sg)
+		local idle = sg.states["idle"]
+		if idle ~= nil and idle.onenter ~= nil then
+			local old_onenter = idle.onenter
+			idle.onenter = function(inst, ...)
+				if inst.prefab == "m_kitcoon" then
+					inst.components.locomotor:StopMoving()
+					inst.AnimState:PlayAnimation("idle_loop")
+					return
+				end
+				return old_onenter(inst, ...)
+			end
+		end
+
+		local walk_stop = sg.states["walk_stop"]
+		if walk_stop ~= nil and walk_stop.events ~= nil then
+			for _, handler in pairs(walk_stop.events) do
+				if type(handler) == "table" and handler.name == "animover" and type(handler.fn) == "function" then
+					local old_fn = handler.fn
+					handler.fn = function(inst, data)
+						if inst.prefab == "m_kitcoon" then
+							inst.sg:GoToState("idle")
+							return
+						end
+						return old_fn(inst, data)
+					end
+				end
+			end
+		end
+	end)
+end
+
+-- 注意：SGticoon 文件里 StateGraph 的名字是 "titcoon"（原版笔误），
+-- PostInit 是按这个内部名字匹配的。
+HookTicoonStateForPet("titcoon")

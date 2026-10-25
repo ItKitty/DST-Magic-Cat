@@ -7,7 +7,7 @@
 --   · container 用 m_kitcoon 布局（3x4，和龙鳞箱一样），开启无限堆叠
 --   · preserver 保鲜 + 定期回满新鲜度
 
-local brain = require("brains/m_kitcoonbrain")
+local brain = require("brains/m_ticoonbrain")
 
 local WAKE_TO_FOLLOW_DISTANCE = 6
 local SLEEP_NEAR_LEADER_DISTANCE = 5
@@ -144,8 +144,13 @@ local function fn()
 	inst:AddComponent("crittertraits")
 	inst:AddComponent("timer")
 
+	-- SGticoon 的 idle/attack 等状态会读 combat 组件，这里补一个（不加任何攻击逻辑，
+	-- 大脑里没有 ChaseAndAttack，所以它不会主动打架）
+	inst:AddComponent("combat")
+	inst.components.combat.defaultdamage = 0
+
 	inst:SetBrain(brain)
-	inst:SetStateGraph("SGcritter_kitten")
+	inst:SetStateGraph("SGticoon")
 
 	-- 兜底保鲜：每 10 秒把格子里的食物新鲜度往回补 1%
 	inst:DoPeriodicTask(10, function(inst2)
