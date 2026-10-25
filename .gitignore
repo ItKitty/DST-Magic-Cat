@@ -24,3 +24,6 @@ tools/
 
 # 提交信息临时文件
 .commit-msg.txt
+
+# 外部知识库（饥荒 Mod 工程知识库，仅本地参考，不随模组仓库提交）
+knowledges/
