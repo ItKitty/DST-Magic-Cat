@@ -1,7 +1,7 @@
 -- m_kitcoon
 -- 玛德琳的专属浣猫崽：会跟随、可改名/换皮，肚子里是一个 3x4 的保鲜仓库。
 -- 参考工坊「(专属)浣猫崽」(2904374520) 的思路重写：
---   · 用原版浣猫崽（kittington）的美术，皮肤用原版 kitcoon 各地形 build
+--   · 用原版「大号浣猫崽」（kitcoon）的美术，皮肤用各地形 build 切换
 --   · 跟随/存档交给自定义的 m_petleash 组件，不碰原版 petleash，
 --     所以不影响玩家召唤其它宠物
 --   · container 用 m_kitcoon 布局（3x4，和龙鳞箱一样），开启无限堆叠
@@ -13,8 +13,9 @@ local brain = require("brains/m_kitcoonbrain")
 local WAKE_TO_FOLLOW_DISTANCE = 6
 local SLEEP_NEAR_LEADER_DISTANCE = 5
 
-local BASE_BANK = "kittington"
-local BASE_BUILD = "kittington_build"
+-- 默认外观用「大号浣猫崽」：kitcoon bank + forest 配色
+local BASE_BANK = "kitcoon"
+local BASE_BUILD = "kitcoon_forest_build"
 
 -- 换皮：原版 kitcoon 的各地形 build
 local SKIN_BUILDS = {
@@ -30,12 +31,7 @@ local SKIN_BUILDS = {
 }
 
 local assets = {
-	Asset("ANIM", "anim/kittington_build.zip"),
-	Asset("ANIM", "anim/kittington_basic.zip"),
-	Asset("ANIM", "anim/kittington_emotes.zip"),
-	Asset("ANIM", "anim/kittington_traits.zip"),
-	Asset("ANIM", "anim/kittington_jump.zip"),
-	-- 换皮用的资源
+	-- 大号浣猫崽的骨架与动作
 	Asset("ANIM", "anim/kitcoon_basic.zip"),
 	Asset("ANIM", "anim/kitcoon_emotes.zip"),
 	Asset("ANIM", "anim/kitcoon_traits.zip"),
