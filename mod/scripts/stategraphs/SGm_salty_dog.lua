@@ -1,8 +1,11 @@
 -- SGm_salty_dog
--- 盐狗自己的状态机：待机 / 走 / 捡（fetch）/ 交（give）/ 抖盐（saltshake）+ 上下水。
--- 不抄原版 SGsalty_dog 的关键原因：它默认状态是 "summon"，并且 summon / desummon /
--- despawn 都会去碰 inst.hat.components.spawner（原版是挂在帽子上的召唤物），
--- 我们的盐狗是护符直接生成的，没有 hat，进这些状态会直接报错。
+-- 盐狗自己的状态机：待机 / 走 / 捡（fetch）/ 交（give）/ 抖盐（saltshake）
+-- + 上下水 + 出场（summon）/退场（desummon）。
+-- 出场、退场的动画与特效对照原版 SGsalty_dog:148-229：
+--   summon  ：wave_splash → 隐藏 → 3 帧后现身、向前跳（jump_pre/jump_pst）
+--   desummon：丢背包 → jump_pre/jump_pst → 6 帧后 wave_splash → 删除
+-- 唯一差异：原版会 inst.hat.components.spawner:GoHome(inst) 把孩子收回帽子，
+-- 我们是护符直接生成的，没有 hat，所以改成直接 Remove。
 
 require("stategraphs/commonstates")
 require("stategraphs/SGcritter_common")
@@ -26,6 +29,18 @@ local events =
 			inst.sg:GoToState("saltshake")
 		end
 	end),
+
+	-- 出场：从水花里跳出来
+	EventHandler("summon", function(inst)
+		if not inst.sg:HasStateTag("busy") then
+			inst.sg:GoToState("summon")
+		end
+	end),
+
+	-- 退场：跳一下再化成水花
+	EventHandler("desummon", function(inst)
+		inst.sg:GoToState("desummon")
+	end),
 }
 
 local states =
@@ -40,6 +55,78 @@ local states =
 				inst.AnimState:PlayAnimation("idle_loop", true)
 			end
 		end,
+	},
+
+	-- 出场（对照原版 SGsalty_dog:148-185）
+	State{
+		name = "summon",
+		tags = { "busy" },
+
+		onenter = function(inst)
+			local fx = SpawnPrefab("wave_splash")
+			if fx ~= nil then
+				fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
+			end
+			inst:Hide()
+			inst.Physics:Stop()
+		end,
+
+		timeline =
+		{
+			FrameEvent(3, function(inst)
+				inst:Show()
+				inst.Physics:SetMotorVel(5, 0, 0)
+				inst.AnimState:PlayAnimation("jump_pre")
+				inst.AnimState:PushAnimation("jump_pst")
+				inst.SoundEmitter:PlaySound("winter2025/saltydog/vocalization")
+			end),
+		},
+
+		events =
+		{
+			EventHandler("animover", function(inst)
+				if inst.AnimState:AnimDone() then
+					inst.sg:GoToState("idle")
+				end
+			end),
+		},
+
+		onexit = function(inst)
+			inst.Physics:SetMotorVel(0, 0, 0)
+			inst:Show()
+		end,
+	},
+
+	-- 退场（对照原版 SGsalty_dog:186-229）
+	State{
+		name = "desummon",
+		tags = { "busy" },
+
+		onenter = function(inst)
+			if inst.components.inventory ~= nil then
+				inst.components.inventory:DropEverything()
+			end
+			inst.AnimState:PlayAnimation("jump_pre")
+			inst.AnimState:PushAnimation("jump_pst")
+			inst.SoundEmitter:PlaySound("winter2025/saltydog/vocalization")
+			inst.Physics:SetMotorVel(5, 0, 0)
+		end,
+
+		timeline =
+		{
+			FrameEvent(6, function(inst)
+				local fx = SpawnPrefab("wave_splash")
+				if fx ~= nil then
+					fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
+				end
+				-- 原版这里是 GoHome，我们直接删掉
+				inst:DoTaskInTime(0.15, function(inst2)
+					if inst2:IsValid() then
+						inst2:Remove()
+					end
+				end)
+			end),
+		},
 	},
 
 	-- 捡东西：扑一下

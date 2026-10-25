@@ -176,25 +176,13 @@ local function fn()
 	inst:SetStateGraph("SGm_salty_dog")
 	inst:SetBrain(brain)
 
-	-- 出现 / 消失都带水花
-	local function PlaySplash(inst2)
-		local fx = SpawnPrefab("splash_green")
-		if fx ~= nil then
-			fx.Transform:SetPosition(inst2.Transform:GetWorldPosition())
-		end
-	end
-
+	-- 出现 / 消失交给状态机的 summon / desummon（水花 + 跳跃，可参考 SGm_salty_dog）
 	inst.PlaySummonAppear = function(inst2)
-		PlaySplash(inst2)
+		inst2:PushEvent("summon")
 	end
 
 	inst.PlaySummonDespawn = function(inst2)
-		PlaySplash(inst2)
-		inst2:DoTaskInTime(0.1, function(inst3)
-			if inst3:IsValid() then
-				inst3:Remove()
-			end
-		end)
+		inst2:PushEvent("desummon")
 	end
 
 	StartSaltTimer(inst)

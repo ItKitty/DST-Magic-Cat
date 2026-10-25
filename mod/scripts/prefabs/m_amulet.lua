@@ -53,13 +53,21 @@ local function SpawnSummonedPets(inst, owner)
 		if traits:HasSkill(skill) and (pet == nil or not pet:IsValid()) then
 			pet = SpawnPrefab(prefab)
 			if pet ~= nil then
+				-- 出生点对照原版 hats.lua:2550-2566 的 getpollyspawnlocation：
+				-- 主人周围 5 格内随机找个能站的点；鸟类的 y 是 15（从空中俯冲下来）
 				local pt = owner:GetPosition()
-				local offset = FindWalkableOffset(pt, math.random() * TWOPI, 2, 6, true, true)
-				pet.Transform:SetPosition(
-					pt.x + (offset ~= nil and offset.x or 0),
-					0,
-					pt.z + (offset ~= nil and offset.z or 0)
-				)
+				local offset = nil
+				local count = 0
+				while offset == nil and count < 12 do
+					offset = FindWalkableOffset(pt, math.random() * TWOPI, math.random() * 5, 12, false, false, nil, false, true)
+					count = count + 1
+				end
+
+				local x = pt.x + (offset ~= nil and offset.x or 0)
+				local z = pt.z + (offset ~= nil and offset.z or 0)
+				local y = pet:HasTag("bird") and 15 or 0
+
+				pet.Transform:SetPosition(x, y, z)
 				if pet.components.follower ~= nil then
 					pet.components.follower:SetLeader(owner)
 				end

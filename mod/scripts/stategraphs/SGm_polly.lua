@@ -1,8 +1,13 @@
 -- SGm_polly
--- 鹦鹉自己的状态机：地面待机 / 走 / 捡（take）/ 交（give）/ 跳。
--- 不抄原版 SGpolly_rogers 的关键原因：它默认从 "init" → "glide" 起步，
--- 而且 hit / death / flyaway / despawn 会用到 health、hat.components.spawner，
--- 我们的鹦鹉没有生命值也不挂在帽子上。
+-- 鹦鹉自己的状态机：悬停 / 滑翔移动 / 捡（take）/ 交（give）/ 俯冲登场（glide）/ 飞走（flyaway）。
+--
+-- 出场、退场对照原版 SGpolly_rogers:332-442：
+--   glide  ：在 y = 15 生成，靠 motorvel 向下俯冲，y <= 0.5 时落地并播 "land"，再回悬停
+--   flyaway：takeoff_vertical/diagonal 两段 + 向上 motorvel 飞走
+-- 唯一差异：原版飞走时会 inst.hat.components.spawner:GoHome(inst) 收回帽子，
+-- 我们是护符直接生成的，没有 hat，所以改成升空一小段时间后 Remove。
+--
+-- 常态一直是悬停（原版是地面/空中交替，我们要的是"一直飞"）。
 
 require("stategraphs/commonstates")
 
@@ -23,53 +28,95 @@ local events =
 
 local states =
 {
-	-- 召唤登场：从空中落下来
+	-- 出场：从高空俯冲下来，落地后再升起悬停
 	State{
-		name = "summon_land",
-		tags = { "busy" },
+		name = "glide",
+		tags = { "busy", "flight" },
 
 		onenter = function(inst)
-			inst.components.locomotor:StopMoving()
-			inst.AnimState:PlayAnimation("land")
+			inst:AddTag("NOCLICK")
+			inst.AnimState:PlayAnimation("glide", true)
+			inst.SoundEmitter:PlaySound("dontstarve/birds/flyin")
+			-- 向下冲：原版是 -20 ~ -10
+			inst.Physics:SetMotorVel(0, math.random() * 10 - 20, 0)
 		end,
 
-		events =
-		{
-			EventHandler("animover", function(inst)
-				inst.sg:GoToState("idle")
-			end),
-		},
-	},
+		onupdate = function(inst)
+			local x, y, z = inst.Transform:GetWorldPosition()
 
-	-- 收回：垂直飞走，播完再删除自己
-	State{
-		name = "despawn_fly",
-		tags = { "busy" },
+			if y < 2 then
+				inst.Physics:SetMotorVel(0, 0, 0)
+			end
 
-		onenter = function(inst)
-			inst.components.locomotor:Stop()
-			inst.AnimState:PlayAnimation("takeoff_vertical_pre")
-			-- 兜底：万一动画播不完也不会永远留着
-			inst.sg:SetTimeout(1.2)
-		end,
-
-		ontimeout = function(inst)
-			if inst:IsValid() then
-				inst:Remove()
+			if y <= 0.5 then
+				inst.Physics:Stop()
+				inst.Physics:Teleport(x, 0, z)
+				inst.AnimState:PlayAnimation("land")
+				inst.DynamicShadow:Enable(true)
+				inst.sg.statemem.landed = true
 			end
 		end,
 
 		events =
 		{
 			EventHandler("animover", function(inst)
-				if inst:IsValid() then
-					inst:Remove()
+				if inst.sg.statemem.landed then
+					inst.sg:GoToState("idle")
 				end
 			end),
 		},
+
+		onexit = function(inst)
+			inst:RemoveTag("NOCLICK")
+		end,
 	},
 
-	-- 常态：一直悬停飞行（对照原版 SGpolly_rogers 的 "idle" 状态）
+	-- 飞走：向上冲，随后消失
+	State{
+		name = "flyaway",
+		tags = { "flight", "busy", "notarget", "flyaway" },
+
+		onenter = function(inst)
+			inst.components.locomotor:Stop()
+			inst:ClearBufferedAction()
+			inst:AddTag("NOCLICK")
+			inst.DynamicShadow:Enable(false)
+			inst.SoundEmitter:KillSound("fly_lp")
+			inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/takeoff")
+
+			if inst.components.inventory ~= nil then
+				inst.components.inventory:DropEverything()
+			end
+
+			if math.random() < 0.5 then
+				inst.sg.statemem.vert = true
+				inst.AnimState:PlayAnimation("takeoff_vertical_pre")
+				inst.AnimState:PushAnimation("takeoff_vertical_loop", true)
+			else
+				inst.AnimState:PlayAnimation("takeoff_diagonal_pre")
+				inst.AnimState:PushAnimation("takeoff_diagonal_loop", true)
+			end
+
+			inst.sg:SetTimeout(0.1 + math.random() * 0.2)
+		end,
+
+		ontimeout = function(inst)
+			if inst.sg.statemem.vert then
+				inst.Physics:SetMotorVel(math.random() * 4 - 2, math.random() * 5 + 15, math.random() * 4 - 2)
+			else
+				inst.Physics:SetMotorVel(math.random() * 8 + 8, math.random() * 5 + 15, math.random() * 4 - 2)
+			end
+
+			-- 原版这里是 GoHome 收回帽子；我们没有帽子，让它升起来再删掉
+			inst:DoTaskInTime(0.4, function(inst2)
+				if inst2:IsValid() then
+					inst2:Remove()
+				end
+			end)
+		end,
+	},
+
+	-- 常态：一直悬停飞行（对照原版 SGpolly_rogers:64-83）
 	State{
 		name = "idle",
 		tags = { "idle", "canrotate", "flying" },

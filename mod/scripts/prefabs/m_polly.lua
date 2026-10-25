@@ -65,17 +65,17 @@ local function fn()
 	inst:SetStateGraph("SGm_polly")
 	inst:SetBrain(brain)
 
-	-- 登场：从空中落下
+	-- 登场：由 glide 状态从高空俯冲下来（召唤时会被放在 y = 15）
 	inst.PlaySummonAppear = function(inst2)
 		if inst2.sg ~= nil then
-			inst2.sg:GoToState("summon_land")
+			inst2.sg:GoToState("glide")
 		end
 	end
 
-	-- 收回：垂直飞走，播完自己消失
+	-- 收回：flyaway 状态向上飞走，状态里会自己 Remove
 	inst.PlaySummonDespawn = function(inst2)
 		if inst2.sg ~= nil then
-			inst2.sg:GoToState("despawn_fly")
+			inst2.sg:GoToState("flyaway")
 		else
 			inst2:Remove()
 		end
