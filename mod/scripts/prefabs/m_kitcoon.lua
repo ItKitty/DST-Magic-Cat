@@ -8,7 +8,7 @@
 --   · preserver 保鲜 + 定期回满新鲜度
 --   · 皮肤用 net_string 同步，客户端收到后再切 AnimState，保证联机也看得到
 
-local brain = require("brains/crittersbrain")
+local brain = require("brains/m_kitcoonbrain")
 
 local WAKE_TO_FOLLOW_DISTANCE = 6
 local SLEEP_NEAR_LEADER_DISTANCE = 5

@@ -76,8 +76,9 @@ AddModUserCommand("petskin", "petskin", {
 			return
 		end
 
-		local key = params_ ~= nil and params_[1] or "base"
-		key = string.lower(key)
+		-- 注意：命令参数是按名字存放的（params.skin），不是 params[1]
+		local key = params_ ~= nil and params_.skin or nil
+		key = key ~= nil and string.lower(key) or "base"
 		if not SKINS[key] and key ~= "base" then
 			if player ~= nil and player.components.talker ~= nil then
 				player.components.talker:Say("没有这种皮肤。")
