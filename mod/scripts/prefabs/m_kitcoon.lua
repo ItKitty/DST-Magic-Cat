@@ -61,31 +61,32 @@ local function fn()
 	inst.entity:AddDynamicShadow()
 	inst.entity:AddNetwork()
 
-	inst.DynamicShadow:SetSize(1, .33)
-	inst.Transform:SetSixFaced()
+	inst.DynamicShadow:SetSize(2, 0.75)
+	-- 浣猫是四方向贴图（对照原版 prefabs/ticoon.lua:237）
+	inst.Transform:SetFourFaced()
 
 	inst.AnimState:SetBank(KITCOON_BANK)
 	inst.AnimState:SetBuild(KITCOON_BUILD)
 	inst.AnimState:PlayAnimation("idle_loop")
 
-	MakeGhostPhysics(inst, 1, .5)
-	RemovePhysicsColliders(inst)
-	inst.Physics:SetDontRemoveOnSleep(true)
+	MakeCharacterPhysics(inst, 1, 0.5)
 
-	inst:AddTag("critter")
+	inst:AddTag("smallcreature")
 	inst:AddTag("companion")
+	inst:AddTag("animal")
+	inst:AddTag("ticoon")
+	inst:AddTag("NOBLOCK")
+	inst:AddTag("handfed")
 	inst:AddTag("notraptrigger")
 	inst:AddTag("noauradamage")
-	inst:AddTag("small_livestock")
-	inst:AddTag("NOBLOCK")
-	-- kitcoon 标签：让原版「浣猫崽」相关逻辑认得它
-	inst:AddTag("kitcoon")
 	inst:AddTag("nonpackable")
+
+	inst.Transform:SetScale(1.1, 1.1, 1.1)
 
 	inst:AddComponent("spawnfader")
 
 	inst.favoritefood = "fishsticks"
-	inst.playmatetags = { "critter", "kitcoon" }
+	inst.playmatetags = { "animal", "ticoon" }
 
 	inst.GetPeepChance = GetPeepChance
 	inst.IsAffectionate = IsAffectionate
@@ -129,10 +130,7 @@ local function fn()
 	inst.components.preserver:SetPerishRateMultiplier(0)
 
 	inst:AddComponent("locomotor")
-	inst.components.locomotor:EnableGroundSpeedMultiplier(true)
-	inst.components.locomotor:SetTriggersCreep(false)
-	inst.components.locomotor.softstop = true
-	inst.components.locomotor.walkspeed = TUNING.CRITTER_WALK_SPEED
+	inst.components.locomotor.walkspeed = TUNING.TICOON_SPEED
 	inst.components.locomotor:SetAllowPlatformHopping(true)
 
 	inst:AddComponent("embarker")
@@ -141,13 +139,11 @@ local function fn()
 	inst:AddComponent("drownable")
 	inst.components.drownable.enabled = false
 
-	inst:AddComponent("crittertraits")
 	inst:AddComponent("timer")
 
-	-- SGticoon 的 idle/attack 等状态会读 combat 组件，这里补一个（不加任何攻击逻辑，
-	-- 大脑里没有 ChaseAndAttack，所以它不会主动打架）
-	inst:AddComponent("combat")
-	inst.components.combat.defaultdamage = 0
+	-- 不给 health / combat：这只宠物不参战、也不会死，
+	-- 免得肚子里的东西跟着一起没了。战斗中由大脑的 RunAway 自己躲开。
+	-- （SGticoon 的 idle 状态会读 combat，已在 vanilla_hooks 里对 m_kitcoon 打过补丁）
 
 	inst:SetBrain(brain)
 	inst:SetStateGraph("SGticoon")
