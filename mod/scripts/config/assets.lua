@@ -98,6 +98,9 @@ PrefabFiles = {
 	-- 灵魂法杖召唤的矮星（不点火版本）
 	"m_stafflight",
 
+	-- 玛德琳的专属宠物（浣猫崽）
+	"m_kitcoon",
+
 	-- 角色相关
 	"madeleine",
 	"madeleine_none",

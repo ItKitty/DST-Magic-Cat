@@ -321,6 +321,16 @@ local master_postinit = function(inst)
 	inst:AddTag("magician")
 	inst:AddComponent("magician")
 
+	-- 专属宠物：浣猫崽（出生自带，跟随、可开储物格）
+	-- 用自定义的 m_petleash 而不是原版 petleash，避免占用玩家召唤其它宠物的名额
+	inst:AddComponent("m_petleash")
+	inst.components.m_petleash:SetPetPrefab("m_kitcoon")
+	inst:DoTaskInTime(1, function(inst2)
+		if inst2.components.m_petleash ~= nil then
+			inst2.components.m_petleash:EnsurePet()
+		end
+	end)
+
 	-- skill
 	inst:AddComponent("madeleinetraits")
 	inst:ListenForEvent("powerready_fire", function(inst)
