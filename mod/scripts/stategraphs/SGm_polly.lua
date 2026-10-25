@@ -29,9 +29,8 @@ local events =
 local states =
 {
 	-- 出场：从高空俯冲下来，落地后再升起悬停
-	-- 完全照原版 SGpolly_rogers:396-442：靠 Physics:SetMotorVel 向下冲，
-	-- 配合 prefabs/polly_rogers.lua:40-48 的飞行刚体（真实动态体，掩码只对地面）。
-	-- 只有 motorvel 意外没生效时才退化成 Teleport 兜底。
+	-- 原样照抄 SGpolly_rogers:396-442，没有任何兜底：
+	--   motorvel 向下冲 → y < 2 停住速度 → y <= 0.5 落地播 "land"
 	State{
 		name = "glide",
 		tags = { "busy", "flight" },
@@ -41,42 +40,21 @@ local states =
 			inst.AnimState:PlayAnimation("glide", true)
 			inst.SoundEmitter:PlaySound("dontstarve/birds/flyin")
 			inst.Physics:SetMotorVel(0, math.random() * 10 - 20, 0)
-			-- 兜底：5 秒还没落地就强行落地
-			inst.sg:SetTimeout(5)
 		end,
 
-		onupdate = function(inst, dt)
-			if inst.sg.statemem.landed then
-				return
-			end
-
+		onupdate = function(inst)
 			local x, y, z = inst.Transform:GetWorldPosition()
 
-			if y > 0.5 then
-				inst.sg.statemem.elapsed = (inst.sg.statemem.elapsed or 0) + dt
-				if inst.sg.statemem.elapsed < 2.5 then
-					inst.Physics:SetMotorVel(0, -10, 0)
-				else
-					-- motorvel 没把它带下来（例如物理体没被驱动），直接 Teleport
-					inst.Physics:Teleport(x, math.max(0, y - 9 * dt), z)
-				end
-			else
-				inst.Physics:Stop()
-				inst.Physics:Teleport(x, 0, z)
-				inst.AnimState:PlayAnimation("land")
-				inst.DynamicShadow:Enable(true)
-				inst.sg.statemem.landed = true
+			if y < 2 then
+				inst.Physics:SetMotorVel(0, 0, 0)
 			end
-		end,
 
-		ontimeout = function(inst)
-			if not inst.sg.statemem.landed then
-				local x, _, z = inst.Transform:GetWorldPosition()
+			if y <= 0.5 then
 				inst.Physics:Stop()
 				inst.Physics:Teleport(x, 0, z)
+				inst.AnimState:PlayAnimation("land")
 				inst.DynamicShadow:Enable(true)
 				inst.sg.statemem.landed = true
-				inst.AnimState:PlayAnimation("land")
 			end
 		end,
 
