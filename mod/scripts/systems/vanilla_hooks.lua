@@ -464,21 +464,18 @@ end
 
 --------------------------------------------------------------------------
 -- 穿刺留影（方案 B）
--- 参考工坊「龙胆亮银枪」(3817792801) 的残影做法：
---   残影是纯客户端非联网实体；外观用 SetSkin + 逐个 symbol 覆盖复制；
---   姿势用 AnimState:GetCurrentAnimationHash() + SetTime 精确定格。
+-- 参考工坊「龙胆亮银枪」(3817792801) 的残影做法，残影本体在
+-- systems/m_lunge_afterimage.lua 里纯客户端本地生成（SetSkin + symbol 覆盖 +
+-- GetCurrentAnimationHash/SetTime 精确定格）。
 --
--- 玩家穿刺是一帧内 Physics:Teleport，没有连续位移可采样，
--- 所以这里在 combat_lunge 的 onenter 前后各取一次坐标，
--- 生成一个联网的 m_lunge_mirage 触发器（只同步 owner + 起终点 + 朝向），
--- 各客户端收到后沿线段本地生成 3~5 张残影。
+-- 这里只负责广播「我穿刺了」：玩家身上挂了 net_event，服务端 push，各客户端
+-- 自己反推起点并铺残影。不用联网 FX 实体的原因：新联网实体会和其它 mod 的
+-- netvar 序列化冲突，客户端会刷 "Failed to read net var data" 且残影不显示。
 --------------------------------------------------------------------------
-local function SpawnLungeMirage(inst, startpos, endpos)
-	local fx = SpawnPrefab("m_lunge_mirage")
-	if fx == nil then
-		return
+local function NotifyLunge(inst)
+	if inst.m_lungenet ~= nil then
+		inst.m_lungenet:push()
 	end
-	fx:SetLungeData(inst, startpos.x, startpos.z, endpos.x, endpos.z, inst.Transform:GetRotation())
 end
 
 AddStategraphPostInit("wilson", function(sg)
@@ -501,7 +498,7 @@ AddStategraphPostInit("wilson", function(sg)
 		local dz = endpos.z - startpos.z
 		-- 真的发生位移了才画（穿刺失败会走 idle，不该出残影）
 		if dx * dx + dz * dz > 1 then
-			SpawnLungeMirage(inst, startpos, endpos)
+			NotifyLunge(inst)
 		end
 
 		return ret

@@ -208,6 +208,17 @@ local common_postinit = function(inst)
 	-- 变身相关
 	inst.nofootsteps = net_bool(inst.GUID, "player.nofootsteps")
 	inst.nofootsteps:set(false)
+
+	-- 穿刺残影广播：服务端 push，客户端本地生成残影（见 systems/m_lunge_afterimage.lua）
+	-- net_event 必须在 SetPristine 之前创建，所以只能写在这里，不能放进 AddPrefabPostInit
+	inst.m_lungenet = net_event(inst.GUID, "madeleine_lungenet")
+	if not TheWorld.ismastersim then
+		inst:ListenForEvent("madeleine_lungenet", function()
+			if M_SpawnLungeAfterimages ~= nil then
+				M_SpawnLungeAfterimages(inst)
+			end
+		end)
+	end
 end
 
 -- 当人物复活的时候
