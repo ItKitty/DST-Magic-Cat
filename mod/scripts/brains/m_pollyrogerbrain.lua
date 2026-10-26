@@ -126,6 +126,51 @@ function PollyRogerBrain:OnStart()
 		return counter ~= nil and counter:GetCount("salty") >= TUNING.SALTY_DOG_MAX_SALT_COUNT
 	end
 
+	-- 盐狗当前是不是在海里
+	local function IsInWater(inst)
+		local x, y, z = inst.Transform:GetWorldPosition()
+		return TheWorld.Map:IsOceanAtPoint(x, y, z, false)
+	end
+
+	local function GetLeader(inst)
+		return inst.components.follower and inst.components.follower:GetLeader()
+	end
+
+	-- 在主人身边找一块「陆地」的位置。
+	-- 不能直接朝主人走：主人可能就站在水边，狗走到跟随距离内还是泡在水里，
+	-- 而抖盐要求「不在海里」，于是永远卡在水里。
+	-- 结果缓存 1 秒，避免每帧重新随机导致目标点抖动。
+	local ashorepoint = nil
+	local ashoretime = 0
+
+	local function FindAshorePoint(inst)
+		local now = GetTime()
+		if ashorepoint ~= nil and now - ashoretime < 1 then
+			return ashorepoint
+		end
+
+		ashoretime = now
+		ashorepoint = nil
+
+		local leader = GetLeader(inst)
+		if leader == nil or not leader:IsValid() then
+			return nil
+		end
+
+		local pt = leader:GetPosition()
+		for r = 1, 4, 0.5 do
+			local offset = FindWalkableOffset(pt, math.random() * TWOPI, r, 8, true, false)
+			if offset ~= nil then
+				ashorepoint = pt + offset
+				return ashorepoint
+			end
+		end
+
+		-- 找不到就往主人脚下走（至少不会原地不动）
+		ashorepoint = pt
+		return ashorepoint
+	end
+
 	local root = PriorityNode({
 		WhileNode(
 			function()
@@ -153,6 +198,18 @@ function PollyRogerBrain:OnStart()
 					ActionNode(function()
 						self.inst:PushEvent("saltshake")
 					end)
+				),
+				-- 盐满但还是泡在水里：主动游到主人身边的陆地上。
+				-- 只靠后面的 Follow 不够 —— 主人站在水边时，狗在跟随距离内 Follow 直接成功，
+				-- 就会原地泡在水里，永远等不到 IsSaltedOnLand 的抖盐。
+				IfNode(
+					function()
+						return self.inst.prefab == "m_salty_dog"
+							and IsSaltFull(self.inst)
+							and IsInWater(self.inst)
+					end,
+					"GoAshore",
+					Leash(self.inst, FindAshorePoint, 2, 0.8)
 				),
 				WhileNode(function()
 					return closetoleader(self.inst)
