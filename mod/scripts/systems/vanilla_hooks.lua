@@ -461,3 +461,63 @@ do
 end
 
 
+
+--------------------------------------------------------------------------
+-- 穿刺留影（方案 B）
+-- 思路照石虾王 rocky_boss.lua:262-374 的 mirage（复制本体贴图 + 定格姿势 + alpha 渐隐）。
+-- 但玩家穿刺是一帧内 Physics:Teleport，没有连续位移可以逐帧采样，
+-- 所以在 combat_lunge 的 onenter 前后各取一次坐标，沿「起点 -> 落点」插值生成残影。
+--------------------------------------------------------------------------
+local LUNGE_MIRAGE_SPACING = 1.2
+local LUNGE_MIRAGE_MAX = 8
+
+local function SpawnLungeMirage(inst, startpos, endpos)
+	local build = inst.AnimState:GetBuild()
+	local rotation = inst.Transform:GetRotation()
+
+	local dx = endpos.x - startpos.x
+	local dz = endpos.z - startpos.z
+	local dist = math.sqrt(dx * dx + dz * dz)
+	if dist <= 0 then
+		return
+	end
+
+	local count = math.min(LUNGE_MIRAGE_MAX, math.max(1, math.floor(dist / LUNGE_MIRAGE_SPACING)))
+	for i = 1, count do
+		local t = i / (count + 1)
+		local fx = SpawnPrefab("m_lunge_mirage")
+		if fx ~= nil then
+			fx.Transform:SetPosition(startpos.x + dx * t, 0, startpos.z + dz * t)
+			fx.Transform:SetRotation(rotation)
+			-- 越靠后越接近冲刺末段的姿势
+			fx:SetMirageData(build, 1 + math.floor(t * 6))
+		end
+	end
+end
+
+AddStategraphPostInit("wilson", function(sg)
+	local state = sg.states["combat_lunge"]
+	if state == nil or state.onenter == nil then
+		return
+	end
+
+	local old_onenter = state.onenter
+	state.onenter = function(inst, data)
+		if inst == nil or inst.prefab ~= "madeleine" then
+			return old_onenter(inst, data)
+		end
+
+		local startpos = inst:GetPosition()
+		local ret = old_onenter(inst, data)
+		local endpos = inst:GetPosition()
+
+		local dx = endpos.x - startpos.x
+		local dz = endpos.z - startpos.z
+		-- 真的发生位移了才画（穿刺失败会走 idle，不该出残影）
+		if dx * dx + dz * dz > 1 then
+			SpawnLungeMirage(inst, startpos, endpos)
+		end
+
+		return ret
+	end
+end)
