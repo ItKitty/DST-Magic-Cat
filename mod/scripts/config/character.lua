@@ -11,7 +11,7 @@ STRINGS.CHARACTER_ABOUTME.madeleine =
 	"玛德琳是一只神奇的猫咪，\n她来到永恒大陆是为了追求更强大的魔法。"
 STRINGS.CHARACTER_NAMES.madeleine = "玛德琳"
 STRINGS.CHARACTER_DESCRIPTIONS.madeleine =
-	"*博学\n*曾经在女巫世界中生活过\n*有自己的演奏风格\n*贪婪"
+	"*博学\n*曾经在女巫世界中生活过\n*有自己的演奏风格\n*贪婪\n*仆从大师"
 STRINGS.CHARACTER_QUOTES.madeleine = '"我是来享受的，不是来坐牢的！"'
 STRINGS.CHARACTER_BIOS.madeleine = {
 	{ title = "生日", desc = "11月6号" },

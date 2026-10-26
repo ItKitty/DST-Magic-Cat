@@ -135,6 +135,8 @@ local function CreateShadowboneCrown()
 	inst:AddTag("m_item")
 	-- 抗击飞效果
 	inst:AddTag("heavyarmor")
+	-- 超重盔甲
+	inst:AddTag("superheavyarmor")
 	-- 硬质盔甲
 	inst:AddTag("hardarmor")
 	-- 添加免疫瘴气

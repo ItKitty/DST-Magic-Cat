@@ -202,15 +202,9 @@ function PollyRogerBrain:OnStart()
 				-- 盐满但还是泡在水里：主动游到主人身边的陆地上。
 				-- 只靠后面的 Follow 不够 —— 主人站在水边时，狗在跟随距离内 Follow 直接成功，
 				-- 就会原地泡在水里，永远等不到 IsSaltedOnLand 的抖盐。
-				IfNode(
-					function()
-						return self.inst.prefab == "m_salty_dog"
-							and IsSaltFull(self.inst)
-							and IsInWater(self.inst)
-					end,
-					"GoAshore",
-					Leash(self.inst, FindAshorePoint, 2, 0.8)
-				),
+				IfNode(function()
+					return self.inst.prefab == "m_salty_dog" and IsSaltFull(self.inst) and IsInWater(self.inst)
+				end, "GoAshore", Leash(self.inst, FindAshorePoint, 2, 0.8)),
 				WhileNode(function()
 					return closetoleader(self.inst)
 				end, "Stayclose", BrainCommon.NodeAssistLeaderPickUps(self, pickupparams)),
