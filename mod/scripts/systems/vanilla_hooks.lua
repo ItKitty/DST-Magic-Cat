@@ -422,3 +422,61 @@ AddClassPostConstruct("screens/playerhud", function(self)
 		return ret
 	end
 end)
+
+--------------------------------------------------------------------------
+-- 猴子诅咒免疫（参考卡尼猫 carney_hook.lua:141-171 的做法）
+-- 拦住 cursable 的三个入口：
+--   IsCursable      -> 不让诅咒物品被塞进来
+--   ApplyCurse      -> 即使被塞进来也不累计 MONKEY 层数
+--   ForceOntoOwner  -> 挡住强制塞入
+-- 不累计层数就不会到 LEVEL_4，也就不会触发 monkeychanger_pre 变身为 wonkey。
+-- 只对 madeleine 生效，其它角色/随从不受影响。
+--------------------------------------------------------------------------
+AddPrefabPostInit("madeleine", function(inst)
+	if not TheWorld.ismastersim then
+		return inst
+	end
+
+	local cursable = inst.components.cursable
+	if cursable == nil then
+		return inst
+	end
+
+	local function IsMonkeyCursedItem(item)
+		return item ~= nil
+			and item.components ~= nil
+			and item.components.curseditem ~= nil
+			and item.components.curseditem.curse == "MONKEY"
+	end
+
+	local old_ApplyCurse = cursable.ApplyCurse
+	cursable.ApplyCurse = function(self, item, curse, ...)
+		if IsMonkeyCursedItem(item) then
+			-- 还原“已施加”的状态，避免物品卡在 applied_curse
+			if item:HasTag("applied_curse") then
+				item:RemoveTag("applied_curse")
+			end
+			item.components.curseditem.cursed_target = nil
+			return
+		end
+		return old_ApplyCurse(self, item, curse, ...)
+	end
+
+	local old_IsCursable = cursable.IsCursable
+	cursable.IsCursable = function(self, item, ...)
+		if IsMonkeyCursedItem(item) then
+			return false
+		end
+		return old_IsCursable(self, item, ...)
+	end
+
+	local old_ForceOntoOwner = cursable.ForceOntoOwner
+	cursable.ForceOntoOwner = function(self, item, ...)
+		if IsMonkeyCursedItem(item) then
+			return
+		end
+		return old_ForceOntoOwner(self, item, ...)
+	end
+
+	return inst
+end)
