@@ -256,4 +256,7 @@ SGCritterStates.AddWalkStates(states,
 		},
 	}, true)
 
+-- 默认状态保持 "idle"：召唤时由 m_amulet 先摆好位置，再推 "summon" 事件，
+-- 这样 wave_splash 才会出现在正确的位置（原版 SGsalty_dog 默认是 summon，
+-- 但那是靠帽子 spawner 先定好位置再生成的，我们生成后再定位，顺序不同）
 return StateGraph("SGm_salty_dog", states, events, "idle", actionhandlers)

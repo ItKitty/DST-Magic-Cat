@@ -70,12 +70,8 @@ local function fn()
 	inst:SetStateGraph("SGm_polly")
 	inst:SetBrain(brain)
 
-	-- 登场：由 glide 状态从高空俯冲下来（召唤时会被放在 y = 15）
-	inst.PlaySummonAppear = function(inst2)
-		if inst2.sg ~= nil then
-			inst2.sg:GoToState("glide")
-		end
-	end
+	-- 登场：不需要额外触发 —— SGm_polly 的默认状态就是 "glide"，
+	-- 和原版 SGpolly_rogers 用 AddInitState(states, "glide") 起手一致。
 
 	-- 收回：flyaway 状态向上飞走，状态里会自己 Remove
 	inst.PlaySummonDespawn = function(inst2)

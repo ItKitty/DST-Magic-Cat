@@ -252,4 +252,8 @@ local states =
 	},
 }
 
-return StateGraph("SGm_polly", states, events, "idle", actionhandlers)
+-- 默认状态就是 "glide"：对照原版 SGpolly_rogers 的
+--   CommonStates.AddInitState(states, "glide")
+--   return StateGraph("polly_rogers", states, events, "init", actionhandlers)
+-- 也就是说原版鹦鹉一生成就在滑翔下降，而不是等外部推事件。
+return StateGraph("SGm_polly", states, events, "glide", actionhandlers)
