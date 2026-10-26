@@ -424,47 +424,40 @@ AddClassPostConstruct("screens/playerhud", function(self)
 end)
 
 --------------------------------------------------------------------------
--- 猴子诅咒免疫
--- 完全照卡尼猫 carney_hook.lua:141-171 的写法（只把 prefab 换成 madeleine）：
--- 包住 cursable 的 ApplyCurse / IsCursable / ForceOntoOwner 三个入口，
--- MONKEY 诅咒层数累计不起来，就到不了 LEVEL_4，也不会触发
--- SGwilson 的 monkeychanger_pre 变身成 wonkey。
+-- 玛德琳不会被猴子诅咒变成 wonkey，但保留诅咒物品的完整流程
+-- （可以正常捡、可以交给猴子女王「回收诅咒」）
+--
+-- 注意：不要照卡尼猫那样去拦 cursable 的 ApplyCurse / IsCursable /
+-- ForceOntoOwner —— 那样诅咒层数永远是 0，cursed_monkey_token 也不会被
+-- 吸进背包，玩家就没法把信物交给女王回收了。
+--
+-- 真正的变身触发点在 curse_monkey_util.docurse：
+--   if not iswonkey and numitems >= TUNING.MONKEY_TOKEN_COUNTS.LEVEL_4 then
+--       owner._trymonkeychangetask = owner:DoPeriodicTask(.1, trytransform, 0, true)
+--   end
+-- 所以这里只把「传给 docurse 的数量」封顶在 LEVEL_4 - 1：
+--   诅咒层数照常记录（外观、女王回收、存档都不变），但永远到不了变身阈值。
 --------------------------------------------------------------------------
-AddPrefabPostInit("madeleine", function(inst)
-	if not TheWorld.ismastersim then
-		return inst
+do
+	local curse_monkey = require("curse_monkey_util")
+	local MONKEY_LEVEL4 = TUNING.MONKEY_TOKEN_COUNTS.LEVEL_4
+
+	local old_docurse = curse_monkey.docurse
+	function curse_monkey.docurse(owner, numitems)
+		if owner ~= nil
+			and owner.prefab == "madeleine"
+			and numitems ~= nil
+			and numitems >= MONKEY_LEVEL4
+		then
+			-- 先掐掉可能已经排上的变身重试任务
+			if owner._trymonkeychangetask ~= nil then
+				owner._trymonkeychangetask:Cancel()
+				owner._trymonkeychangetask = nil
+			end
+			numitems = MONKEY_LEVEL4 - 1
+		end
+		return old_docurse(owner, numitems)
 	end
+end
 
-	if inst.components.cursable ~= nil then
-		local oldApplyCurse = inst.components.cursable.ApplyCurse
-		function inst.components.cursable.ApplyCurse(self, item, curse, ...)
-			if item and item.components and item.components.curseditem and item.components.curseditem.curse == "MONKEY" then
-				if item:HasTag("applied_curse") then
-					item:RemoveTag("applied_curse")
-				end
-				item.components.curseditem.cursed_target = nil
-				return
-			end
-			return oldApplyCurse(self, item, curse, ...)
-		end
-
-		local oldIsCursable = inst.components.cursable.IsCursable
-		function inst.components.cursable.IsCursable(self, item, ...)
-			if item and item.components and item.components.curseditem and item.components.curseditem.curse == "MONKEY" then
-				return false
-			end
-			return oldIsCursable(self, item, ...)
-		end
-
-		local oldForceOntoOwner = inst.components.cursable.ForceOntoOwner
-		function inst.components.cursable.ForceOntoOwner(self, item, ...)
-			if item and item.components and item.components.curseditem and item.components.curseditem.curse == "MONKEY" then
-				return
-			end
-			return oldForceOntoOwner(self, item, ...)
-		end
-	end
-
-	return inst
-end)
 
