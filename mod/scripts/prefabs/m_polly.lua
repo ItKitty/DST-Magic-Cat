@@ -8,6 +8,13 @@ local assets = {
 	Asset("ANIM", "anim/polly_rogers.zip"),
 }
 
+-- 对照原版 prefabs/polly_rogers.lua:25-29 的 SOUNDS_POLLY_ROGERS
+local SOUNDS_POLLY_ROGERS = {
+	takeoff = "dontstarve/birds/takeoff_crow",
+	chirp = "dontstarve/birds/chirp_crow",
+	flyin = "dontstarve/birds/flyin",
+}
+
 local function fn()
 	local inst = CreateEntity()
 
@@ -66,6 +73,9 @@ local function fn()
 	inst.components.follower:KeepLeaderOnAttacked()
 
 	inst:AddComponent("inspectable")
+
+	-- glide 状态里会读 inst.sounds.flyin
+	inst.sounds = SOUNDS_POLLY_ROGERS
 
 	inst:SetStateGraph("SGm_polly")
 	inst:SetBrain(brain)

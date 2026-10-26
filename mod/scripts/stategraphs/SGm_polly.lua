@@ -28,19 +28,29 @@ local events =
 
 local states =
 {
-	-- 出场：从高空俯冲下来，落地后再升起悬停
-	-- 原样照抄 SGpolly_rogers:396-442，没有任何兜底：
-	--   motorvel 向下冲 → y < 2 停住速度 → y <= 0.5 落地播 "land"
+	-- 出场：从高空俯冲下来（逐行对照 SGpolly_rogers:396-442）
 	State{
 		name = "glide",
-		tags = { "busy", "flight" },
+		tags = { "idle", "flight", "notarget", "busy", "noelectrocute" },
 
 		onenter = function(inst)
+			inst.readytogather = nil
 			inst:AddTag("NOCLICK")
-			inst.AnimState:PlayAnimation("glide", true)
-			inst.SoundEmitter:PlaySound("dontstarve/birds/flyin")
+			if not inst.AnimState:IsCurrentAnimation("glide") then
+				inst.AnimState:PlayAnimation("glide", true)
+			end
+			inst.sg:SetTimeout(inst.AnimState:GetCurrentAnimationLength())
 			inst.Physics:SetMotorVel(0, math.random() * 10 - 20, 0)
 		end,
+
+		timeline =
+		{
+			TimeEvent(1 * FRAMES, function(inst)
+				if inst.components.inventoryitem == nil or not inst.components.inventoryitem:IsHeld() then
+					inst.SoundEmitter:PlaySound(inst.sounds.flyin)
+				end
+			end),
+		},
 
 		onupdate = function(inst)
 			local x, y, z = inst.Transform:GetWorldPosition()
@@ -54,21 +64,42 @@ local states =
 				inst.Physics:Teleport(x, 0, z)
 				inst.AnimState:PlayAnimation("land")
 				inst.DynamicShadow:Enable(true)
-				inst.sg.statemem.landed = true
+				if inst.components.floater ~= nil then
+					inst:PushEvent("on_landed")
+				end
+				inst.sg:GoToState("idle_ground", true)
 			end
 		end,
 
-		events =
-		{
-			EventHandler("animover", function(inst)
-				if inst.sg.statemem.landed then
-					inst.sg:GoToState("idle")
-				end
-			end),
-		},
-
 		onexit = function(inst)
 			inst:RemoveTag("NOCLICK")
+			inst.readytogather = true
+		end,
+	},
+
+	-- 触地状态（逐行对照 SGpolly_rogers:133-172）
+	-- 唯一差异：原版会在原地赖一会儿再随机 switch/peck/hop/caw，
+	-- 我们要「常态一直在飞」，所以停留 1~2 秒后直接起飞回悬停。
+	State{
+		name = "idle_ground",
+		tags = { "idle", "canrotate", "ground" },
+
+		onenter = function(inst, pushanim)
+			inst:RemoveTag("flying")
+			if pushanim then
+				if type(pushanim) == "string" then
+					inst.AnimState:PlayAnimation(pushanim)
+				end
+				inst.AnimState:PushAnimation("idle_ground", true)
+			elseif not inst.AnimState:IsCurrentAnimation("idle_ground") then
+				inst.AnimState:PlayAnimation("idle_ground", true)
+			end
+			inst.sg:SetTimeout(1 + math.random())
+		end,
+
+		ontimeout = function(inst)
+			inst:AddTag("flying")
+			inst.sg:GoToState("idle")
 		end,
 	},
 
