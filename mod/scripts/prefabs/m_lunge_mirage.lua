@@ -1,76 +1,202 @@
 -- m_lunge_mirage
--- 穿刺（combat_lunge）的「留影」：复制施法者本人的 build，定格在 lunge_pst 的某一帧，半透明淡出。
--- 思路照石虾王 rocky_boss.lua:262-374 的 mirage：
---   非持久化 FX、复制本体贴图、SetFrame 定格姿势、alpha 渐隐。
--- 区别：
---   · 石虾王的冲刺是连续位移，可以每帧采样；玩家穿刺是一帧内 Teleport，
---     所以在 systems/vanilla_hooks.lua 里按「起点 -> 落点」插值生成。
---   · 这里用 net_string/net_byte 把 build 与定格帧同步给客户端，
---     这样联机时别人也看得到同一套外观（石虾王是纯客户端本地生成）。
+-- 穿刺残影的「同步触发器」。
+--
+-- 参考工坊「龙胆亮银枪」(3817792801) scripts/prefabs/zhaoyun_spear.lua:425-536 的做法：
+--   · 残影（ghost）本身是**纯客户端、非联网**实体，每张自己淡出；
+--   · 复制外观要 SetSkin + 逐个 symbol 覆盖（只 SetBuild 时穿皮肤不渲染、护甲也丢）；
+--   · 姿势用 owner.AnimState:GetCurrentAnimationHash() + SetTime 精确定格，然后 Pause。
+--
+-- 我们只需要「穿刺的那一下」，所以不挂常驻发射器，而是：
+--   服务端在 combat_lunge 里生成这个触发器，把「主人 + 起点 + 终点 + 朝向」写进网络变量；
+--   各客户端收到后，沿起终点插值生成 3~5 张本地残影。
+-- 这样网络只同步 5 个 float + 1 个 entity，残影外观/姿势都在本地算。
 
-local FADE_TIME = 0.35
-local START_ALPHA = 0.5
+local GHOST_COUNT_MAX = 5
+local GHOST_SPACING = 1.1
+local GHOST_LIFETIME = 0.35
+local GHOST_START_ALPHA = 0.6
+local GHOST_SCALE = 1.05
+
+-- 乘色 / 叠加色：淡紫（玛德琳的魔法猫配色）
+local GHOST_MULT = { 0.72, 0.6, 1.0 }
+local GHOST_ADD = { 0.15, 0.08, 0.35 }
+
+-- 复制玩家外观时需要覆盖的部位（照 zhaoyun_spear.lua:434-455）
+local PLAYER_SYMBOLS = {
+	"arm_lower",
+	"arm_upper",
+	"arm_upper_skin",
+	"beard",
+	"cheeks",
+	"face",
+	"foot",
+	"hair",
+	"hair_hat",
+	"hairfront",
+	"hairpigtails",
+	"hand",
+	"headbase",
+	"headbase_hat",
+	"leg",
+	"skirt",
+	"tail",
+	"torso",
+	"torso_pelvis",
+}
+
+local function CopyPlayerLook(ga, owner)
+	local animstate = owner.AnimState
+
+	-- 皮肤贴图必须用 SetSkin，直接 SetBuild(GetBuild()) 在穿皮肤时不会渲染
+	local skin_build = animstate:GetSkinBuild()
+	if skin_build ~= nil and skin_build ~= "" then
+		ga:SetSkin(skin_build, owner.prefab)
+	else
+		ga:SetBuild(animstate:GetBuild())
+	end
+
+	for _, v in ipairs(PLAYER_SYMBOLS) do
+		if animstate:BuildHasSymbol(v) and ga:BuildHasSymbol(v) then
+			local build, sym = animstate:GetSymbolOverride(v)
+			if build then
+				if animstate:IsSkinBuild(build) then
+					ga:OverrideSkinSymbol(v, build, sym)
+				else
+					ga:OverrideSymbol(v, build, sym)
+				end
+			end
+		end
+	end
+end
+
+-- 生成一张本地残影（非联网、不占网络）
+local function SpawnGhost(owner, x, z, rot, time_offset)
+	local ghost = CreateEntity()
+
+	ghost.entity:SetCanSleep(false)
+	ghost.persists = false
+	ghost:AddTag("FX")
+	ghost:AddTag("NOCLICK")
+
+	ghost.entity:AddTransform()
+	ghost.entity:AddAnimState()
+
+	ghost.Transform:SetFourFaced()
+	ghost.Transform:SetPosition(x, 0, z)
+	ghost.Transform:SetRotation(rot)
+	local sx, sy, sz = owner.Transform:GetScale()
+	ghost.Transform:SetScale(sx * GHOST_SCALE, sy * GHOST_SCALE, sz * GHOST_SCALE)
+
+	local ga = ghost.AnimState
+	ga:SetBank("wilson")
+	CopyPlayerLook(ga, owner)
+
+	-- 手里的武器（m_catpaw 的 swap 资源）
+	ga:OverrideSymbol("swap_object", "swap_catpaw", "swap_catpaw")
+	ga:Show("ARM_carry")
+	ga:Hide("ARM_normal")
+	ga:Hide("HAT")
+	ga:Hide("HAIR_HAT")
+	ga:Hide("HEAD_HAT")
+	ga:Hide("HEAD_HAT_NOHELM")
+	ga:Hide("HEAD_HAT_HELM")
+
+	-- 复制当前动画，并把时间点错开一点，形成「冲刺过程」的层次
+	local animstate = owner.AnimState
+	local len = animstate:GetCurrentAnimationLength()
+	local t = math.clamp(animstate:GetCurrentAnimationTime() + time_offset, 0, math.max(0, len - .01))
+	ga:PlayAnimation(animstate:GetCurrentAnimationHash())
+	ga:SetTime(t)
+	ga:Pause()
+
+	ghost._alpha = GHOST_START_ALPHA
+	ga:SetMultColour(GHOST_MULT[1], GHOST_MULT[2], GHOST_MULT[3], ghost._alpha)
+	ga:SetAddColour(GHOST_ADD[1], GHOST_ADD[2], GHOST_ADD[3], 0)
+	ga:SetLightOverride(.4)
+	ga:SetFinalOffset(-1)
+
+	ghost:DoPeriodicTask(FRAMES, function(g)
+		g._alpha = g._alpha - FRAMES / GHOST_LIFETIME * .6
+		if g._alpha <= 0 then
+			g:Remove()
+		else
+			g.AnimState:SetMultColour(GHOST_MULT[1], GHOST_MULT[2], GHOST_MULT[3], g._alpha)
+		end
+	end)
+end
 
 local function fn()
 	local inst = CreateEntity()
 
 	inst.entity:AddTransform()
-	inst.entity:AddAnimState()
 	inst.entity:AddNetwork()
 
 	inst:AddTag("FX")
 	inst:AddTag("NOCLICK")
-	inst:AddTag("nointerpolate")
 
-	inst.Transform:SetFourFaced()
-
-	-- 服务器写、客户端读：本体 build 名 + 定格帧
-	inst._build = net_string(inst.GUID, "m_lunge_mirage.build", "m_lunge_mirage.dirty")
-	inst._frame = net_byte(inst.GUID, "m_lunge_mirage.frame", "m_lunge_mirage.dirty")
-
-	inst.AnimState:SetBank("wilson")
-	inst.AnimState:PlayAnimation("lunge_pst")
-	inst.AnimState:SetMultColour(1, 1, 1, START_ALPHA)
+	-- 服务端写、客户端读
+	inst._owner = net_entity(inst.GUID, "m_lunge_mirage.owner", "m_lunge_mirage.dirty")
+	inst._sx = net_float(inst.GUID, "m_lunge_mirage.sx", "m_lunge_mirage.dirty")
+	inst._sz = net_float(inst.GUID, "m_lunge_mirage.sz", "m_lunge_mirage.dirty")
+	inst._ex = net_float(inst.GUID, "m_lunge_mirage.ex", "m_lunge_mirage.dirty")
+	inst._ez = net_float(inst.GUID, "m_lunge_mirage.ez", "m_lunge_mirage.dirty")
+	inst._rot = net_float(inst.GUID, "m_lunge_mirage.rot", "m_lunge_mirage.dirty")
 
 	inst.entity:SetPristine()
 
 	if not TheWorld.ismastersim then
-		-- 客户端：网络值到了就套用外观
-		local function Apply(inst2)
-			local build = inst2._build:value()
-			if build ~= nil and build ~= "" then
-				inst2.AnimState:SetBuild(build)
+		local spawned = false
+
+		local function TrySpawn()
+			if spawned then
+				return
 			end
-			inst2.AnimState:PlayAnimation("lunge_pst")
-			inst2.AnimState:SetFrame(inst2._frame:value())
-			inst2.AnimState:Pause()
+
+			local owner = inst._owner:value()
+			if owner == nil or not owner:IsValid() then
+				return
+			end
+
+			spawned = true
+
+			local sx, sz = inst._sx:value(), inst._sz:value()
+			local ex, ez = inst._ex:value(), inst._ez:value()
+			local rot = inst._rot:value()
+
+			local dx, dz = ex - sx, ez - sz
+			local dist = math.sqrt(dx * dx + dz * dz)
+			if dist <= 0 then
+				return
+			end
+
+			local count = math.min(GHOST_COUNT_MAX, math.max(1, math.floor(dist / GHOST_SPACING)))
+			local len = owner.AnimState:GetCurrentAnimationLength()
+			for i = 1, count do
+				local k = i / (count + 1)
+				SpawnGhost(owner, sx + dx * k, sz + dz * k, rot, k * len * 0.5)
+			end
 		end
 
-		inst:ListenForEvent("m_lunge_mirage.dirty", Apply)
-		-- 进服时网络值可能稍后才到，补一次
-		inst:DoTaskInTime(0.1, Apply)
-
-		-- 客户端自己做淡出（服务器会在同一时间删除实体）
-		inst._alpha = START_ALPHA
-		inst:DoPeriodicTask(1 / 20, function(inst2, dt)
-			inst2._alpha = (inst2._alpha or START_ALPHA) - dt * (START_ALPHA / FADE_TIME)
-			if inst2._alpha > 0 then
-				inst2.AnimState:SetMultColour(1, 1, 1, inst2._alpha)
-			end
-		end, 1 / 20, 1 / 20)
+		inst:ListenForEvent("m_lunge_mirage.dirty", TrySpawn)
+		-- 进服 / 网络值稍后才到的兜底
+		inst:DoTaskInTime(0.05, TrySpawn)
 
 		return inst
 	end
 
-	-- 服务器：设置外观数据，到时间删除
 	inst.persists = false
 
-	function inst:SetMirageData(build, frame)
-		self._build:set(build or "")
-		self._frame:set(math.max(0, math.min(255, frame or 0)))
+	function inst:SetLungeData(owner, sx, sz, ex, ez, rot)
+		self._owner:set(owner)
+		self._sx:set(sx or 0)
+		self._sz:set(sz or 0)
+		self._ex:set(ex or 0)
+		self._ez:set(ez or 0)
+		self._rot:set(rot or 0)
 	end
 
-	inst:DoTaskInTime(FADE_TIME, function(inst2)
+	-- 客户端读到数据后就不再需要这个触发器了
+	inst:DoTaskInTime(0.5, function(inst2)
 		if inst2:IsValid() then
 			inst2:Remove()
 		end
