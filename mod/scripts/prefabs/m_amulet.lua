@@ -19,12 +19,17 @@ local function RemoveSummonedPets(inst)
 		return
 	end
 
-	-- 退场方式完全照原版 hats.lua:2493-2510 的 polly_rogers_go_away：
+	-- 退场方式照原版 hats.lua:2493-2510 的 polly_rogers_go_away：
 	-- 鸟 -> 打上 flyaway 标记再推 "flyaway"（没有 hat 时状态里会自己 Remove）
 	-- 其它 -> 推 "desummon"（丢背包 + 跳跃 + 水花后自己 Remove）
 	for _, pet in pairs(inst.m_summoned_pets) do
 		if pet:IsValid() then
-			if pet:HasTag("bird") then
+			-- 读档 / 关服阶段生成的宠物可能还没跑完 prefab 的 master 初始化
+			-- （原版帽子用 DoTaskInTime(pollyspawndelay) 延后生成来避开这个阶段），
+			-- 这种半成品直接删，不推事件，否则状态机会读到 nil 的 components.health
+			if pet.components.health == nil then
+				pet:Remove()
+			elseif pet:HasTag("bird") then
 				pet.flyaway = true
 				pet:PushEvent("flyaway")
 			else
@@ -41,53 +46,70 @@ local function SpawnSummonedPets(inst, owner)
 		return
 	end
 
-	local traits = inst.components.amulettraits
-	if traits == nil then
-		return
-	end
+	-- 照原版 hats.lua:2517-2533：佩戴后先 DoTaskInTime(pollyspawndelay) 再真正召唤。
+	-- 不延后的话，读档时 onequip 会在 shard 还没起来时就把宠物生成出来，
+	-- 那个阶段 prefab 的 master 分支可能被跳过（components 不全）。
+	inst:DoTaskInTime(0, function()
+		if not inst:IsValid() then
+			return
+		end
+		if owner == nil or not owner:IsValid() then
+			return
+		end
+		-- 已经脱下来了就别召了
+		local item_owner = inst.components.inventoryitem ~= nil and inst.components.inventoryitem.owner or nil
+		if item_owner ~= owner then
+			return
+		end
 
-	inst.m_summoned_pets = inst.m_summoned_pets or {}
+		local traits = inst.components.amulettraits
+		if traits == nil then
+			return
+		end
 
-	for skill, prefab in pairs(SUMMONED_PETS) do
-		local pet = inst.m_summoned_pets[prefab]
-		if traits:HasSkill(skill) and (pet == nil or not pet:IsValid()) then
-			pet = SpawnPrefab(prefab)
-			if pet ~= nil then
-				-- 出生点对照原版 hats.lua:2550-2566 的 getpollyspawnlocation：
-				-- 主人周围 5 格内随机找个能站的点；鸟类的 y 是 15（从空中俯冲下来）
-				local pt = owner:GetPosition()
-				local offset = nil
-				local count = 0
-				while offset == nil and count < 12 do
-					offset = FindWalkableOffset(pt, math.random() * TWOPI, math.random() * 5, 12, false, false, nil, false, true)
-					count = count + 1
-				end
+		inst.m_summoned_pets = inst.m_summoned_pets or {}
 
-				local x = pt.x + (offset ~= nil and offset.x or 0)
-				local z = pt.z + (offset ~= nil and offset.z or 0)
-				local y = pet:HasTag("bird") and 15 or 0
-
-				pet.Transform:SetPosition(x, y, z)
-				if pet.components.follower ~= nil then
-					pet.components.follower:SetLeader(owner)
-				end
-
-				-- 登场表现：
-				-- 鹦鹉的 SG 默认状态是 init -> glide，自己就从高空俯冲下来；
-				-- 盐狗需要推 "summon" 才会播水花跳出来（照原版 hats.lua:2584-2586）
-				if not pet:HasTag("bird") then
-					pet:PushEvent("summon")
-				end
-
-				inst.m_summoned_pets[prefab] = pet
-				inst:ListenForEvent("onremove", function()
-					if inst.m_summoned_pets ~= nil then
-						inst.m_summoned_pets[prefab] = nil
+		for skill, prefab in pairs(SUMMONED_PETS) do
+			local pet = inst.m_summoned_pets[prefab]
+			if traits:HasSkill(skill) and (pet == nil or not pet:IsValid()) then
+				pet = SpawnPrefab(prefab)
+				if pet ~= nil then
+					-- 出生点对照原版 hats.lua:2550-2566 的 getpollyspawnlocation：
+					-- 主人周围 5 格内随机找个能站的点；鸟类的 y 是 15（从空中俯冲下来）
+					local pt = owner:GetPosition()
+					local offset = nil
+					local count = 0
+					while offset == nil and count < 12 do
+						offset = FindWalkableOffset(pt, math.random() * TWOPI, math.random() * 5, 12, false, false, nil, false, true)
+						count = count + 1
 					end
-				end, pet)
+
+					local x = pt.x + (offset ~= nil and offset.x or 0)
+					local z = pt.z + (offset ~= nil and offset.z or 0)
+					local y = pet:HasTag("bird") and 15 or 0
+
+					pet.Transform:SetPosition(x, y, z)
+					if pet.components.follower ~= nil then
+						pet.components.follower:SetLeader(owner)
+					end
+
+					-- 登场表现：
+					-- 鹦鹉的 SG 默认状态是 init -> glide，自己就从高空俯冲下来；
+					-- 盐狗需要推 "summon" 才会播水花跳出来（照原版 hats.lua:2584-2586）
+					if not pet:HasTag("bird") then
+						pet:PushEvent("summon")
+					end
+
+					inst.m_summoned_pets[prefab] = pet
+					inst:ListenForEvent("onremove", function()
+						if inst.m_summoned_pets ~= nil then
+							inst.m_summoned_pets[prefab] = nil
+						end
+					end, pet)
+				end
 			end
 		end
-	end
+	end)
 end
 
 
