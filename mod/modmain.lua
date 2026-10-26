@@ -41,7 +41,6 @@ modimport("scripts/systems/m_infinity_action.lua") -- 无限充能动作（启�
 modimport("scripts/systems/m_kitcoon_container.lua") -- 浣猫崽：储物格 + 改名/换皮命令
 modimport("scripts/systems/m_skill_winona.lua") -- 薇诺娜技能树兼容
 modimport("scripts/systems/maogugu_text_trail_fx.lua") -- 文本轨迹特效
-modimport("scripts/systems/m_lunge_afterimage.lua") -- 穿刺残影（纯客户端）
 
 -- 放在最后：所有对原版代码的挂接修改（AddPrefabPostInit / AddComponentPostInit / AddClassPostConstruct）
 modimport("scripts/systems/vanilla_hooks.lua")
