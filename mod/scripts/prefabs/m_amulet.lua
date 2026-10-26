@@ -65,10 +65,18 @@ local function SpawnSummonedPets(inst, owner)
 			return
 		end
 
-		inst.m_summoned_pets = inst.m_summoned_pets or {}
+		-- 注意：这里必须用「本轮自己的 pets 表」，并用它做 onremove 回调的闭包。
+		-- 否则会出这个 bug：
+		--   解锁能力时 RefreshIfEquipped 会 onunequip -> onequip，
+		--   旧宠物收到 flyaway/desummon 后是「延迟退场」的，
+		--   等它真正 onremove 时，新宠物已经登记在新表里了；
+		--   如果回调里写的是 inst.m_summoned_pets[prefab] = nil（动态取表），
+		--   就会把「新宠物」的登记抹掉，下一次脱护符就漏收它 -> 越召越多。
+		local pets = inst.m_summoned_pets or {}
+		inst.m_summoned_pets = pets
 
 		for skill, prefab in pairs(SUMMONED_PETS) do
-			local pet = inst.m_summoned_pets[prefab]
+			local pet = pets[prefab]
 			if traits:HasSkill(skill) and (pet == nil or not pet:IsValid()) then
 				pet = SpawnPrefab(prefab)
 				if pet ~= nil then
@@ -108,10 +116,12 @@ local function SpawnSummonedPets(inst, owner)
 						pet:PushEvent("summon")
 					end
 
-					inst.m_summoned_pets[prefab] = pet
+					pets[prefab] = pet
+					-- 只清「自己这一只」的登记：pets 是本轮的表，
+					-- 上一轮的旧宠物退场时不会误删本轮新宠物的记录
 					inst:ListenForEvent("onremove", function()
-						if inst.m_summoned_pets ~= nil then
-							inst.m_summoned_pets[prefab] = nil
+						if pets[prefab] == pet then
+							pets[prefab] = nil
 						end
 					end, pet)
 				end
