@@ -181,9 +181,11 @@ local function OnTimerDone(inst, data)
 end
 
 local function OnEnterWater(inst)
-	-- 每次下水都重新开一轮「快速积盐」（用户调成 0.1 倍间隔），
-	-- 不用 ResumeTimer，避免沿用上岸时暂停的剩余时间导致节奏不一致
-	inst.components.timer:StartTimer("salty", TUNING.SALTY_DOG_TIME_TO_SALT * 0.1)
+	if inst.components.timer:TimerExists("salty") then
+		inst.components.timer:ResumeTimer("salty")
+	else
+		inst.components.timer:StartTimer("salty", TUNING.SALTY_DOG_TIME_TO_SALT * 0.1)
+	end
 end
 
 local function OnExitWater(inst)
