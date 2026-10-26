@@ -118,6 +118,14 @@ function PollyRogerBrain:OnStart()
 
 	local nearbyoceanpoint = nil
 
+	-- 盐是否已经积满。积满后就不该继续泡在水里等计时器了：
+	-- 原版大脑在「主人离海点 16 格内」时让 Follow 返回 nil，
+	-- 于是会一直停在 Wander（水里溜达），永远等不到上岸抖盐。
+	local function IsSaltFull(inst)
+		local counter = inst.components.counter
+		return counter ~= nil and counter:GetCount("salty") >= TUNING.SALTY_DOG_MAX_SALT_COUNT
+	end
+
 	local root = PriorityNode({
 		WhileNode(
 			function()
@@ -152,6 +160,11 @@ function PollyRogerBrain:OnStart()
 				Follow(self.inst, function()
 					local leader = self.inst.components.follower and self.inst.components.follower:GetLeader()
 					if self.inst.prefab == "m_salty_dog" then
+						-- 盐满了：不再往水里钻，改为跟回主人（主人一般在岸上），
+						-- 上岸后上面的 IsSaltedOnLand 节点会推 saltshake 抖盐
+						if IsSaltFull(self.inst) then
+							return leader
+						end
 						if
 							nearbyoceanpoint
 							and leader
@@ -164,7 +177,8 @@ function PollyRogerBrain:OnStart()
 				end, MIN_FOLLOW_DIST, TARGET_FOLLOW_DIST, MAX_FOLLOW_DIST),
 				IfNode(
 					function()
-						return self.inst.prefab == "m_salty_dog"
+						-- 只有没积满的时候才去海里溜达
+						return self.inst.prefab == "m_salty_dog" and not IsSaltFull(self.inst)
 					end,
 					"IsSaltyDog",
 					Wander(self.inst, function(inst)

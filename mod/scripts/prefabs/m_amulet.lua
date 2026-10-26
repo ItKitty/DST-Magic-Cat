@@ -27,9 +27,7 @@ local function RemoveSummonedPets(inst)
 			-- 读档 / 关服阶段生成的宠物可能还没跑完 prefab 的 master 初始化
 			-- （原版帽子用 DoTaskInTime(pollyspawndelay) 延后生成来避开这个阶段），
 			-- 这种半成品直接删，不推事件，否则状态机会读到 nil 的 components.health
-			if pet.components.health == nil then
-				pet:Remove()
-			elseif pet:HasTag("bird") then
+			if pet:HasTag("bird") then
 				pet.flyaway = true
 				pet:PushEvent("flyaway")
 			else
@@ -80,7 +78,17 @@ local function SpawnSummonedPets(inst, owner)
 					local offset = nil
 					local count = 0
 					while offset == nil and count < 12 do
-						offset = FindWalkableOffset(pt, math.random() * TWOPI, math.random() * 5, 12, false, false, nil, false, true)
+						offset = FindWalkableOffset(
+							pt,
+							math.random() * TWOPI,
+							math.random() * 5,
+							12,
+							false,
+							false,
+							nil,
+							false,
+							true
+						)
 						count = count + 1
 					end
 
@@ -111,7 +119,6 @@ local function SpawnSummonedPets(inst, owner)
 		end
 	end)
 end
-
 
 local function onequip(inst, owner)
 	-- 处理皮肤和动画

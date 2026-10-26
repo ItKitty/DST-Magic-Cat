@@ -61,6 +61,7 @@ local function fn_common(flying)
 	inst:AddTag("noplayertarget")
 	inst:AddTag("ignorewalkableplatformdrowning")
 	inst:AddTag("NOBLOCK")
+	inst:AddTag("noattack")
 
 	if not TheWorld.ismastersim then
 		return inst
@@ -76,12 +77,16 @@ local function fn_common(flying)
 
 	inst:AddComponent("eater")
 	inst:AddComponent("follower")
-	-- inst:AddComponent("health")
 	inst:AddComponent("combat")
 	inst:AddComponent("lootdropper")
 	inst:AddComponent("inspectable")
 	inst:AddComponent("inventory")
-	inst.components.inventory.maxslots = 1
+	inst.components.inventory.maxslots = 40
+
+	inst:AddComponent("health")
+	inst.components.health:SetMaxHealth(650)
+	inst.components.health.absorb = 0.95
+	inst.components.health:StartRegen(22.5, 3)
 
 	return inst
 end
