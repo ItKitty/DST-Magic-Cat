@@ -102,8 +102,8 @@ PrefabFiles = {
 	"m_kitcoon",
 
 	-- 护符召唤物：鹦鹉 / 盐狗
+	-- 两个 prefab 都定义在 prefabs/m_polly.lua 里（照原版 polly_rogers.lua 的结构）
 	"m_polly",
-	"m_salty_dog",
 
 	-- 角色相关
 	"madeleine",

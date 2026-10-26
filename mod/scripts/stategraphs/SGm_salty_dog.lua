@@ -1,262 +1,484 @@
 -- SGm_salty_dog
--- 盐狗自己的状态机：待机 / 走 / 捡（fetch）/ 交（give）/ 抖盐（saltshake）
--- + 上下水 + 出场（summon）/退场（desummon）。
--- 出场、退场的动画与特效对照原版 SGsalty_dog:148-229：
---   summon  ：wave_splash → 隐藏 → 3 帧后现身、向前跳（jump_pre/jump_pst）
---   desummon：丢背包 → jump_pre/jump_pst → 6 帧后 wave_splash → 删除
--- 唯一差异：原版会 inst.hat.components.spawner:GoHome(inst) 把孩子收回帽子，
--- 我们是护符直接生成的，没有 hat，所以改成直接 Remove。
+-- 1:1 照搬原版 scripts/stategraphs/SGsalty_dog.lua。
+-- 唯一改动：默认状态 summon -> idle。原版靠帽子 spawner 先生成在正确位置再 run summon，
+-- 我们是 SpawnPrefab 之后再定位，若不改默认状态，第一帧就会在原点放一次 wave_splash。
+-- 召唤时由 m_amulet 定位完成后再 PushEvent("summon")。
 
 require("stategraphs/commonstates")
 require("stategraphs/SGcritter_common")
 
 local actionhandlers =
 {
-	ActionHandler(ACTIONS.PICKUP, "pickup"),
-	ActionHandler(ACTIONS.CHECKTRAP, "pickup"),
-	ActionHandler(ACTIONS.GIVE, "give"),
-	ActionHandler(ACTIONS.GIVEALLTOPLAYER, "give"),
-	ActionHandler(ACTIONS.DROP, "give"),
+    ActionHandler(ACTIONS.GIVE, "give"),
+    ActionHandler(ACTIONS.GIVEALLTOPLAYER, "give"),
+    ActionHandler(ACTIONS.DROP, "give"),
+    ActionHandler(ACTIONS.PICKUP, "pickup"),
+    ActionHandler(ACTIONS.CHECKTRAP, "pickup"),
 }
 
-local events =
+local events=
 {
-	CommonHandlers.OnLocomote(false, true),
-	CommonHandlers.OnHop(),
-
-	EventHandler("saltshake", function(inst)
-		if not inst.sg:HasStateTag("busy") then
-			inst.sg:GoToState("saltshake")
+    CommonHandlers.OnSleep(),
+    CommonHandlers.OnFreeze(),
+	CommonHandlers.OnElectrocute(),
+	EventHandler("attacked", function(inst, data)
+		if not inst.components.health:IsDead() then
+			if CommonHandlers.TryElectrocuteOnAttacked(inst, data) then
+				return
+			elseif not inst.sg:HasStateTag("electrocute") then
+				inst.sg:GoToState("hit")
+			end
 		end
 	end),
-
-	-- 出场：从水花里跳出来
-	EventHandler("summon", function(inst)
-		if not inst.sg:HasStateTag("busy") then
-			inst.sg:GoToState("summon")
-		end
-	end),
-
-	-- 退场：跳一下再化成水花
-	EventHandler("desummon", function(inst)
-		inst.sg:GoToState("desummon")
-	end),
+    CommonHandlers.OnDeath(),
+    CommonHandlers.OnHop(),
+    CommonHandlers.OnLocomote(false, true),
+    EventHandler("summon", function(inst)
+        inst.sg:GoToState("summon")
+    end),
+    EventHandler("desummon", function(inst)
+        if not inst.components.health:IsDead() then
+            inst.sg:GoToState("desummon")
+        end
+    end),
+    EventHandler("saltshake", function(inst)
+        if not inst.sg:HasStateTag("busy") then
+            inst.sg:GoToState("saltshake")
+        end
+    end),
+    EventHandler("despawn", function(inst, data)
+        if not inst.components.health:IsDead() then
+            inst.sg:GoToState("despawn")
+        end
+    end),
 }
 
-local states =
+local states=
 {
-	State{
-		name = "idle",
-		tags = { "idle", "canrotate" },
+    State{
+        name = "idle",
+        tags = {"idle", "canrotate"},
+        onenter = function(inst)
+            inst.AnimState:PlayAnimation("idle_loop", true)
+        end,
+    },
 
-		onenter = function(inst)
-			inst.components.locomotor:StopMoving()
-			if not inst.AnimState:IsCurrentAnimation("idle_loop") then
-				inst.AnimState:PlayAnimation("idle_loop", true)
-			end
-		end,
-	},
+    State{
+        name = "death",
+        tags = {"busy"},
+        onenter = function(inst, reanimating)
+            inst.AnimState:PlayAnimation("death")
+            inst.Physics:Stop()
+            RemovePhysicsColliders(inst)
+            inst.SoundEmitter:PlaySound("winter2025/saltydog/death")
+        end,
+    },
+    State{
+        name = "hit",
+        tags = {"busy"},
 
-	-- 出场（对照原版 SGsalty_dog:148-185）
-	State{
-		name = "summon",
-		tags = { "busy" },
+        onenter = function(inst)
+            inst.AnimState:PlayAnimation("hit")
+            inst.SoundEmitter:PlaySound("winter2025/saltydog/hit")
+            inst.Physics:Stop()
+        end,
 
-		onenter = function(inst)
-			local fx = SpawnPrefab("wave_splash")
-			if fx ~= nil then
-				fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
-			end
-			inst:Hide()
-			inst.Physics:Stop()
-		end,
+        events = {
+            EventHandler("animover", function(inst)
+                inst.sg:GoToState("idle")
+            end),
+        },
+    },
+    State{
+        name = "saltshake",
+        tags = {"busy"},
 
-		timeline =
-		{
-			FrameEvent(3, function(inst)
-				inst:Show()
-				inst.Physics:SetMotorVel(5, 0, 0)
-				inst.AnimState:PlayAnimation("jump_pre")
-				inst.AnimState:PushAnimation("jump_pst")
-				inst.SoundEmitter:PlaySound("winter2025/saltydog/vocalization")
-			end),
-		},
+        onenter = function(inst)
+            inst.AnimState:PlayAnimation("emote_cute")
+            inst.Physics:Stop()
+        end,
 
-		events =
-		{
-			EventHandler("animover", function(inst)
-				if inst.AnimState:AnimDone() then
-					inst.sg:GoToState("idle")
-				end
-			end),
-		},
+        timeline = {
+            FrameEvent(10, function(inst)
+                inst.SoundEmitter:PlaySound("dontstarve/characters/walter/woby/small/emote_cute_shake")
+                inst.SoundEmitter:PlaySound("winter2025/saltydog/salt_shake")
+                if math.random() < 0.2 then
+                    inst:ShedSalt()
+                end
+            end),
+            FrameEvent(13, function(inst)
+                inst.SoundEmitter:PlaySound("dontstarve/characters/walter/woby/small/emote_cute_shake")
+            end),
+            FrameEvent(15, function(inst)
+                inst.SoundEmitter:PlaySound("winter2025/saltydog/salt_shake")
+                if math.random() < 0.5 then
+                    inst:ShedSalt()
+                end
+            end),
+            FrameEvent(19, function(inst)
+                inst.SoundEmitter:PlaySound("winter2025/saltydog/salt_shake")
+                if math.random() < 0.8 then
+                    inst:ShedSalt()
+                end
+            end),
+            FrameEvent(22, function(inst)
+                inst.SoundEmitter:PlaySound("winter2025/saltydog/salt_shake")
+                if math.random() < 0.6 then
+                    inst:ShedSalt()
+                end
+            end),
+            FrameEvent(25, function(inst)
+                inst.SoundEmitter:PlaySound("winter2025/saltydog/salt_shake")
+                if math.random() < 0.5 then
+                    inst:ShedSalt()
+                end
+            end),
+            FrameEvent(30, function(inst)
+                inst.SoundEmitter:PlaySound("winter2025/saltydog/salt_shake")
+                if math.random() < 0.4 then
+                    inst:ShedSalt()
+                end
+            end),
+            FrameEvent(34, function(inst)
+                inst.SoundEmitter:PlaySound("winter2025/saltydog/salt_shake")
+                inst:ShedAllSalt()
+            end),
+        },
 
-		onexit = function(inst)
-			inst.Physics:SetMotorVel(0, 0, 0)
-			inst:Show()
-		end,
-	},
+        events = {
+            EventHandler("animover", function(inst)
+                inst.sg:GoToState("idle")
+            end),
+        },
+    },
+    State{
+        name = "summon",
+        tags = {"busy"},
+        onenter = function(inst, queued)
+            if queued and inst.hat then
+                if inst.hat.components.spawner then
+                    local x, y, z = inst.hat.components.spawner.overridespawnlocation(inst.hat)
+                    inst.Transform:SetPosition(x, y, z)
+                end
+            end
+            SpawnPrefab("wave_splash").Transform:SetPosition(inst.Transform:GetWorldPosition())
+            inst:Hide()
+            inst.Physics:Stop()
+        end,
+        timeline =
+        {
+            FrameEvent(3, function(inst)
+                inst:Show()
+                inst.Physics:SetMotorVel(5, 0, 0)
+                inst.AnimState:PlayAnimation("jump_pre")
+                inst.AnimState:PushAnimation("jump_pst")
+                inst.SoundEmitter:PlaySound("winter2025/saltydog/vocalization")
+            end),
+        },
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end)
+        },
+        onexit = function(inst)
+            inst.readytogather = true
+            inst.Physics:SetMotorVel(0, 0, 0)
+            inst:Show()
+        end,
+    },
+    State{
+        name = "desummon",
+        tags = {"busy"},
+        onenter = function(inst)
+            inst.readytogather = nil
+            if inst.components.inventory ~= nil then
+                inst.components.inventory:DropEverything()
+            end
+            inst.AnimState:PlayAnimation("jump_pre")
+            inst.AnimState:PushAnimation("jump_pst")
+            inst.SoundEmitter:PlaySound("winter2025/saltydog/vocalization")
+            inst.Physics:SetMotorVel(5, 0, 0)
+        end,
+        timeline =
+        {
+            FrameEvent(6, function(inst)
+                SpawnPrefab("wave_splash").Transform:SetPosition(inst.Transform:GetWorldPosition())
+                if inst.hat then
+                    if inst.sg.statemem.queueresummon then -- NOTES(JBK): This will no longer hit from pollyspawndelay existing but keeping it here in case delay is lowered.
+                        inst.sg:GoToState("summon", true)
+                    else
+                        inst.hat.components.spawner:GoHome(inst)
+                        inst.sg:GoToState("idle")
+                    end
+                else
+                    inst:Remove()
+                end
+            end),
+        },
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end)
+        },
+        onexit = function(inst)
+            inst.Physics:SetMotorVel(0, 0, 0)
+            if not inst.hat then
+                inst:Remove()
+            end
+        end,
+    },
+    State{
+        name = "pickup",
+        tags = {"busy", "jumping"},
 
-	-- 退场（对照原版 SGsalty_dog:186-229）
-	State{
-		name = "desummon",
-		tags = { "busy" },
+        onenter = function(inst)
+            inst.components.locomotor:StopMoving()
+            inst.components.locomotor:EnableGroundSpeedMultiplier(false)
 
-		onenter = function(inst)
-			if inst.components.inventory ~= nil then
-				inst.components.inventory:DropEverything()
-			end
-			inst.AnimState:PlayAnimation("jump_pre")
-			inst.AnimState:PushAnimation("jump_pst")
-			inst.SoundEmitter:PlaySound("winter2025/saltydog/vocalization")
-			inst.Physics:SetMotorVel(5, 0, 0)
-		end,
+            inst.AnimState:PlayAnimation("fetch")
+            inst.AnimState:SetFrame(6)
+            inst.SoundEmitter:PlaySound("meta5/woby/woby_pounce")
 
-		timeline =
-		{
-			FrameEvent(6, function(inst)
-				local fx = SpawnPrefab("wave_splash")
-				if fx ~= nil then
-					fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
-				end
-				-- 原版这里是 GoHome，我们直接删掉
-				inst:DoTaskInTime(0.15, function(inst2)
-					if inst2:IsValid() then
-						inst2:Remove()
-					end
-				end)
-			end),
-		},
-	},
+            inst.sg.statemem.buffaction = inst:GetBufferedAction()
+            local target = inst.sg.statemem.buffaction and inst.sg.statemem.buffaction.target or nil
+            if target ~= nil and target:IsValid() then
+                inst:ForceFacePoint(target.Transform:GetWorldPosition())
+            end
+        end,
 
-	-- 捡东西：扑一下
-	State{
-		name = "pickup",
-		tags = { "busy" },
+        onupdate = function(inst)
+            local buffaction = inst:GetBufferedAction()
+            if buffaction ~= inst.sg.statemem.buffaction then
+                buffaction = nil
+            end
+            local target = buffaction ~= nil and buffaction.target or nil
 
-		onenter = function(inst)
-			inst.components.locomotor:StopMoving()
-			inst.AnimState:PlayAnimation("fetch")
-			inst.SoundEmitter:PlaySound("meta5/woby/woby_pounce")
-			inst.sg:SetTimeout(0.6)
-		end,
+            if target == nil or not target:IsValid() then
+                inst.Physics:ClearMotorVelOverride()
+                inst.Physics:Stop()
 
-		ontimeout = function(inst)
-			inst:PerformBufferedAction()
-			inst.sg:GoToState("idle")
-		end,
-	},
+                inst:ClearBufferedAction()
 
-	-- 交给主人
-	State{
-		name = "give",
-		tags = { "busy" },
+                return
+            end
 
-		onenter = function(inst)
-			inst.components.locomotor:StopMoving()
-			inst.AnimState:PlayAnimation("give")
-		end,
+            local distance = math.sqrt(inst:GetDistanceSqToInst(target))
 
-		timeline =
-		{
-			TimeEvent(4 * FRAMES, function(inst)
-				inst:PerformBufferedAction()
-			end),
-		},
+            if distance > .2 then
+                inst.Physics:SetMotorVelOverride(math.max(distance, 4), 0, 0)
+            else
+                inst.Physics:ClearMotorVelOverride()
+                inst.Physics:Stop()
+            end
+        end,
 
-		events =
-		{
-			EventHandler("animover", function(inst)
-				inst.sg:GoToState("idle")
-			end),
-		},
-	},
+        timeline = {
+            TimeEvent((7-6)*FRAMES, function(inst) PlayFootstep(inst, 0.25) end),
 
-	-- 抖盐：把身上的盐甩到地上
-	State{
-		name = "saltshake",
-		tags = { "busy" },
+            TimeEvent((21-6)*FRAMES, function(inst)
+                local buffaction = inst:GetBufferedAction()
+                local target = buffaction ~= nil and buffaction.target or nil
 
-		onenter = function(inst)
-			inst.components.locomotor:StopMoving()
-			inst.AnimState:PlayAnimation("emote_cute")
-			inst.Physics:Stop()
-		end,
+                if target == nil or not target:IsValid() then
+                    inst.sg.statemem.missed = true
 
-		timeline =
-		{
-			FrameEvent(10, function(inst)
-				inst.SoundEmitter:PlaySound("dontstarve/characters/walter/woby/small/emote_cute_shake")
-				inst.SoundEmitter:PlaySound("winter2025/saltydog/salt_shake")
-				inst:ShedSalt()
-			end),
-			FrameEvent(13, function(inst)
-				inst.SoundEmitter:PlaySound("dontstarve/characters/walter/woby/small/emote_cute_shake")
-			end),
-		},
+                    return -- Fail! No target.
+                end
 
-		events =
-		{
-			EventHandler("animover", function(inst)
-				inst.sg:GoToState("idle")
-			end),
-		},
-	},
+                local distance = math.sqrt(inst:GetDistanceSqToInst(target))
+
+                if distance > 1.75 then
+                    inst:ClearBufferedAction()
+
+                    inst.sg.statemem.missed = true
+                else
+                    inst:PerformBufferedAction()
+                end
+            end),
+        },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState(inst.sg.statemem.missed and "pickup_pst_fail" or "pickup_pst_success")
+                end
+            end)
+        },
+
+        onexit = function(inst)
+            inst.components.locomotor:EnableGroundSpeedMultiplier(true)
+            inst.Physics:ClearMotorVelOverride()
+            inst.Physics:Stop()
+            if inst.sg.statemem.buffaction and inst.sg.statemem.buffaction == inst.bufferedaction then
+                inst:ClearBufferedAction()
+            end
+        end,
+    },
+
+    State{
+        name = "pickup_pst_success",
+        tags = {"busy", "jumping"},
+
+        onenter = function(inst)
+            inst.components.locomotor:StopMoving()
+
+            inst.AnimState:PlayAnimation("fetch_pst_fast")
+        end,
+
+        timeline =
+        {
+            FrameEvent(1, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/sheepington/bodyfall", nil, .25) end),
+            FrameEvent(8,  function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/pupington/pant") end),
+        },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end)
+        },
+    },
+
+    State{
+        name = "pickup_pst_fail",
+        tags = {"busy", "jumping"},
+
+        onenter = function(inst, missed)
+            inst.components.locomotor:StopMoving()
+
+            inst.AnimState:PlayAnimation("fetch_fail_pst")
+        end,
+
+        timeline =
+        {
+            FrameEvent(1, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/sheepington/bodyfall", nil, .5) end),
+            FrameEvent(19, function(inst) inst.SoundEmitter:PlaySound("winter2025/saltydog/footstep") end),
+            FrameEvent(22, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/pupington/tail") end),
+            FrameEvent(27, function(inst) inst.SoundEmitter:PlaySound("winter2025/saltydog/footstep") end),
+            FrameEvent(30, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/pupington/tail") end),
+            FrameEvent(36, function(inst) inst.SoundEmitter:PlaySound("winter2025/saltydog/footstep") end),
+        },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end)
+        },
+    },
+
+    State {
+        name = "give",
+        tags = {"busy"},
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+
+            inst.AnimState:PlayAnimation("give")
+            inst.sg.statemem.buffaction = inst:GetBufferedAction()
+        end,
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end),
+        },
+
+        timeline =
+        {
+            FrameEvent(8, function(inst) inst.SoundEmitter:PlaySound("winter2025/saltydog/footstep") end),
+
+            FrameEvent(10, function(inst)
+                inst:PerformBufferedAction()
+            end),
+        },
+
+        onexit = function(inst)
+            if inst.sg.statemem.buffaction and inst.sg.statemem.buffaction == inst.bufferedaction then
+                inst:ClearBufferedAction()
+            end
+        end,
+    },
+    State{
+        name = "despawn",
+        tags = {"busy", "nointerrupt"},
+
+        onenter = function(inst)
+            inst.readytogather = nil
+            inst.persists = false
+            inst.OnEntitySleep = inst.Remove
+            inst.components.locomotor:StopMoving()
+            inst.AnimState:PlayAnimation("idle_loop", true)
+            inst.sg:SetTimeout(0.8)
+        end,
+        ontimeout = function(inst)
+            inst:Remove()
+        end,
+        onexit = function(inst)
+            inst:DoTaskInTime(0, inst.Remove)
+        end,
+    },
 }
+CommonStates.AddSleepStates(states)
+CommonStates.AddFrozenStates(states)
+CommonStates.AddElectrocuteStates(states)
 
--- 上下水的动画状态
 CommonStates.AddAmphibiousCreatureHopStates(states,
-	{ -- config
-		swimming_clear_collision_frame = 3 * FRAMES,
-	},
-	{ -- anims
-	},
-	{ -- timeline
-		hop_pre =
-		{
-			TimeEvent(0, function(inst)
-				if inst:HasTag("swimming") then
-					SpawnPrefab("splash_green").Transform:SetPosition(inst.Transform:GetWorldPosition())
-				end
-			end),
-		},
-		hop_pst =
-		{
-			FrameEvent(4, function(inst)
-				if inst:HasTag("swimming") then
-					inst.components.locomotor:Stop()
-					SpawnPrefab("splash_green").Transform:SetPosition(inst.Transform:GetWorldPosition())
-				end
-			end),
-			FrameEvent(6, function(inst)
-				if not inst:HasTag("swimming") then
-					inst.components.locomotor:StopMoving()
-				end
-			end),
-		},
-	}
-)
-
--- 走路状态（和小动物共用一套 walk_pre / walk_loop / walk_pst）
-SGCritterStates.AddWalkStates(states,
+{ -- config
+	swimming_clear_collision_frame = 3 * FRAMES,
+},
+{ -- anims
+},
+{ -- timeline
+	hop_pre =
 	{
-		starttimeline =
-		{
-			TimeEvent(0 * FRAMES, function(inst)
-				inst.SoundEmitter:PlaySound("dontstarve/creatures/together/pupington/pant")
-			end),
-			TimeEvent(4 * FRAMES, function(inst)
-				inst.SoundEmitter:PlaySound("dontstarve/creatures/together/pupington/pant")
-			end),
-		},
-		walktimeline =
-		{
-			TimeEvent(1 * FRAMES, function(inst) PlayFootstep(inst, 0.25) end),
-			TimeEvent(4 * FRAMES, function(inst) PlayFootstep(inst, 0.25) end),
-		},
-	}, true)
+		TimeEvent(0, function(inst)
+			if inst:HasTag("swimming") then
+				SpawnPrefab("splash_green").Transform:SetPosition(inst.Transform:GetWorldPosition())
+			end
+		end),
+	},
+	hop_pst = {
+		FrameEvent(4, function(inst)
+			if inst:HasTag("swimming") then
+				inst.components.locomotor:Stop()
+				SpawnPrefab("splash_green").Transform:SetPosition(inst.Transform:GetWorldPosition())
+			end
+		end),
+		FrameEvent(6, function(inst)
+			if not inst:HasTag("swimming") then
+                inst.components.locomotor:StopMoving()
+			end
+		end),
+	}
+})
 
--- 默认状态保持 "idle"：召唤时由 m_amulet 先摆好位置，再推 "summon" 事件，
--- 这样 wave_splash 才会出现在正确的位置（原版 SGsalty_dog 默认是 summon，
--- 但那是靠帽子 spawner 先定好位置再生成的，我们生成后再定位，顺序不同）
-return StateGraph("SGm_salty_dog", states, events, "idle", actionhandlers)
+SGCritterStates.AddWalkStates(states,
+    {
+        starttimeline =
+        {
+            TimeEvent(0*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/pupington/pant") end),
+            TimeEvent(4*FRAMES, function(inst) inst.SoundEmitter:PlaySound("dontstarve/creatures/together/pupington/pant") end),
+        },
+        walktimeline =
+        {
+            TimeEvent(1*FRAMES, function(inst) PlayFootstep(inst, 0.25) end),
+            TimeEvent(4*FRAMES, function(inst) PlayFootstep(inst, 0.25) end),
+        },
+    }, true)
+
+return StateGraph("m_salty_dog", states, events, "idle", actionhandlers)

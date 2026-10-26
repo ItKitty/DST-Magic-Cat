@@ -1,290 +1,585 @@
 -- SGm_polly
--- 鹦鹉自己的状态机：悬停 / 滑翔移动 / 捡（take）/ 交（give）/ 俯冲登场（glide）/ 飞走（flyaway）。
---
--- 出场、退场对照原版 SGpolly_rogers:332-442：
---   glide  ：在 y = 15 生成，靠 motorvel 向下俯冲，y <= 0.5 时落地并播 "land"，再回悬停
---   flyaway：takeoff_vertical/diagonal 两段 + 向上 motorvel 飞走
--- 唯一差异：原版飞走时会 inst.hat.components.spawner:GoHome(inst) 收回帽子，
--- 我们是护符直接生成的，没有 hat，所以改成升空一小段时间后 Remove。
---
--- 常态一直是悬停（原版是地面/空中交替，我们要的是"一直飞"）。
+-- 1:1 照搬原版 scripts/stategraphs/SGpolly_rogers.lua，仅改 StateGraph 名。
 
 require("stategraphs/commonstates")
 
 local actionhandlers =
 {
-	ActionHandler(ACTIONS.PICKUP, "take"),
-	ActionHandler(ACTIONS.CHECKTRAP, "take"),
-	ActionHandler(ACTIONS.GIVE, "give"),
-	ActionHandler(ACTIONS.GIVEALLTOPLAYER, "give"),
-	ActionHandler(ACTIONS.DROP, "give"),
+    ActionHandler(ACTIONS.GIVE, "give"),
+    ActionHandler(ACTIONS.GIVEALLTOPLAYER, "give"),
+    ActionHandler(ACTIONS.DROP, "give"),
+    ActionHandler(ACTIONS.PICKUP, "take"),
+    ActionHandler(ACTIONS.CHECKTRAP, "take"),
 }
 
-local events =
+local events=
 {
-	CommonHandlers.OnLocomote(false, true),
-	CommonHandlers.OnHop(),
+    CommonHandlers.OnSleep(),
+    CommonHandlers.OnFreeze(),
+	CommonHandlers.OnElectrocute(),
+	EventHandler("attacked", function(inst, data)
+		if inst.components.health and not inst.components.health:IsDead() then
+			if CommonHandlers.TryElectrocuteOnAttacked(inst, data) then
+				return
+			elseif not inst.sg:HasStateTag("electrocute") then
+				inst.sg:GoToState("hit")
+			end
+		end
+	end),
+    CommonHandlers.OnDeath(),
+    EventHandler("flyaway", function(inst, data)
+                if not inst.components.health:IsDead() then
+					if inst.sg:HasStateTag("electrocute") then
+						inst.sg.mem.flyaway = true
+					else
+						inst.sg:GoToState("flyaway")
+					end
+                end
+            end),    
+    EventHandler("locomote", function(inst)
+                if not inst.sg:HasStateTag("busy") then
+                    local is_moving = inst.sg:HasStateTag("moving")
+                    local is_running = inst.sg:HasStateTag("running")
+                    local is_idling = inst.sg:HasStateTag("idle")
+                    local should_move = inst.components.locomotor:WantsToMoveForward() 
+                    local should_run = inst.components.locomotor:WantsToRun()
+                           
+                    if is_moving and not should_move then
+                        inst.sg:GoToState("walk_stop", inst.sg:HasStateTag("ground"))
+                    elseif not is_moving and should_move then
+                        inst.sg:GoToState("walk_start", inst.sg:HasStateTag("ground"))
+                    end
+                end
+            end),
+
+    EventHandler("despawn", function(inst, data)
+        if not inst.components.health:IsDead() then
+            inst.sg:GoToState("despawn")
+        end
+    end),
+	-- Corpse handlers
+	CommonHandlers.OnCorpseChomped(),
 }
 
-local states =
+local states=
 {
-	-- 出场：从高空俯冲下来（逐行对照 SGpolly_rogers:396-442）
-	State{
-		name = "glide",
+    State{
+        name = "idle",
+        tags = {"idle", "canrotate"},
+        onenter = function(inst)
+            inst.AnimState:PlayAnimation("idle", true)
+            if not inst.SoundEmitter:PlayingSound("fly_lp") then
+                inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/flap_lp", "fly_lp")
+            end
+
+            --inst.sg:SetTimeout(1 + math.random())
+        end,
+
+        --[[ontimeout = function(inst)
+            local x,y,z = inst.Transform:GetWorldPosition()
+            if TheWorld.Map:IsVisualGroundAtPoint(x,y,z) or TheWorld.Map:GetPlatformAtPoint(x,z) then
+                --inst.SoundEmitter:KillSound("fly_lp")
+            else
+                inst.sg:GoToState("idle")
+            end
+        end,]]
+    },
+
+    State{
+        name = "take",
+        tags = {"busy"},
+        onenter = function(inst)
+            inst.AnimState:PlayAnimation("take")
+        end,
+
+        timeline =
+        {
+            TimeEvent(7 * FRAMES, function(inst)
+                inst:PerformBufferedAction()
+            end),
+        },
+
+        events=
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle") 
+                end
+            end),
+        },
+    },
+
+    State{
+        name = "give",
+        tags = {"busy"},
+        onenter = function(inst)
+            inst.AnimState:PlayAnimation("give")
+        end,
+
+        timeline =
+        {
+            TimeEvent(4 * FRAMES, function(inst)
+                inst:PerformBufferedAction()
+            end),
+        },
+
+        events=
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end),
+        },
+    },
+
+    State{
+        name = "idle_ground",
+        tags = {"idle", "canrotate", "ground"},
+        onenter = function(inst, pushanim)
+            inst:RemoveTag("flying")
+            if pushanim then
+                if type(pushanim) == "string" then
+                    inst.AnimState:PlayAnimation(pushanim)
+                end
+                inst.AnimState:PushAnimation("idle_ground", true)
+            elseif not inst.AnimState:IsCurrentAnimation("idle_ground") then
+                inst.AnimState:PlayAnimation("idle_ground", true)
+            end
+            inst.sg:SetTimeout(1 + math.random())
+        end,
+
+        ontimeout = function(inst)
+            inst.sg.statemem.stayonground = true
+            local r = math.random()
+            inst.sg:GoToState(
+                (r < .5 and "idle_ground") or
+                (r < .6 and "switch") or
+                (r < .7 and "peck") or
+                (r < .8 and "hop") or
+                "caw"
+            )
+        end,
+
+        onexit = function(inst)
+            if not inst.sg.statemem.stayonground then
+                inst:AddTag("flying")
+            end
+        end,
+    },
+
+    State{
+        name = "peck",
+        tags = {"idle", "canrotate", "ground"},
+        onenter = function(inst)
+            inst:RemoveTag("flying")
+            inst.AnimState:PlayAnimation("peck")
+        end,
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg.statemem.stayonground = true
+                    inst.sg:GoToState("idle_ground")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            if not inst.sg.statemem.stayonground then
+                inst:AddTag("flying")
+            end
+        end,
+    },
+
+    State{
+        name = "switch",
+        tags = {"idle", "canrotate", "ground"},
+        onenter = function(inst)
+            inst:RemoveTag("flying")
+            inst.Transform:SetRotation(inst.Transform:GetRotation() + 180)
+            inst.AnimState:PlayAnimation("switch")
+        end,
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg.statemem.stayonground = true
+                    inst.sg:GoToState("idle_ground")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            if not inst.sg.statemem.stayonground then
+                inst:AddTag("flying")
+            end
+        end,
+    },
+
+    State{
+        name = "hop",
+        tags = { "idle", "canrotate", "hopping", "ground" },
+
+        onenter = function(inst)
+            inst:RemoveTag("flying")
+            inst.AnimState:PlayAnimation("hop")
+            inst.Physics:SetMotorVel(5, 0, 0)
+        end,
+
+        timeline =
+        {
+            TimeEvent(8 * FRAMES, function(inst)
+                inst.Physics:Stop()
+                if inst.components.floater ~= nil then
+                    inst:PushEvent("on_landed")
+                elseif inst.components.inventoryitem ~= nil then
+                    inst.components.inventoryitem:TryToSink()
+                end
+            end),
+        },
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg.statemem.stayonground = true
+                    inst.sg:GoToState("idle_ground")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            if not inst.sg.statemem.stayonground then
+                inst:AddTag("flying")
+            end
+        end,
+    },
+
+    State{
+        name = "caw",
+        tags = { "idle", "ground" },
+
+        onenter = function(inst)
+            inst:RemoveTag("flying")
+            if not inst.AnimState:IsCurrentAnimation("caw") then
+                inst.AnimState:PlayAnimation("caw", true)
+            end
+            inst.sg:SetTimeout(inst.AnimState:GetCurrentAnimationLength())
+            inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/caw")
+        end,
+
+        ontimeout = function(inst)
+            inst.sg.statemem.stayonground = true
+            inst.sg:GoToState(math.random() < .5 and "caw" or "idle_ground")
+        end,
+
+        onexit = function(inst)
+            if not inst.sg.statemem.stayonground then
+                inst:AddTag("flying")
+            end
+        end,
+    },
+
+    State{
+        name = "hit",
+        tags = { "busy", "ground" },
+
+        onenter = function(inst)
+            inst:RemoveTag("flying")
+            inst.AnimState:PlayAnimation("hit")
+            inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/hit")
+        end,
+
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if not inst.AnimState:AnimDone() then
+                    inst.sg.statemem.stayonground = true
+                    inst.sg:GoToState("idle_ground")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            if not inst.sg.statemem.stayonground then
+                inst:AddTag("flying")
+            end
+        end,
+    },
+
+    State{
+        name = "death",
+        tags = { "busy", "ground" },
+        onenter = function(inst)
+            inst:RemoveTag("flying")
+            inst.components.locomotor:StopMoving()
+            inst.AnimState:PlayAnimation("death")
+            inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/death")
+            RemovePhysicsColliders(inst)
+            inst:DropDeathLoot()
+        end,
+
+        onexit = function(inst)
+            inst:AddTag("flying")
+        end,
+
+        events =
+        {
+            CommonHandlers.OnCorpseDeathAnimOver(),
+        },
+    },
+
+    State{
+        name = "flyaway",
+		tags = { "flight", "busy", "notarget" , "flyaway", "noelectrocute" },
+
+        onenter = function(inst)
+            inst.components.locomotor:Stop()
+            inst:ClearBufferedAction()
+
+            inst.readytogather = nil
+            inst:AddTag("NOCLICK")
+            if inst.components.floater ~= nil then
+                inst:PushEvent("on_no_longer_landed")
+            end
+
+            inst.DynamicShadow:Enable(false)
+            inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/takeoff")
+
+            if math.random() < 0.5 then
+                inst.sg.statemem.vert = true
+                inst.AnimState:PlayAnimation("takeoff_vertical_pre")
+                inst.AnimState:PushAnimation("takeoff_vertical_loop", true)
+            else
+                inst.AnimState:PlayAnimation("takeoff_diagonal_pre")
+                inst.AnimState:PushAnimation("takeoff_diagonal_loop", true)
+            end
+            inst.SoundEmitter:KillSound("fly_lp")
+
+            if inst.components.inventory ~= nil then
+                inst.components.inventory:DropEverything()
+            end
+
+            inst.sg:SetTimeout(.1 + math.random() * .2)
+        end,
+
+        ontimeout = function(inst)
+            if inst.sg.statemem.vert then
+                inst.Physics:SetMotorVel(math.random() * 4 - 2, math.random() * 5 + 15, math.random() * 4 - 2)
+            else
+                inst.Physics:SetMotorVel(math.random() * 8 + 8, math.random() * 5 + 15, math.random() * 4 - 2)
+            end
+        end,
+
+        timeline =
+        {
+            TimeEvent(2, function(inst)
+                if inst.flyaway then
+                    if inst.hat then
+                        inst.hat.components.spawner:GoHome(inst)
+                        inst.SoundEmitter:KillSound("fly_lp")
+                    else
+                        inst:Remove()
+                    end
+                else
+                    inst.sg:GoToState("glide")
+                end
+            end),
+        },
+
+        onexit = function(inst)
+            inst.readytogather = true
+            inst:RemoveTag("NOCLICK")
+        end,
+    },
+
+    State{
+        name = "glide",
 		tags = { "idle", "flight", "notarget", "busy", "noelectrocute" },
 
-		onenter = function(inst)
-			inst.readytogather = nil
-			inst:AddTag("NOCLICK")
-			if not inst.AnimState:IsCurrentAnimation("glide") then
-				inst.AnimState:PlayAnimation("glide", true)
-			end
-			inst.sg:SetTimeout(inst.AnimState:GetCurrentAnimationLength())
-			inst.Physics:SetMotorVel(0, math.random() * 10 - 20, 0)
-		end,
+        onenter = function(inst)
+            inst.readytogather = nil
+            inst:AddTag("NOCLICK")
+            if not inst.AnimState:IsCurrentAnimation("glide") then
+                inst.AnimState:PlayAnimation("glide", true)
+            end
+            inst.sg:SetTimeout(inst.AnimState:GetCurrentAnimationLength())
 
-		timeline =
-		{
-			TimeEvent(1 * FRAMES, function(inst)
-				if inst.components.inventoryitem == nil or not inst.components.inventoryitem:IsHeld() then
-					inst.SoundEmitter:PlaySound(inst.sounds.flyin)
-				end
-			end),
-		},
+            inst.Physics:SetMotorVel(0, math.random() * 10 - 20, 0)
+        end,
 
-		onupdate = function(inst)
-			local x, y, z = inst.Transform:GetWorldPosition()
+        timeline =
+        {
+            TimeEvent(1 * FRAMES, function(inst)
+                if inst.components.inventoryitem == nil or not inst.components.inventoryitem:IsHeld() then
+                    inst.SoundEmitter:PlaySound(inst.sounds.flyin)
+                end
+            end),
+        },
 
-			if y < 2 then
-				inst.Physics:SetMotorVel(0, 0, 0)
-			end
+        onupdate = function(inst)
+            local x, y, z = inst.Transform:GetWorldPosition()
 
-			if y <= 0.5 then
-				inst.Physics:Stop()
-				inst.Physics:Teleport(x, 0, z)
-				inst.AnimState:PlayAnimation("land")
-				inst.DynamicShadow:Enable(true)
-				if inst.components.floater ~= nil then
-					inst:PushEvent("on_landed")
-				end
-				inst.sg:GoToState("idle_ground", true)
-			end
-		end,
+            if y < 2 then
+                inst.Physics:SetMotorVel(0, 0, 0)
+            end
+            if y <= 0.5 then
+                inst.Physics:Stop()
+                inst.Physics:Teleport(x, 0, z)
+                inst.AnimState:PlayAnimation("land")
+                inst.DynamicShadow:Enable(true)
+                if inst.components.floater ~= nil then
+                    inst:PushEvent("on_landed")
+                end
+                inst.sg:GoToState("idle_ground", true)
+            end
+        end,
 
-		onexit = function(inst)
-			inst:RemoveTag("NOCLICK")
-			inst.readytogather = true
-		end,
-	},
+        onexit = function(inst)
+            inst:RemoveTag("NOCLICK")
+            inst.readytogather = true
+        end,
+    },
 
-	-- 触地状态（逐行对照 SGpolly_rogers:133-172）
-	-- 唯一差异：原版会在原地赖一会儿再随机 switch/peck/hop/caw，
-	-- 我们要「常态一直在飞」，所以停留 1~2 秒后直接起飞回悬停。
-	State{
-		name = "idle_ground",
-		tags = { "idle", "canrotate", "ground" },
+    State{
+        name = "walk_start",
+        tags = { "moving", "canrotate" },
 
-		onenter = function(inst, pushanim)
-			inst:RemoveTag("flying")
-			if pushanim then
-				if type(pushanim) == "string" then
-					inst.AnimState:PlayAnimation(pushanim)
-				end
-				inst.AnimState:PushAnimation("idle_ground", true)
-			elseif not inst.AnimState:IsCurrentAnimation("idle_ground") then
-				inst.AnimState:PlayAnimation("idle_ground", true)
-			end
-			inst.sg:SetTimeout(1 + math.random())
-		end,
+        onenter = function(inst, fromground)
+            if fromground then
+                inst.AnimState:PlayAnimation("takeoff_walk")
+            else
+                inst.AnimState:PlayAnimation("walk_pre")
+            end
+        end,
 
-		ontimeout = function(inst)
-			inst:AddTag("flying")
-			inst.sg:GoToState("idle")
-		end,
-	},
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("walk")
+                end
+            end),
+        },
+    },
 
-	-- 飞走：向上冲，随后消失
-	State{
-		name = "flyaway",
-		tags = { "flight", "busy", "notarget", "flyaway" },
+    State{
+        name = "walk",
+        tags = { "moving", "canrotate" },
 
-		onenter = function(inst)
-			inst.components.locomotor:Stop()
-			inst:ClearBufferedAction()
-			inst:AddTag("NOCLICK")
-			inst.DynamicShadow:Enable(false)
-			inst.SoundEmitter:KillSound("fly_lp")
-			inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/takeoff")
+        onenter = function(inst)
+            if not inst.AnimState:IsCurrentAnimation("walk_loop") then
+                inst.AnimState:PlayAnimation("walk_loop", true)
+            end
+            if not inst.SoundEmitter:PlayingSound("fly_lp") then
+                inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/flap_lp", "fly_lp")
+            end
+            if inst.components.locomotor:WantsToRun() then
+                inst.components.locomotor:RunForward()
+            else
+                inst.components.locomotor:WalkForward()
+            end
+            inst.sg:SetTimeout(inst.AnimState:GetCurrentAnimationLength())
+        end,
 
-			if inst.components.inventory ~= nil then
-				inst.components.inventory:DropEverything()
-			end
+        ontimeout = function(inst)
+            inst.sg:GoToState("walk")
+        end,
+    },
 
-			if math.random() < 0.5 then
-				inst.sg.statemem.vert = true
-				inst.AnimState:PlayAnimation("takeoff_vertical_pre")
-				inst.AnimState:PushAnimation("takeoff_vertical_loop", true)
-			else
-				inst.AnimState:PlayAnimation("takeoff_diagonal_pre")
-				inst.AnimState:PushAnimation("takeoff_diagonal_loop", true)
-			end
+    State{
+        name = "walk_stop",
+        tags = { "canrotate" },
 
-			inst.sg:SetTimeout(0.1 + math.random() * 0.2)
-		end,
+        onenter = function(inst)
+            inst.components.locomotor:StopMoving()
+            inst.AnimState:PlayAnimation("walk_pst")
+            --inst.SoundEmitter:KillSound("fly_lp")
+        end,
 
-		-- 上升照原版 SGpolly_rogers:366-372 用 motorvel
-		ontimeout = function(inst)
-			if inst.sg.statemem.vert then
-				inst.Physics:SetMotorVel(math.random() * 4 - 2, math.random() * 5 + 15, math.random() * 4 - 2)
-			else
-				inst.Physics:SetMotorVel(math.random() * 8 + 8, math.random() * 5 + 15, math.random() * 4 - 2)
-			end
+        events =
+        {
+            EventHandler("animover", function(inst)
+                if inst.AnimState:AnimDone() then
+                    inst.sg:GoToState("idle")
+                end
+            end),
+        },
+    },
+    State{
+        name = "despawn",
+        tags = {"busy", "nointerrupt"},
 
-			-- 原版这里是 GoHome 收回帽子；我们没有帽子，升起来后删掉
-			inst:DoTaskInTime(0.45, function(inst2)
-				if inst2:IsValid() then
-					inst2:Remove()
-				end
-			end)
-		end,
-	},
-
-	-- 常态：一直悬停飞行（对照原版 SGpolly_rogers:64-83）
-	State{
-		name = "idle",
-		tags = { "idle", "canrotate", "flying" },
-
-		onenter = function(inst)
-			inst.components.locomotor:StopMoving()
-			inst:AddTag("flying")
-			if not inst.AnimState:IsCurrentAnimation("idle") then
-				inst.AnimState:PlayAnimation("idle", true)
-			end
-			if not inst.SoundEmitter:PlayingSound("fly_lp") then
-				inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/flap_lp", "fly_lp")
-			end
-		end,
-
-		onexit = function(inst)
-			inst.SoundEmitter:KillSound("fly_lp")
-		end,
-	},
-
-	State{
-		name = "walk_start",
-		tags = { "moving", "canrotate" },
-
-		-- 一直飞着：不走地面那套 walk_pre，直接接飞行循环
-		onenter = function(inst)
-			inst.sg:GoToState("walk")
-		end,
-	},
-
-	State{
-		name = "walk",
-		tags = { "moving", "canrotate", "flying" },
-
-		onenter = function(inst)
-			inst:AddTag("flying")
-			inst.components.locomotor:WalkForward()
-			if not inst.AnimState:IsCurrentAnimation("glide") then
-				inst.AnimState:PlayAnimation("glide", true)
-			end
-			if not inst.SoundEmitter:PlayingSound("fly_lp") then
-				inst.SoundEmitter:PlaySound("monkeyisland/pollyroger/flap_lp", "fly_lp")
-			end
-		end,
-
-		onexit = function(inst)
-			inst.SoundEmitter:KillSound("fly_lp")
-		end,
-	},
-
-	State{
-		name = "walk_stop",
-		tags = { "canrotate" },
-
-		-- 停下就直接回悬停
-		onenter = function(inst)
-			inst.components.locomotor:StopMoving()
-			inst.sg:GoToState("idle")
-		end,
-	},
-
-	-- 捡东西
-	State{
-		name = "take",
-		tags = { "busy" },
-
-		onenter = function(inst)
-			inst.components.locomotor:StopMoving()
-			inst.AnimState:PlayAnimation("take")
-		end,
-
-		timeline =
-		{
-			TimeEvent(7 * FRAMES, function(inst)
-				inst:PerformBufferedAction()
-			end),
-		},
-
-		events =
-		{
-			EventHandler("animover", function(inst)
-				if inst.AnimState:AnimDone() then
-					inst.sg:GoToState("idle")
-				end
-			end),
-		},
-	},
-
-	-- 交给主人
-	State{
-		name = "give",
-		tags = { "busy" },
-
-		onenter = function(inst)
-			inst.components.locomotor:StopMoving()
-			inst.AnimState:PlayAnimation("give")
-		end,
-
-		timeline =
-		{
-			TimeEvent(4 * FRAMES, function(inst)
-				inst:PerformBufferedAction()
-			end),
-		},
-
-		events =
-		{
-			EventHandler("animover", function(inst)
-				if inst.AnimState:AnimDone() then
-					inst.sg:GoToState("idle")
-				end
-			end),
-		},
-	},
-
-	-- 跳（OnHop 需要这个状态）
-	State{
-		name = "hop",
-		tags = { "busy" },
-
-		onenter = function(inst)
-			inst.AnimState:PlayAnimation("hop")
-		end,
-
-		events =
-		{
-			EventHandler("animover", function(inst)
-				inst.sg:GoToState("idle")
-			end),
-		},
-	},
+        onenter = function(inst)
+            inst.readytogather = nil
+            inst.persists = false
+            inst.OnEntitySleep = inst.Remove
+            inst.components.locomotor:StopMoving()
+            inst.AnimState:PlayAnimation("idle", true)
+            inst.sg:SetTimeout(0.8)
+        end,
+        ontimeout = function(inst)
+            inst:Remove()
+        end,
+        onexit = function(inst)
+            inst:DoTaskInTime(0, inst.Remove)
+        end,
+    },
 }
+CommonStates.AddSleepStates(states)
+CommonStates.AddFrozenStates(states)
+CommonStates.AddElectrocuteStates(states,
+nil, --timeline
+{--anims
+	loop = function(inst)
+		if inst.sg.lasttags["ground"] then
+			inst.sg:AddStateTag("ground")
+			inst:RemoveTag("flying")
+		else
+			return "walk_shock_loop" --walk is the flying anim
+		end
+	end,
+	pst = function(inst)
+		if inst.sg.lasttags["ground"] then
+			inst.sg:AddStateTag("ground")
+		else
+			return "walk_shock_pst" --walk is the flying anim
+		end
+	end,
+},
+{--fns
+	loop_onexit = function(inst)
+		if not inst.sg.statemem.not_interrupted then
+			inst.sg.mem.flyaway = nil
+			if not inst.sg.statemem.stayonground and inst.sg:HasStateTag("ground") then
+				inst:AddTag("flying")
+			end
+		end
+	end,
+	onanimover = function(inst)
+		if inst.AnimState:AnimDone() then
+			if inst.sg.mem.flyaway then
+				inst.sg:GoToState("flyaway")
+			elseif inst.sg:HasStateTag("ground") then
+				inst.sg.statemem.stayonground = true
+				inst.sg:GoToState("idle_ground")
+			else
+				inst.sg:GoToState("idle")
+			end
+		end
+	end,
+	pst_onexit = function(inst)
+		inst.sg.mem.flyaway = nil
+		if not inst.sg.statemem.stayonground and inst.sg:HasStateTag("ground") then
+			inst:AddTag("flying")
+		end
+	end,
+})
 
--- 默认状态就是 "glide"：对照原版 SGpolly_rogers 的
---   CommonStates.AddInitState(states, "glide")
---   return StateGraph("polly_rogers", states, events, "init", actionhandlers)
--- 也就是说原版鹦鹉一生成就在滑翔下降，而不是等外部推事件。
-return StateGraph("SGm_polly", states, events, "glide", actionhandlers)
+CommonStates.AddInitState(states, "glide")
+CommonStates.AddCorpseStates(states)
+
+return StateGraph("m_polly", states, events, "init", actionhandlers)

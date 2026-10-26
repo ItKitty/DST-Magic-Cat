@@ -19,16 +19,16 @@ local function RemoveSummonedPets(inst)
 		return
 	end
 
+	-- 退场方式完全照原版 hats.lua:2493-2510 的 polly_rogers_go_away：
+	-- 鸟 -> 打上 flyaway 标记再推 "flyaway"（没有 hat 时状态里会自己 Remove）
+	-- 其它 -> 推 "desummon"（丢背包 + 跳跃 + 水花后自己 Remove）
 	for _, pet in pairs(inst.m_summoned_pets) do
 		if pet:IsValid() then
-			if pet.components.inventory ~= nil then
-				pet.components.inventory:DropEverything()
-			end
-			-- 各自播自己的退场（鹦鹉飞走 / 盐狗水花），没有就用直接删除兜底
-			if pet.PlaySummonDespawn ~= nil then
-				pet:PlaySummonDespawn()
+			if pet:HasTag("bird") then
+				pet.flyaway = true
+				pet:PushEvent("flyaway")
 			else
-				pet:Remove()
+				pet:PushEvent("desummon")
 			end
 		end
 	end
@@ -72,9 +72,11 @@ local function SpawnSummonedPets(inst, owner)
 					pet.components.follower:SetLeader(owner)
 				end
 
-				-- 登场表现（鹦鹉落下 / 盐狗水花）
-				if pet.PlaySummonAppear ~= nil then
-					pet:PlaySummonAppear()
+				-- 登场表现：
+				-- 鹦鹉的 SG 默认状态是 init -> glide，自己就从高空俯冲下来；
+				-- 盐狗需要推 "summon" 才会播水花跳出来（照原版 hats.lua:2584-2586）
+				if not pet:HasTag("bird") then
+					pet:PushEvent("summon")
 				end
 
 				inst.m_summoned_pets[prefab] = pet

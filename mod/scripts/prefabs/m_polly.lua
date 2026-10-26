@@ -1,98 +1,257 @@
--- m_polly
--- 护符召唤的鹦鹉：只捡种子，不给它生命值、不带碰撞体积。
--- 由 m_amulet 在「护符带龙鳞」时召唤，脱下护符就消失。
-
-local brain = require("brains/m_pollybrain")
+-- m_polly / m_salty_dog
+-- 1:1 照搬原版 scripts/prefabs/polly_rogers.lua（同一个文件里定义了这两个 prefab）。
+-- 仅改动：prefab 名、brain 路径、stategraph 名，其余逻辑（含 health/combat/lootdrop）全部保留。
 
 local assets = {
-	Asset("ANIM", "anim/polly_rogers.zip"),
+    Asset("ANIM", "anim/polly_rogers.zip"),
 }
 
--- 对照原版 prefabs/polly_rogers.lua:25-29 的 SOUNDS_POLLY_ROGERS
+local prefabs =
+{
+    "polly_rogerscorpse",
+}
+
+local assets_dog = {
+    Asset("ANIM", "anim/salty_dog.zip"),
+    Asset("ANIM", "anim/pupington_basic.zip"),
+    Asset("ANIM", "anim/pupington_emotes.zip"),
+    Asset("ANIM", "anim/pupington_traits.zip"),
+    Asset("ANIM", "anim/pupington_jump.zip"),
+    Asset("ANIM", "anim/pupington_basic_water.zip"),
+}
+
+local prefabs_dog = {
+    "saltrock",
+}
+
+local brain = require("brains/m_pollyrogerbrain")
+
 local SOUNDS_POLLY_ROGERS = {
-	takeoff = "dontstarve/birds/takeoff_crow",
-	chirp = "dontstarve/birds/chirp_crow",
-	flyin = "dontstarve/birds/flyin",
+    takeoff = "dontstarve/birds/takeoff_crow",
+    chirp = "dontstarve/birds/chirp_crow",
+    flyin = "dontstarve/birds/flyin",
 }
 
-local function fn()
-	local inst = CreateEntity()
+local function fn_common(flying)
+    local inst = CreateEntity()
 
-	inst.entity:AddTransform()
-	inst.entity:AddAnimState()
-	inst.entity:AddSoundEmitter()
-	inst.entity:AddDynamicShadow()
-	inst.entity:AddNetwork()
+    inst.entity:AddTransform()
+    inst.entity:AddAnimState()
+    inst.entity:AddSoundEmitter()
+    inst.entity:AddDynamicShadow()
+    inst.entity:AddNetwork()
 
-	-- 物理对照原版 prefabs/polly_rogers.lua:40-48 的「飞行」分支：
-	-- 用真实动态刚体（这样 Physics:SetMotorVel 才推得动），
-	-- 但碰撞掩码只给 GROUND，不会和玩家/生物互推 —— 依旧无碰撞体积。
-	inst.entity:AddPhysics()
-	inst.Physics:SetCollisionGroup(COLLISION.CHARACTERS)
-	inst.Physics:SetCollisionMask(COLLISION.GROUND)
-	inst.Physics:SetMass(1)
-	inst.Physics:SetSphere(1)
+    inst.entity:AddPhysics()
+    if flying then
+        inst.Physics:SetCollisionGroup(COLLISION.CHARACTERS)
+        inst.Physics:SetCollisionMask(COLLISION.GROUND)
+        inst.Physics:SetMass(1)
+        inst.Physics:SetSphere(1)
+    else
+        MakeCharacterPhysics(inst, 1, .1)
+    end
 
-	inst.DynamicShadow:SetSize(1, .75)
-	inst.Transform:SetFourFaced()
 
-	inst.AnimState:SetBank("polly_rogers")
-	inst.AnimState:SetBuild("polly_rogers")
-	inst.AnimState:PlayAnimation("idle_ground", true)
+    inst.DynamicShadow:SetSize(1, .75)
+    inst.Transform:SetFourFaced()
 
-	inst:AddTag("animal")
-	inst:AddTag("smallcreature")
-	inst:AddTag("companion")
-	inst:AddTag("untrappable")
-	inst:AddTag("noplayertarget")
-	inst:AddTag("NOBLOCK")
-	inst:AddTag("bird")
-	inst:AddTag("flying")
-	inst:AddTag("notraptrigger")
-	inst:AddTag("noauradamage")
+    inst:AddTag("animal")
+    inst:AddTag("prey")
+    inst:AddTag("smallcreature")
+    inst:AddTag("untrappable")
+    inst:AddTag("companion")
+    inst:AddTag("noplayertarget")
+    inst:AddTag("ignorewalkableplatformdrowning")
+    inst:AddTag("NOBLOCK")
 
-	inst.entity:SetPristine()
+    if not TheWorld.ismastersim then
+        return inst
+    end
 
-	if not TheWorld.ismastersim then
-		return inst
-	end
+    inst.persists = false
 
-	-- 由护符管理，不进存档
-	inst.persists = false
+    inst:AddComponent("locomotor") -- locomotor must be constructed before the stategraph
+    inst.components.locomotor.walkspeed = TUNING.POLLY_ROGERS_WALK_SPEED
+    inst.components.locomotor.runspeed = TUNING.POLLY_ROGERS_RUN_SPEED
+    inst.components.locomotor.pathcaps = { allowocean = true } -- All polly variations should be able to access ocean.
+    inst.components.locomotor:SetTriggersCreep(false)
 
-	inst:AddComponent("locomotor")
-	inst.components.locomotor.walkspeed = TUNING.POLLY_ROGERS_WALK_SPEED
-	inst.components.locomotor.runspeed = TUNING.POLLY_ROGERS_RUN_SPEED
-	inst.components.locomotor.pathcaps = { allowocean = true }
-	inst.components.locomotor:SetTriggersCreep(false)
+    inst:AddComponent("eater")
+    inst:AddComponent("follower")
+    inst:AddComponent("health")
+    inst:AddComponent("combat")
+    inst:AddComponent("lootdropper")
+    inst:AddComponent("inspectable")
+    inst:AddComponent("inventory")
+    inst.components.inventory.maxslots = 1
 
-	inst:AddComponent("inventory")
-	inst.components.inventory.maxslots = 1
-
-	inst:AddComponent("follower")
-	inst.components.follower:KeepLeaderOnAttacked()
-
-	inst:AddComponent("inspectable")
-
-	-- glide 状态里会读 inst.sounds.flyin
-	inst.sounds = SOUNDS_POLLY_ROGERS
-
-	inst:SetStateGraph("SGm_polly")
-	inst:SetBrain(brain)
-
-	-- 登场：不需要额外触发 —— SGm_polly 的默认状态就是 "glide"，
-	-- 和原版 SGpolly_rogers 用 AddInitState(states, "glide") 起手一致。
-
-	-- 收回：flyaway 状态向上飞走，状态里会自己 Remove
-	inst.PlaySummonDespawn = function(inst2)
-		if inst2.sg ~= nil then
-			inst2.sg:GoToState("flyaway")
-		else
-			inst2:Remove()
-		end
-	end
-
-	return inst
+    return inst
 end
 
-return Prefab("m_polly", fn, assets)
+local function fn_polly()
+    local inst = fn_common(true)
+
+    inst.AnimState:SetBank("polly_rogers")
+    inst.AnimState:SetBuild("polly_rogers")
+    inst.AnimState:PlayAnimation("idle_ground")
+    
+    inst.scrapbook_animoffsety = 5
+    inst.scrapbook_animpercent = 0.3
+    inst.scrapbook_specialinfo = "POLLYROGERS"
+
+    inst:AddTag("bird")
+    inst:AddTag("flying")
+
+    inst.entity:SetPristine()
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst.sounds = SOUNDS_POLLY_ROGERS
+
+    inst:SetStateGraph("SGm_polly")
+    inst:SetBrain(brain)
+
+    inst.components.eater:SetDiet({ FOODTYPE.SEEDS }, { FOODTYPE.SEEDS })
+
+    inst.components.health:SetMaxHealth(TUNING.POLLY_ROGERS_MAX_HEALTH)
+
+    inst.components.combat.hiteffectsymbol = "polly_body"
+
+    MakeSmallBurnableCharacter(inst, "polly_body")
+    MakeTinyFreezableCharacter(inst, "polly_body")
+
+    return inst
+end
+
+local function ShedSalt(inst)
+    local counter = inst.components.counter
+    if counter then
+        local count = counter:GetCount("salty")
+        if count > 0 then
+            counter:DecrementToZero("salty")
+            inst:UpdateSaltVisuals()
+            local item = SpawnPrefab("saltrock")
+            item.components.inventoryitem:InheritWorldWetnessAtTarget(inst)
+            inst.components.lootdropper:FlingItem(item)
+        end
+    end
+end
+
+local function ShedAllSalt(inst)
+    local counter = inst.components.counter
+    if counter then
+        local count = counter:GetCount("salty")
+        if count > 0 then
+            counter:Clear("salty")
+            inst:UpdateSaltVisuals()
+            for i = 1, count do
+                local item = SpawnPrefab("saltrock")
+                item.components.inventoryitem:InheritWorldWetnessAtTarget(inst)
+                inst.components.lootdropper:FlingItem(item)
+            end
+        end
+    end
+end
+
+local function UpdateSaltVisuals(inst)
+    local count = 0
+    local counter = inst.components.counter
+    if counter then
+        count = math.min(math.floor(((counter:GetCount("salty") - 1) * 2 / TUNING.SALTY_DOG_MAX_SALT_COUNT) + 1.001), 2) -- Remaps salt values to [0, 2] range evenly but makes 0 == 0.
+    end
+    if count > 0 then
+        inst.AnimState:OverrideSymbol("body", "salty_dog", "body_stage" .. count)
+        inst.AnimState:OverrideSymbol("body_overlay", "salty_dog", "body_overlay_stage" .. count)
+    else
+        inst.AnimState:ClearOverrideSymbol("body")
+        inst.AnimState:ClearOverrideSymbol("body_overlay")
+    end
+end
+
+local function OnTimerDone(inst, data)
+    if data then
+        if data.name == "salty" then
+            local counter = inst.components.counter
+            if counter and (counter:GetCount("salty") < TUNING.SALTY_DOG_MAX_SALT_COUNT) then
+                counter:Increment("salty", 1)
+                inst:UpdateSaltVisuals()
+            end
+            inst.components.timer:StartTimer("salty", TUNING.SALTY_DOG_TIME_TO_SALT)
+        end
+    end
+end
+
+local function OnEnterWater(inst)
+    if inst.components.timer:TimerExists("salty") then
+        inst.components.timer:ResumeTimer("salty")
+    else
+        inst.components.timer:StartTimer("salty", TUNING.SALTY_DOG_TIME_TO_SALT)
+    end
+end
+
+local function OnExitWater(inst)
+    if inst.components.timer:TimerExists("salty") then
+        inst.components.timer:PauseTimer("salty")
+    end
+end
+
+local function OnLoad_dog(inst, data, newents)
+    inst:UpdateSaltVisuals()
+end
+
+local function fn_dog()
+    local inst = fn_common(false)
+
+    inst.AnimState:SetBank("pupington")
+    inst.AnimState:SetBuild("salty_dog")
+    inst.AnimState:PlayAnimation("idle_loop", true)
+
+    inst.scrapbook_animoffsety = 5
+    inst.scrapbook_animpercent = 0.3
+    inst.AnimState:OverrideSymbol("water_ripple", "pupington_basic_water", "water_ripple")
+    inst.AnimState:OverrideSymbol("water_shadow", "pupington_basic_water", "water_shadow")
+
+    inst.entity:SetPristine()
+    if not TheWorld.ismastersim then
+        return inst
+    end
+
+    inst.ShedSalt = ShedSalt
+    inst.ShedAllSalt = ShedAllSalt
+    inst.UpdateSaltVisuals = UpdateSaltVisuals
+    inst.OnLoad = OnLoad_dog
+
+    inst:AddComponent("embarker")
+    inst.components.embarker.embark_speed = inst.components.locomotor.runspeed
+
+    inst.components.locomotor:SetAllowPlatformHopping(true)
+
+    inst:AddComponent("counter")
+
+    inst:AddComponent("timer")
+    inst:ListenForEvent("timerdone", OnTimerDone)
+
+    inst:AddComponent("amphibiouscreature")
+    inst.components.amphibiouscreature:SetBanks("pupington", "pupington_water")
+    inst.components.amphibiouscreature:SetEnterWaterFn(OnEnterWater)
+    inst.components.amphibiouscreature:SetExitWaterFn(OnExitWater)
+    inst.components.amphibiouscreature:SetTransitionDistance(0.5)
+
+    inst:SetStateGraph("SGm_salty_dog")
+    inst:SetBrain(brain)
+
+    inst.components.eater:SetDiet({ FOODTYPE.MONSTER }, { FOODTYPE.MONSTER })
+
+    inst.components.health:SetMaxHealth(TUNING.POLLY_ROGERS_MAX_HEALTH)
+
+    inst.components.combat.hiteffectsymbol = "body"
+
+    MakeSmallBurnableCharacter(inst, "body")
+    MakeTinyFreezableCharacter(inst, "body")
+
+    return inst
+end
+
+return Prefab("m_polly", fn_polly, assets, prefabs),
+    Prefab("m_salty_dog", fn_dog, assets_dog, prefabs_dog) -- A variation of polly_rogers with shared stats and tuning values.
