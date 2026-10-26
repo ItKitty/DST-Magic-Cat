@@ -186,6 +186,8 @@ local function LightningSpearPostInitFn_Base(inst)
 	inst:AddComponent("aoeweapon_lunge")
 	inst.components.aoeweapon_lunge:SetDamage(TUNING.SPEAR_WATHGRITHR_LIGHTNING_LUNGE_DAMAGE)
 	inst.components.aoeweapon_lunge:SetSound("meta3/wigfrid/spear_lighting_lunge")
+	-- 穿刺拖尾：DoLunge 会沿起点->落点每 1.5 格铺一个 m_lunge_trail
+	inst.components.aoeweapon_lunge:SetTrailFX("m_lunge_trail", 1.5)
 	inst.components.aoeweapon_lunge:SetSideRange(1)
 	inst.components.aoeweapon_lunge:SetOnPreLungeFn(Lightning_OnPreLunge)
 	inst.components.aoeweapon_lunge:SetOnLungedFn(Lightning_OnLunged)
