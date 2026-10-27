@@ -459,3 +459,30 @@ do
 		return old_docurse(owner, numitems)
 	end
 end
+
+--------------------------------------------------------------------------
+-- 火堆特效永久化（万圣节药水：石灰硫化晶体 / 硝化硫酸晶体）
+--
+-- 原版 halloweenpotion_embers.lua 里，特效是挂在火堆上的 buff 实体：
+--   :183  timer:StartTimer("buffover", TUNING.HALLOWEENPOTION_FIREFX_DURATION)  -- 240 秒
+--   :116  buff_OnTimerDone：计时到就 debuff:Stop()
+--   :122  buff_OnExtended：再扔一瓶只是重新计时（StopTimer + StartTimer）
+--
+-- 这里只拦「buffover」这个计时器名：对这两个 buff 直接不启动，
+-- 于是特效不会被时间清掉，一直留到火堆熄灭（熄灭那条原版逻辑不动）。
+-- 燃料 0.8 倍速（HALLOWEENPOTION_FIREFX_FUEL_MOD）保持原样。
+--------------------------------------------------------------------------
+local PERMANENT_FIREFX_BUFFS = {
+	halloweenpotion_embers_buff = true,
+	halloweenpotion_sparks_buff = true,
+}
+
+AddComponentPostInit("timer", function(self)
+	local old_StartTimer = self.StartTimer
+	function self:StartTimer(name, time, ...)
+		if name == "buffover" and self.inst ~= nil and PERMANENT_FIREFX_BUFFS[self.inst.prefab] then
+			return
+		end
+		return old_StartTimer(self, name, time, ...)
+	end
+end)

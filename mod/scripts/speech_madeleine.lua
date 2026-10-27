@@ -542,7 +542,7 @@ local SPEECH = {
 	ANNOUNCE_BEES = "去蜇那些讨厌的家伙！",
 	ANNOUNCE_BOOMERANG = "我错估了它飞回来的时间。",
 	ANNOUNCE_CHARLIE = "有声音！怎么会有花香？",
-	ANNOUNCE_CHARLIE_ATTACK = "哎哟！谁这么大胆？！",
+	ANNOUNCE_CHARLIE_ATTACK = "哎哟！你怎么敢攻击我喵？！",
 	--fallback to speech_wilson.lua 	ANNOUNCE_CHARLIE_MISSED = "only_used_by_winona", --winona specific
 	ANNOUNCE_COLD = "周围温度好低喵。",
 	ANNOUNCE_HOT = "周围温度好高。",
@@ -1210,8 +1210,9 @@ local SPEECH = {
 	-- Rifts 8
 
 	-- after the final fight when Charlie goes MIA and isn't the night monster anymore
-	ANNOUNCE_GRUE_NOCHARLIE = "有动静！怎么没了花香？",
-	ANNOUNCE_GRUE_NOCHARLIE_ATTACK = "哎哟！谁这么大胆？！",
+	ANNOUNCE_GRUE_NOCHARLIE = "有动静！怎么没了花香喵？",
+	ANNOUNCE_GRUE_NOCHARLIE_ATTACK = "哎哟！你这么敢攻击我喵？！",
+	ANNOUNCE_GRUE_NOCHARLIE_MISSED = "我警告你，事不过三喵~",
 	--fallback to speech_wilson.lua 	ANNOUNCE_GRUE_NOCHARLIE_MISSED = "only_used_by_winona", --winona specific
 
 	ANNOUNCE_STOMP_SHROUDEN = "这声音实在骇人。",
@@ -1404,8 +1405,8 @@ local SPEECH = {
 			FIRESTARTER = "谁给了你火柴，%s！",
 		},
 		WATHGRITHR = {
-			GENERIC = "啊哈，你好，亲爱的%s喵！",
-			ATTACKER = "你没有在制造麻烦，对吧，%s？",
+			GENERIC = "啊��，你��，亲��的%s喵！",
+			ATTACKER = "你没有在制造麻烦，对吧，%s���",
 			MURDERER = "你的传说到此结束，%s喵！",
 			REVIVER = "我欣赏你对团体生存的坚持，%s！",
 			GHOST = "%s，我跟你说过不要带着长矛跑。啧啧。",
@@ -4212,7 +4213,7 @@ local SPEECH = {
 		DUSTMOTHDEN = "似乎是这些生物体内的化学反应产生了铥矿。",
 
 		ARCHIVE_LOCKBOX = "似乎要接外部能量源才能启用。",
-		ARCHIVE_CENTIPEDE = "一件令人印象深刻的古代工程产品。",
+		ARCHIVE_CENTIPEDE = "一件令人���象深刻���古代工���产品。",
 		ARCHIVE_CENTIPEDE_HUSK = "这些零件看起来出故障了喵。",
 
 		ARCHIVE_COOKPOT = {
