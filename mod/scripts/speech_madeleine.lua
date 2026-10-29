@@ -216,7 +216,7 @@ local SPEECH = {
 			NOTDISH = "那食物根本不适合喵。",
 			DUPLICATE = "我们已经记下了这个配方。",
 			NOTSCULPTABLE = "没有人应该用那东西来雕刻，亲爱的。",
-			NOTATRIUMKEY = "It's not quite the right shape.",
+			NOTATRIUMKEY = "形状不太对喵。",
 			CANTSHADOWREVIVE = "情况不对。",
 			WRONGSHADOWFORM = "骨架解剖不准确。",
 			NOMOON = "它需要月亮的作用。",
@@ -274,9 +274,9 @@ local SPEECH = {
 			--
 		},
 		LOWER_SAIL_FAIL = {
-			"There must be a trick to this.",
-			"Oh, you finicky thing!",
-			"Come along now, no need to be stubborn.",
+			"不得要领啊。",
+			"啊，真是个麻烦的事情啊！",
+			"配合点吧，不需要这么固执吧。",
 		},
 		MARK = {
 			ALREADY_MARKED = "我对自己的选择十分自信。",
@@ -303,8 +303,8 @@ local SPEECH = {
 			INUSE = "已经在用了喵。",
 			--fallback to speech_wilson.lua             NOTMINE_SPIDER = "only_used_by_webber",
 			NOTMINE_YOTC = {
-				"Oh my, I seem to have gotten a bit mixed up.",
-				"My glasses need a good cleaning, that's clearly not my Daucus carota rattus!",
+				"哦，我的天啊，我好像弄混了喵。",
+				"我得好好擦擦眼镜了，那显然不是我的伞形胡萝卜属野胡萝卜喵！",
 			},
 			--fallback to speech_wilson.lua 			NO_HEAVY_LIFTING = "only_used_by_wanda",
 			FULL_OF_CURSES = "我认为最好不要管它。",
@@ -434,7 +434,7 @@ local SPEECH = {
 			--fallback to speech_wilson.lua             BADPOSITION = "only_used_by_wx78",
 		},
 		USEITEMON = {
-			GENERIC = "I can't use this on that!",
+			GENERIC = "这个没法用在那个上面喵。",
 
 			--construction is PREFABNAME_REASON
 			BEEF_BELL_INVALID_TARGET = "那样不行。",
@@ -550,14 +550,14 @@ local SPEECH = {
 	ANNOUNCE_DEERCLOPS = "听起来似乎来了个巨人！",
 	ANNOUNCE_CAVEIN = "上面的岩石很快就会让路。",
 	ANNOUNCE_ANTLION_SINKHOLE = {
-		"The ground will soon give way.",
-		"Not the work of tectonic plates.",
-		"A six on the Richter scale.",
+		"地面快速让路。",
+		"这不是板块构造的结果。",
+		"里氏六级地震喵。",
 	},
 	ANNOUNCE_ANTLION_TRIBUTE = {
-		"For you, great Panthera auropunctata.",
-		"It ought to be more docile now.",
-		"The great Panthera auropunctata is tamed.",
+		"献给你，伟大的蚁狮。",
+		"现在它应该更温顺了喵。",
+		"伟大的蚁狮被驯服了喵。",
 	},
 	ANNOUNCE_SACREDCHEST_YES = "起作用了。",
 	ANNOUNCE_SACREDCHEST_NO = "可惜啊，我本来很有把握的喵。",
@@ -605,20 +605,20 @@ local SPEECH = {
 	ANNOUNCE_FOODMEMORY = "only_used_by_warly",
 
 	ANNOUNCE_ENCUMBERED = {
-		"It's all in the legs.",
+		"只是腿脚活喵。",
 		"Goodness...",
-		"Dear me...",
-		"I've got it, dear.",
-		"I'm more spry than I look!",
-		"You just need to know how to lift!",
-		"No sweat off my back! Ho ho!",
-		"How invigorating!",
-		"This gets the blood pumping!",
+		"哎呀喵……",
+		"我搞得定，亲爱的。",
+		"我比我看上去要精神得多喵！",
+		"负重要抓到技巧！",
+		"我的背没有流汗！吼吼！",
+		"多么令人振奋啊！",
+		"这让血液抽送起来！",
 	},
 	ANNOUNCE_ATRIUM_DESTABILIZING = {
-		"I do believe it's time to go.",
-		"It's dangerous to be here.",
-		"Goodness gracious!",
+		"我觉得该走了。",
+		"待在这里太危险了喵。",
+		"仁慈的上帝！",
 	},
 	ANNOUNCE_RUINS_RESET = "小心，怪兽回来了。",
 	ANNOUNCE_SNARED = "你不能长时间抱着我，亲爱的喵。",
@@ -886,14 +886,14 @@ local SPEECH = {
 	QUAGMIRE_ANNOUNCE_WIN = "我们最好要继续前进。迈步！",
 
 	ANNOUNCE_ROYALTY = {
-		"Your Highness.",
-		"Your Grace.",
-		"You wear her crown well.",
+		"殿下喵。",
+		"向陛下致敬喵。",
+		"你戴她的王冠很合适。",
 	},
 	ANNOUNCE_ROYALTY_JOKER = {
-		'Your "Highness".',
-		'Your "Grace".',
-		'You wear that "crown" well.',
+		"“殿下”喵。",
+		"“陛下”喵",
+		"你戴那顶“王冠”很合适喵。",
 	},
 
 	ANNOUNCE_ATTACH_BUFF_ELECTRICATTACK = "我似乎导电了喵！",
@@ -915,10 +915,10 @@ local SPEECH = {
 	ANNOUNCE_OCEANFISHING_GOTAWAY = "看来晚餐吃不到鱼了。",
 	ANNOUNCE_OCEANFISHING_BADCAST = "咱们再试试，如何？",
 	ANNOUNCE_OCEANFISHING_IDLE_QUOTE = {
-		"Patience is a virtue.",
-		"I do not appreciate the tardiness of these fish.",
-		"Perhaps if I tried a different lure...",
-		"I wonder if I could get some reading done while I wait.",
+		"忍耐是一种美德。",
+		"这些鱼拖拖拉拉，我不喜欢。",
+		"我或许该换个鱼饵试试……",
+		"等待的时候是不是可以看看书喵。",
 	},
 
 	ANNOUNCE_WEIGHT = "重量：{weight}",
@@ -961,8 +961,8 @@ local SPEECH = {
 	ANNOUNCE_CARRAT_START_RACE = "比赛开始喵！",
 
 	ANNOUNCE_CARRAT_ERROR_WRONG_WAY = {
-		"Wrong way, dear.",
-		"Oh my, I'll have to make a note of this.",
+		"方向错了，亲爱的。",
+		"哎呀，我要注意点。",
 	},
 	ANNOUNCE_CARRAT_ERROR_FELL_ASLEEP = "对象的耐力水平似乎偏低。",
 	ANNOUNCE_CARRAT_ERROR_WALKING = "拿出点生龙活虎的样子，亲爱的喵。",
@@ -1013,7 +1013,7 @@ local SPEECH = {
 	ANNOUNCE_ARCHIVE_NO_POWER = "真是非常失望，我很想知道它的作用。",
 
 	ANNOUNCE_PLANT_RESEARCHED = {
-		"I've gained a bit more insight into the workings of this species.",
+		"我对这个物种的机理有了更多的了解。",
 	},
 
 	ANNOUNCE_PLANT_RANDOMSEED = "等它长大了，我就可以辨认物种了。",
@@ -1021,26 +1021,26 @@ local SPEECH = {
 	ANNOUNCE_FERTILIZER_RESEARCHED = "即使我有相当丰富的园艺经验，也总有新的东西要学。",
 
 	ANNOUNCE_FIRENETTLE_TOXIN = {
-		"Oh dear... I seem to be afflicted by the plant's toxin.",
-		"The toxin from those nettles carries a rather unpleasant burning sensation.",
+		"哦，天啊……我好像在被植物的毒素折磨喵。",
+		"那些荨麻的毒素带着相当难受的烧灼感。",
 	},
 	ANNOUNCE_FIRENETTLE_TOXIN_DONE = "值得庆幸的是，这种毒素的影响似乎是暂时的。",
 
 	ANNOUNCE_TALK_TO_PLANTS = {
-		"Talking to my little garden always seemed to help it grow.",
-		"My, those leaves are coming in quite nicely, dear!",
-		"All one needs to thrive is a bit of love and care, isn't that right?",
-		"No need to rush dear, you just take your time.",
-		"How are you doing today? Do you have enough water?",
+		"和我的小花园说话，似乎总能帮助它成长。",
+		"天的，这些叶子长的真好！",
+		"一个人要想茁壮成长，只需要一点爱和关怀，不是吗？",
+		"不用着急，亲爱的，你慢慢来就好了。",
+		"你今天过得怎么样？水够吗喵？",
 	},
 
 	ANNOUNCE_KITCOON_HIDEANDSEEK_START = "游戏已经启动，我应该开始搜索了。",
 	ANNOUNCE_KITCOON_HIDEANDSEEK_JOIN = "打扰了，我愿意加入猫科动物的搜索。",
 	ANNOUNCE_KITCOON_HIDANDSEEK_FOUND = {
-		"Ah, there you are.",
-		"It seems I've discovered a kitten.",
-		"I could see your tail from the distance, dear.",
-		"Finding kittens is quite simple once you become accustomed to it.",
+		"啊，你在这里喵。",
+		"我似乎发现了一只小猫喵。",
+		"我老远就看到了你的尾巴，亲爱的喵。",
+		"一旦熟悉之后，寻找小猫就变得很简单喵。",
 	},
 	ANNOUNCE_KITCOON_HIDANDSEEK_FOUND_ONE_MORE = "又邂逅了一只小猫喵。",
 	ANNOUNCE_KITCOON_HIDANDSEEK_FOUND_LAST_ONE = "我找到了所有不见的小猫喵。",
@@ -1198,8 +1198,8 @@ local SPEECH = {
 	-- Rifts 7
 
 	ANNOUNCE_MITEGLAND_DEBUFF = {
-		"Oh dear... that gland is really disagreeing with me...",
-		"It appears that gland was not safe for consumption after all.",
+		"哎呀……我的身体对那颗腺体产生了排异反应喵……",
+		"看来那颗腺体还是不能食用。",
 	},
 	ANNOUNCE_MITEGLAND_DEBUFF_DONE = "这是个以痛苦换来的教训喵。",
 	ANNOUNCE_GOT_DECON_MISTED = "啊……我的思绪莫名其妙地变清晰了。",
@@ -1807,16 +1807,16 @@ local SPEECH = {
 		PIGGUARD = "一位武士喵。",
 		ABIGAIL = {
 			LEVEL1 = {
-				"Fascinating. Can you speak, specter?",
-				"Fascinating. Can you speak, specter?",
+				"好迷人。妖怪，你会说话吗喵？",
+				"好迷人。妖怪，你会说话吗喵？",
 			},
 			LEVEL2 = {
-				"Fascinating. Can you speak, specter?",
-				"Fascinating. Can you speak, specter?",
+				"好迷人。妖怪，你会说话吗喵？",
+				"好迷人。妖怪，你会说话吗喵？",
 			},
 			LEVEL3 = {
-				"Fascinating. Can you speak, specter?",
-				"Fascinating. Can you speak, specter?",
+				"好迷人。妖怪，你会说话吗喵？",
+				"好迷人。妖怪，你会说话吗喵？",
 			},
 		},
 
@@ -2045,7 +2045,7 @@ local SPEECH = {
 		CHESSPIECE_DEERCLOPS = "对这些奇怪野兽的解剖学研究。",
 		CHESSPIECE_BEARGER = "相当具有表现力！",
 		CHESSPIECE_MOOSEGOOSE = {
-			"Bust of Alces canadensis.",
+			"驼鹿的半身像。",
 		},
 		CHESSPIECE_DRAGONFLY = "艺术家对虚构双翅目生物的演绎。",
 		CHESSPIECE_MINOTAUR = "颇有几分神似呢。",
@@ -2147,7 +2147,7 @@ local SPEECH = {
 		GOGGLESHAT = "我不能想象这些能提高能见度喵。",
 		DESERTHAT = "比老花镜效率高多了。",
 		ANTLIONHAT = "有了它造景就方便多了。",
-		DEVTOOL = "It smells of bacon!",
+		DEVTOOL = "闻着像培根喵！",
 		DEVTOOL_NODEV = "I'm not strong enough to wield it喵.",
 		DIRTPILE = "太不卫生了！",
 		DIVININGROD = {
@@ -2982,7 +2982,7 @@ local SPEECH = {
 		WARGSHRINE = {
 			GENERIC = "开始举行庆典吧！",
 			EMPTY = "以火致敬，哈？",
-			BURNING = "I should make something fun.", --for willow to override
+			BURNING = "总得找点乐子喵。",--for willow to override
 			BURNT = "令人遗憾喵。",
 		},
 		CLAYWARG = {
@@ -3294,7 +3294,7 @@ local SPEECH = {
 			DEFAULT = "%s的骨骼始终提醒着在%s周围要注意喵。",
 		},
 		HUMANMEAT = "Flesh is flesh. Where do I draw the line喵?",
-		HUMANMEAT_COOKED = "Cooked nice and pink, but still morally gray.",
+		HUMANMEAT_COOKED = "烤得粉嫩，可道德上还是灰的喵。",
 		HUMANMEAT_DRIED = "Letting it dry makes it not come from a human, right喵?",
 		ROCK_MOON = "暗示着月球天体？有趣。",
 		MOONROCKNUGGET = "暗示着月球天体？有趣。",
@@ -3456,9 +3456,9 @@ local SPEECH = {
 		QUAGMIRE_RUBBLE_CLOCKTOWER = "钟表也被夺走了喵。",
 		QUAGMIRE_RUBBLE_BIKE = "修不好了。",
 		QUAGMIRE_RUBBLE_HOUSE = {
-			"What creatures once lived here?",
-			"There's nothing left of the inhabitants.",
-			"What caused this city to crumble?",
+			"哪些生物在这里住过呢？",
+			"丝毫没留下居民们的痕迹喵。",
+			"是什么导致了这村子的瓦解喵？",
 		},
 		QUAGMIRE_RUBBLE_CHIMNEY = "肯定是什么东西把它弄倒了。",
 		QUAGMIRE_RUBBLE_CHIMNEY2 = "它快要支离破碎了喵。",
@@ -3509,7 +3509,7 @@ local SPEECH = {
 		QUAGMIRE_CASSEROLEDISH_SMALL = "够一个人吃喵。",
 		QUAGMIRE_PLATE_SILVER = "我真想念体面的餐具喵。",
 		QUAGMIRE_BOWL_SILVER = "碗的用处真不少。",
-		QUAGMIRE_CRATE = "Kitchen stuff.",
+		QUAGMIRE_CRATE = "厨房里的家什喵。",
 
 		QUAGMIRE_MERM_CART1 = "让我想起了我的流动图书馆岁月喵。", --sammy's wagon
 		QUAGMIRE_MERM_CART2 = "里面有些好东西喵。", --pipton's cart
@@ -3948,12 +3948,12 @@ local SPEECH = {
 
 		-- Walter
 		WOBYBIG = {
-			"There must be a mutagen in monster meat that triggers her growth.",
-			"There must be a mutagen in monster meat that triggers her growth.",
+			"一定是怪物肉里有诱变剂，引发了她的成长喵。",
+			"一定是怪物肉里有诱变剂，引发了她的成长喵。",
 		},
 		WOBYSMALL = {
-			"I was always more of a cat person, but she is very sweet.",
-			"I was always more of a cat person, but she is very sweet.",
+			"我一直比较喜欢猫，但她很可爱。",
+			"我一直比较喜欢猫，但她很可爱。",
 		},
 		WALTERHAT = "我想，人必须努力保持年轻的心态。",
 		SLINGSHOT = {
@@ -4015,7 +4015,7 @@ local SPEECH = {
 			SOME_FLOWERS = "花朵是传统上祭献逝者的一种供品。",
 			LOTS_OF_FLOWERS = "花朵似乎吐露着芬芳。",
 			LOTS_OF_FLOWERS_EVIL = "这些花会影响精神稳定。",
-			LOTS_OF_FLOWERS_BLOSSOM = "They generate an unearthly sound.",
+			LOTS_OF_FLOWERS_BLOSSOM = "它们在发出一种地外的声音。",
 		},
 
 		--Wortox
@@ -4096,7 +4096,7 @@ local SPEECH = {
 		WEREITEM_GOOSE = "一种对加拿大鹅的艺术呈现喵。",
 		WEREITEM_MOOSE = "亲爱的，有人会不小心绊倒的。",
 
-		MERMHAT = "I'm not eager to test out its effectiveness.",
+		MERMHAT = "我急切的想要验证它的有效性。",
 		MERMTHRONE = {
 			GENERIC = '这种"坐的下就给你坐"的君主筛选,我再熟悉不过了喵。',
 			BURNT = "哦，天啊，他们得从头来过了喵。",
@@ -5120,7 +5120,7 @@ local SPEECH = {
 		-- Shared between the round and square tables.
 		WOOD_TABLE = {
 			GENERIC = "Perfect for enjoying a cup of tea and a good book喵.",
-			HAS_ITEM = "Perfect for enjoying a cup of tea and a good book.",
+			HAS_ITEM = "非常适合品茶读书喵。",
 			BURNT = "What a shame喵.",
 		},
 
@@ -5354,7 +5354,7 @@ local SPEECH = {
 		-- Shared between the round and square tables.
 		STONE_TABLE = {
 			GENERIC = "Perfect for enjoying a cup of tea and a good book喵.",
-			HAS_ITEM = "Perfect for enjoying a cup of tea and a good book.",
+			HAS_ITEM = "非常适合品茶读书喵。",
 		},
 
 		STONE_CHAIR = {
@@ -5555,7 +5555,7 @@ local SPEECH = {
 			BROKEN = "该设备需要维修喵。",
 			UNPOWERED = "由于未充能，此装置无法运行。",
 		},
-		VAULT_TELEPORTER_UNDERCONSTRUCTION = '"This Waymark is under development for a future update."',
+		VAULT_TELEPORTER_UNDERCONSTRUCTION = "「这座路标还在开发中，容后再见喵。」",
 		VAULT_ORB = "此球体是粒子传输装置的重要组件喵。",
 		VAULT_LOBBY_EXIT = "用绳索下降或许才是明智之举喵。",
 		VAULT_CHANDELIER_BROKEN = "基本可以断定，工艺不达标导致了这盏枝形吊灯从安装处坠落喵。",
@@ -5613,7 +5613,7 @@ local SPEECH = {
 		-- A generic set of lines for ANY corpse, until they get their own unique lines at least.
 		GENERIC_CORPSE = {
 			GENERIC = "It appears to be deceased喵.",
-			BURNING = "A necessary precaution.",
+			BURNING = "必要的预防措施喵。",
 			REVIVING = "It is reviving, unfortunately喵.",
 		},
 
@@ -5629,14 +5629,14 @@ local SPEECH = {
 		HERMITHOTSPRING_CONSTR = "那块油布盖着的是泡澡用的温泉喵。",
 		--talk to vito; want to reuse MEATRACK, but less meat focused; more fish/tea
 		MEATRACK_HERMIT_MULTI = {
-			DONE = "The process has completed.",
-			DRYING = "Dehydration is a slow process.",
+			DONE = "这个过程已经完成了喵。",
+			DRYING = "脱水是一个缓慢的过程。",
 			DRYINGINRAIN = "The rain has temporarily halted the dehydration process喵.",
 			GENERIC = "This drying rack has a larger capacity喵.",
 			BURNT = "It doesn't seem stable喵.",
 			DONE_NOTMEAT = "The process has completed喵.",
 			DRYING_NOTMEAT = "Dehydration is a slow process喵.",
-			DRYINGINRAIN_NOTMEAT = "The rain has temporarily halted the dehydration process.",
+			DRYINGINRAIN_NOTMEAT = "下雨让脱水过程暂停了。",
 			DONE_SALT = "The salt is a bi-product of the dehydration process for certain things obtained from the sea喵.",
 			ABANDONED = "What a shame喵.",
 		},
