@@ -313,6 +313,24 @@ local function AddBroomStates(sg)
 	end
 
 	------------------------------------------------------------------
+	-- 兜底：sg.mem.footsteps 只在 run_start.onenter 里初始化（SGwilson.lua:11303），
+	-- 但我们的 run_start 补丁会跳过它、原版 run_flyingbroom 的 unequip 事件
+	-- 又会直接 GoToState("run")，于是 run 的 TimeEvent 调 DoRunSounds 时
+	-- `inst.sg.mem.footsteps > 3` 会拿 nil 比较而崩溃（SGwilson.lua:127）。
+	-- 这里在进入 run 时补一次初始化。
+	------------------------------------------------------------------
+	local run_state = states["run"]
+	if run_state ~= nil and run_state.onenter ~= nil then
+		local old_run_onenter = run_state.onenter
+		run_state.onenter = function(inst, ...)
+			if inst.sg.mem.footsteps == nil then
+				inst.sg.mem.footsteps = 0
+			end
+			old_run_onenter(inst, ...)
+		end
+	end
+
+	------------------------------------------------------------------
 	-- ① 起步：跳过 run_witchbroom_pre，直接进 loop 状态
 	------------------------------------------------------------------
 	local run_start = states["run_start"]
@@ -320,6 +338,9 @@ local function AddBroomStates(sg)
 		local old_onenter = run_start.onenter
 		run_start.onenter = function(inst, ...)
 			if ShouldFly(inst) then
+				-- 原版 run_start.onenter 会初始化 sg.mem.footsteps（SGwilson.lua:11303），
+				-- 这里跳过它，所以要自己补上，否则之后进 run 时 DoRunSounds 会拿 nil 比较
+				inst.sg.mem.footsteps = 0
 				inst.sg:GoToState("run_flyingbroom")
 				return
 			end
@@ -335,6 +356,7 @@ local function AddBroomStates(sg)
 		local old_onenter = broom_start.onenter
 		broom_start.onenter = function(inst, ...)
 			if ShouldFly(inst) then
+				inst.sg.mem.footsteps = inst.sg.mem.footsteps or 0
 				inst.sg:GoToState("run_flyingbroom")
 				return
 			end
