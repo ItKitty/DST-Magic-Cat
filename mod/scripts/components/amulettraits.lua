@@ -187,14 +187,17 @@ function Amulettraits:EnableNoSlowDown(owner, enable)
 	end
 end
 
--- 地面抓地：冰面不打滑 + 坑洼/陷坑不减速
--- 照原版女巫扫帚 SGwilson.lua:890-911 的 ConfigureWitchBroomFlying，但不关地面速度倍率，
--- 所以道路加速、蛛网等其它地面倍率行为保持原版：
---   1) nonslipgrituser  -> components/slipperyfeet.lua:245-255 不再累积 slipperiness
+-- 地面抓地：冰面不打滑 + 坑洼/陷坑不减速 + 蛛网/蜜迹减速免疫
+--  1) nonslipgrituser  -> components/slipperyfeet.lua:245-255 不再累积 slipperiness
 --                          （达不到 threshold 就不会 PushEvent("feetslipped")，冰面不滑）
---   2) carefulwalker:Enable(false)
---                       -> unevenground（蚁狮塌陷、坑洼）推来的 unevengrounddetected 不再
---                          TrackTarget，也就不会挂 "carefulwalking"（TUNING.CAREFUL_SPEED_MOD=0.3）
+--                          —— 照原版女巫扫帚 SGwilson.lua:890-911 的 ConfigureWitchBroomFlying
+--  2) carefulwalker:Enable(false)
+--                          -> unevenground（蚁狮塌陷、坑洼）推来的 unevengrounddetected 不再
+--                             TrackTarget，也就不会挂 "carefulwalking"（TUNING.CAREFUL_SPEED_MOD=0.3）
+--  3) vigorbuff 标签       -> 原版「迅捷药剂」ghostly_elixirs.lua:208-218 用的同一套：
+--                             · locomotor.lua:620 站在 creep（蛛网等）上不套 slowmultiplier(0.6)
+--                             · honey_trail.lua:2/18 蜂王蜜迹不再推 BEEQUEEN_HONEYTRAIL_SPEED_PENALTY
+--                             · equippable.lua:126-144 装备减速按 +0.25 折扣（客户端 replica 同步）
 -- 记录进入前的状态，脱下时按原值恢复，避免覆盖别的来源做的修改。
 function Amulettraits:SetGroundTraction(owner, enable)
 	if owner == nil or not owner:IsValid() then
@@ -216,6 +219,23 @@ function Amulettraits:SetGroundTraction(owner, enable)
 			self._careful_was_enabled = owner.components.carefulwalker.enabled ~= false
 			owner.components.carefulwalker:Enable(false)
 		end
+
+		-- 蛛网 / 蜂王蜜迹 / 装备减速（原版迅捷药剂的 vigorbuff）
+		-- 只在原本没有该标签时由我们加，脱下时只撤销我们自己加的那次
+		if self._vigor_added == nil then
+			self._vigor_added = not owner:HasTag("vigorbuff")
+			if self._vigor_added then
+				owner:AddTag("vigorbuff")
+			end
+		end
+
+		-- 立刻清掉当前正生效的地面减速（原版药剂同款手法：关掉再开，归 1 并清 temp 倍率）
+		-- 只在倍率当前是开启状态时才做，避免把别的来源（例如女巫扫帚）关掉的状态误打开
+		local loco = owner.components.locomotor
+		if loco ~= nil and loco.enablegroundspeedmultiplier then
+			loco:EnableGroundSpeedMultiplier(false)
+			loco:EnableGroundSpeedMultiplier(true)
+		end
 	else
 		local grit = owner.components.nonslipgrituser
 		if grit ~= nil then
@@ -227,6 +247,11 @@ function Amulettraits:SetGroundTraction(owner, enable)
 			owner.components.carefulwalker:Enable(self._careful_was_enabled)
 			self._careful_was_enabled = nil
 		end
+
+		if self._vigor_added == true then
+			owner:RemoveTag("vigorbuff")
+		end
+		self._vigor_added = nil
 	end
 end
 
