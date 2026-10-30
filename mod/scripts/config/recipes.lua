@@ -600,3 +600,21 @@ GLOBAL.STRINGS.RECIPE_DESC.FISHMEAT = "化小鱼肉为鱼肉。"
 GLOBAL.STRINGS.RECIPE_DESC.FISHMEAT_SMALL = "化鱼肉为小鱼肉。"
 GLOBAL.STRINGS.RECIPE_DESC.PUREBRILLIANCE = "给月亮碎片注入能量。"
 GLOBAL.STRINGS.RECIPE_DESC.HORRORFUEL = "给噩梦燃料注入能量。"
+
+-- 女巫扫帚（飞行 / 跨海）
+AddMadeleineRecipe(
+	"m_witchbroom",
+	{
+		Ingredient("twigs", 2),
+		Ingredient("rope", 1),
+		Ingredient("cutgrass", 3),
+	},
+	TECH.NONE,
+	{
+		atlas = "images/inventoryimages.xml",
+		image = "witchbroom.tex",
+		builder_tag = "madeleine",
+		description = "m_witchbroom",
+	},
+	{ "MADELEINETAB" }
+)
