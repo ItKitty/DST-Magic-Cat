@@ -16,7 +16,8 @@ local EQUIPSLOTS = GLOBAL.EQUIPSLOTS
 local COLLISION = GLOBAL.COLLISION
 local unpack = GLOBAL.unpack
 
-local BROOM_TAG = "flyingbroom"
+-- 注意：物品自己带 "flyingbroom" 标签（原版 SGwilson 靠它播骑扫帚动画），
+-- 但这里不用标签做判定 —— 标签只有活体原版 witchbroom 也会有，用了就会连带影响它。
 local BROOM_PREFAB = "m_witchbroom"
 local WATERWALK_TAG = "witchbroom_waterwalk"
 
@@ -59,14 +60,9 @@ local function GetHandItem(inst)
 	return nil
 end
 
+-- 只认本模组的扫帚；原版 witchbroom（包括活体形态）完全不参与本系统
 local function IsEnchantedBroom(item)
-	if item == nil or not item:IsValid() then
-		return false
-	end
-	if item.prefab == BROOM_PREFAB then
-		return true
-	end
-	return item:HasTag(BROOM_TAG)
+	return item ~= nil and item:IsValid() and item.prefab == BROOM_PREFAB
 end
 
 local function IsRiding(inst)

@@ -57,34 +57,34 @@ local function DoRipple(inst)
 end
 
 function Amulettraits:EnableWaterWalking(inst, owner, enable)
-	if owner.components.drownable then
-		owner.components.drownable.enabled = not enable
-		if not TheWorld:HasTag("cave") then
-			if enable then
-				owner.Physics:ClearCollisionMask()
-				owner.Physics:CollidesWith(COLLISION.GROUND)
-				owner.Physics:CollidesWith(COLLISION.OBSTACLES)
-				owner.Physics:CollidesWith(COLLISION.SMALLOBSTACLES)
-				owner.Physics:CollidesWith(COLLISION.CHARACTERS)
-				owner.Physics:CollidesWith(COLLISION.GIANTS)
+	-- if owner.components.drownable then
+	-- 	owner.components.drownable.enabled = not enable
+	-- 	if not TheWorld:HasTag("cave") then
+	-- 		if enable then
+	-- 			owner.Physics:ClearCollisionMask()
+	-- 			owner.Physics:CollidesWith(COLLISION.GROUND)
+	-- 			owner.Physics:CollidesWith(COLLISION.OBSTACLES)
+	-- 			owner.Physics:CollidesWith(COLLISION.SMALLOBSTACLES)
+	-- 			owner.Physics:CollidesWith(COLLISION.CHARACTERS)
+	-- 			owner.Physics:CollidesWith(COLLISION.GIANTS)
 
-				if self.ripple_task then
-					self.ripple_task:Cancel()
-					self.ripple_task = nil
-				end
-				self.ripple_task = owner:DoPeriodicTask(0.7, DoRipple, FRAMES)
-			else
-				owner.Physics:ClearCollisionMask()
-				owner.Physics:CollidesWith(COLLISION.WORLD)
-				owner.Physics:CollidesWith(COLLISION.OBSTACLES)
-				owner.Physics:CollidesWith(COLLISION.SMALLOBSTACLES)
-				owner.Physics:CollidesWith(COLLISION.CHARACTERS)
-				owner.Physics:CollidesWith(COLLISION.GIANTS)
-				self.ripple_task = self:CancelTask(self.ripple_task)
-			end
-			owner.Physics:Teleport(owner.Transform:GetWorldPosition())
-		end
-	end
+	-- 			if self.ripple_task then
+	-- 				self.ripple_task:Cancel()
+	-- 				self.ripple_task = nil
+	-- 			end
+	-- 			self.ripple_task = owner:DoPeriodicTask(0.7, DoRipple, FRAMES)
+	-- 		else
+	-- 			owner.Physics:ClearCollisionMask()
+	-- 			owner.Physics:CollidesWith(COLLISION.WORLD)
+	-- 			owner.Physics:CollidesWith(COLLISION.OBSTACLES)
+	-- 			owner.Physics:CollidesWith(COLLISION.SMALLOBSTACLES)
+	-- 			owner.Physics:CollidesWith(COLLISION.CHARACTERS)
+	-- 			owner.Physics:CollidesWith(COLLISION.GIANTS)
+	-- 			self.ripple_task = self:CancelTask(self.ripple_task)
+	-- 		end
+	-- 		owner.Physics:Teleport(owner.Transform:GetWorldPosition())
+	-- 	end
+	-- end
 	-- 确保 preserver 组件存在
 	if not owner.components.preserver then
 		owner:AddComponent("preserver") -- 自动添加组件

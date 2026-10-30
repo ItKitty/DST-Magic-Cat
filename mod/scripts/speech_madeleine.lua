@@ -43,8 +43,8 @@ local SPECIAL = {
 
 	-- 潮湿（暂时关闭，需要时把下面的 -- 去掉即可）
 	ANNOUNCE_DAMP = "有点潮，不痛快喵。",
-	ANNOUNCE_WET = "湿了。很不体面喵。",
-	ANNOUNCE_WETTER = "都贴皮了，成何体统喵。",
+	ANNOUNCE_WET = "湿了，很不体面喵。",
+	ANNOUNCE_WETTER = "湿透了，成何体统喵。",
 	ANNOUNCE_SOAKED = "……罢了，就这样吧喵。",
 
 	-- 战斗喊话
@@ -687,7 +687,7 @@ local SPEECH = {
 	ANNOUNCE_WETTER = "好湿啊！",
 	ANNOUNCE_SOAKED = "已经完全湿透了。",
 
-	ANNOUNCE_WASHED_ASHORE = "希望不要弄坏了我的书喵。",
+	ANNOUNCE_WASHED_ASHORE = "真是一次讨厌的感觉喵。",
 
 	ANNOUNCE_DESPAWN = "我从没读过任何描述它的内容！",
 	ANNOUNCE_BECOMEGHOST = "呜呜呜呜呜！！",
@@ -1405,8 +1405,8 @@ local SPEECH = {
 			FIRESTARTER = "谁给了你火柴，%s！",
 		},
 		WATHGRITHR = {
-			GENERIC = "啊��，你��，亲��的%s喵！",
-			ATTACKER = "你没有在制造麻烦，对吧，%s���",
+			GENERIC = "啊哈，你好，亲爱的%s喵！",
+			ATTACKER = "你没有在制造麻烦，对吧，%s！",
 			MURDERER = "你的传说到此结束，%s喵！",
 			REVIVER = "我欣赏你对团体生存的坚持，%s！",
 			GHOST = "%s，我跟你说过不要带着长矛跑。啧啧。",
@@ -2841,7 +2841,7 @@ local SPEECH = {
 		TELEPORTATO_RING = "由合金和电线构成的圆环。", --single player
 		TELESTAFF = "宝石似乎将噩梦燃料的能量聚集了起来。",
 		TENT = {
-			GENERIC = "睡���那里面会让我落枕喵。",
+			GENERIC = "睡在那里面会让我落枕喵。",
 			BURNT = "反正它对我来说也没什么用喵。",
 		},
 		SIESTAHUT = {
@@ -2997,7 +2997,7 @@ local SPEECH = {
 		WARGSHRINE = {
 			GENERIC = "开始举行庆典吧！",
 			EMPTY = "以火致敬，哈？",
-			BURNING = "总得找点乐子喵。",--for willow to override
+			BURNING = "总得找点乐子喵。", --for willow to override
 			BURNT = "令人遗憾喵。",
 		},
 		CLAYWARG = {
@@ -4206,7 +4206,7 @@ local SPEECH = {
 		MOLEBATHILL = "这个小山丘似乎主要由脓鼻涕和泥组成。",
 
 		BATNOSE = "生物的进化真的很了不起。",
-		BATNOSE_COOKED = "稍微好一些了。",
+		BATNOSE_COOKED = "稍微好一些喵。",
 		BATNOSEHAT = "多么……有创意。",
 
 		MUSHGNOME = "我应该将你归类为动物还是真菌呢？",
@@ -4228,7 +4228,7 @@ local SPEECH = {
 		DUSTMOTHDEN = "似乎是这些生物体内的化学反应产生了铥矿。",
 
 		ARCHIVE_LOCKBOX = "似乎要接外部能量源才能启用。",
-		ARCHIVE_CENTIPEDE = "一件令人���象深刻���古代工���产品。",
+		ARCHIVE_CENTIPEDE = "一件令人深刻的古代工产品。",
 		ARCHIVE_CENTIPEDE_HUSK = "这些零件看起来出故障了喵。",
 
 		ARCHIVE_COOKPOT = {
