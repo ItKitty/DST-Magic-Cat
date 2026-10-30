@@ -2957,6 +2957,21 @@ local SPEECH = {
 		HALLOWEEN_ORNAMENT_5 = "这样的装饰物就该挂起来。",
 		HALLOWEEN_ORNAMENT_6 = "这种乌鸦似的东西比较适合挂在树上。",
 
+		-- Halloween 2026
+		FRANKEN_PIG = "造出它的那颗头脑，显然是才智与邪念各占一半喵。",
+		MUMMY_MERM = "我还不知道鱼人也会举行木乃伊制作仪式。",
+		VAMPIRE_BUNNY = "吸血的兔形目动物？真奇怪喵！",
+		LEAFPILE = "树木落叶，是为了节省能量过冬。",
+		PUMPKIN_BOMB = "我敢说，今年的恶作剧会引起不小的轰动喵。",
+		WITCHBROOM = {
+			GENERIC = "一种传统的家务工具。",
+			LIVING = "看来那些古老的传说也不全是凭空想象喵！",
+		},
+		HALLOWEEN_ORNAMENT_7 = "这个猪形装饰应该挂在树上。", -- frankenswine
+		HALLOWEEN_ORNAMENT_8 = "我们那位小鱼人朋友，似乎很想亲手挂上这个。", -- mummy merm
+		HALLOWEEN_ORNAMENT_9 = "它与节日装饰很相配。", -- vampire bunnyman
+		HALLOWEEN_ORNAMENT_10 = "给树添上这么一件装饰，很不错。", -- hound batilisk
+
 		HALLOWEENPOTION_DRINKS_WEAK = "没有我期望的那么强。",
 		HALLOWEENPOTION_DRINKS_POTENT = "厉害的药剂。",
 		HALLOWEENPOTION_BRAVERY = "瓶装的英勇。",
