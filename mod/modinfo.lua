@@ -1,11 +1,12 @@
 -- This information tells other players more about the mod
 name = "[DST]Magic Cat"
 author = "NONTAN (Edited BY WYF)"
-version = "2.233"
+version = "2.24"
 description = "当前[版本󰀝]："
 	.. version
 	.. "\n󰀒【一旦接受了自己的软弱，那么我就是无敌的！】󰀒"
 
+-- 2.24 爱的力量，增加了扫把
 -- 2.23 爱的力量，增加了盐狗，鹦鹉
 -- 2.22 爱的力量，增加了箱子猫
 -- 2.21 爱的力量，增加了一些原本的设想
@@ -206,7 +207,7 @@ configuration_options = {
 			{ description = "背部 · 1.1", data = 1.1 },
 			{ description = "偏高 · 1.35", data = 1.35 },
 		},
-		default = 1.35,
+		default = 0.85,
 	},
 	{
 		name = "maogugu_trail_glow",
