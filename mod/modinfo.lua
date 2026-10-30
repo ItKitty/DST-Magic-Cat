@@ -1,7 +1,7 @@
 -- This information tells other players more about the mod
 name = "[DST]Magic Cat"
 author = "NONTAN (Edited BY WYF)"
-version = "2.232"
+version = "2.233"
 description = "当前[版本󰀝]："
 	.. version
 	.. "\n󰀒【一旦接受了自己的软弱，那么我就是无敌的！】󰀒"

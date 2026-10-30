@@ -167,10 +167,8 @@ function Amulettraits:EnableNoSlowDown(owner, enable)
 		self.inst:AddTag("hidesmeats")
 		-- 不会被钢羊，姜饼座狼黏住
 		owner.components.pinnable.canbepinned = false
-		-- 免疫蛛网，蜂蜜，地陷减速(实际并没有)
-		-- owner:AddTag("vigorbuff")
-		-- owner.components.locomotor:EnableGroundSpeedMultiplier(false)
-		-- owner.components.locomotor:EnableGroundSpeedMultiplier(true)
+		-- 冰面不打滑 + 坑洼/陷坑不减速（原版女巫扫帚的做法，见 SetGroundTraction）
+		self:SetGroundTraction(owner, true)
 	else
 		owner.components.critwork:Disable() -- 禁用
 		owner:RemoveTag("beefalo")
@@ -185,7 +183,50 @@ function Amulettraits:EnableNoSlowDown(owner, enable)
 		owner:RemoveTag("m_strong")
 		owner.components.pinnable.canbepinned = true
 		self.inst:RemoveTag("hidesmeats")
-		-- owner:RemoveTag("vigorbuff")
+		self:SetGroundTraction(owner, false)
+	end
+end
+
+-- 地面抓地：冰面不打滑 + 坑洼/陷坑不减速
+-- 照原版女巫扫帚 SGwilson.lua:890-911 的 ConfigureWitchBroomFlying，但不关地面速度倍率，
+-- 所以道路加速、蛛网等其它地面倍率行为保持原版：
+--   1) nonslipgrituser  -> components/slipperyfeet.lua:245-255 不再累积 slipperiness
+--                          （达不到 threshold 就不会 PushEvent("feetslipped")，冰面不滑）
+--   2) carefulwalker:Enable(false)
+--                       -> unevenground（蚁狮塌陷、坑洼）推来的 unevengrounddetected 不再
+--                          TrackTarget，也就不会挂 "carefulwalking"（TUNING.CAREFUL_SPEED_MOD=0.3）
+-- 记录进入前的状态，脱下时按原值恢复，避免覆盖别的来源做的修改。
+function Amulettraits:SetGroundTraction(owner, enable)
+	if owner == nil or not owner:IsValid() then
+		return
+	end
+
+	if enable then
+		-- 冰面：给玩家挂一个"防滑砂"来源（和原版防滑砂共用同一个组件）
+		local grit = owner.components.nonslipgrituser
+		if grit == nil then
+			grit = owner:AddComponent("nonslipgrituser")
+		end
+		if grit ~= nil then
+			grit:AddSource(self.inst)
+		end
+
+		-- 坑洼 / 陷坑
+		if owner.components.carefulwalker ~= nil and self._careful_was_enabled == nil then
+			self._careful_was_enabled = owner.components.carefulwalker.enabled ~= false
+			owner.components.carefulwalker:Enable(false)
+		end
+	else
+		local grit = owner.components.nonslipgrituser
+		if grit ~= nil then
+			-- RemoveSource 在最后一个来源移除时会自己 RemoveComponent
+			grit:RemoveSource(self.inst)
+		end
+
+		if owner.components.carefulwalker ~= nil and self._careful_was_enabled ~= nil then
+			owner.components.carefulwalker:Enable(self._careful_was_enabled)
+			self._careful_was_enabled = nil
+		end
 	end
 end
 

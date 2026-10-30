@@ -230,6 +230,10 @@ local function onunequip(inst, owner)
 		inst:RemoveTag("m_amulet_spatial")
 	end
 
+	-- 橙宝石的抓地效果（冰面/坑洼）可能因为技能变化而跳过上面的 HasSkill 判断，
+	-- 这里无条件再恢复一次；SetGroundTraction 内部按记录的旧值幂等恢复，未启用时什么都不做
+	amulettraits:SetGroundTraction(owner, false)
+
 	amulettraits:SetTemperatureImmunity(inst, false, false, owner)
 	amulettraits:onunequip_protect(inst, owner)
 	-- 骨甲
