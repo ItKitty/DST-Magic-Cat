@@ -9,10 +9,13 @@
 --
 -- 相对原版新增：
 --   1) 手持移速 +30%：equippable.walkspeedmult（locomotor.lua:193/216 会乘进速度）
---   2) 可以跨海：做法同 amulettraits:EnableWaterWalking
---      （drownable 关闭 + 物理只与 GROUND 碰撞 + pathcaps.allowocean）
---      脱下时恢复；如果正站在海上，会先找最近的陆地落脚，找不到就等玩家上岸后再恢复，
+--   2) 真正的飞行物理：装备时把玩家切成 COLLISION.FLYERS 组（原版飞行单位同款，
+--      例如 wagdrone_flying），障碍物（树/石头/墙/石笋）的碰撞掩码里没有 FLYERS，
+--      所以能直接飞过去 —— 地上和地下都有效。
+--      同时保留 GROUND 碰撞：水面上能站住（跨海），WORLD 碰撞保留：不会飞出地图边界。
+--   3) 脱下时如果正站在海上，会先找最近的陆地落脚，找不到就等玩家上岸后再恢复，
 --      避免在深海换装备直接淹死。
+--   4) 拖尾：原版扫帚飞行拖尾 + cane_victorian_fx 星屑。
 
 local assets = {
 	Asset("ANIM", "anim/witchbroom.zip"),
@@ -53,17 +56,25 @@ local function FindLandOffset(owner)
 	return nil
 end
 
-local function ApplyOceanMask(owner)
+-- 飞行物理：把自己切成 FLYERS 组。
+-- 障碍物（树、岩石、玩家建的墙、石笋）的碰撞掩码里只有 CHARACTERS / GIANTS，
+-- 没有 FLYERS，所以换组之后可以直接穿过去（原版飞行单位就是这么做的）。
+-- 保留 GROUND（水面上能站住）+ WORLD（地图边界仍然挡），
+-- 也保留 CHARACTERS / GIANTS，避免穿过其它角色。
+local function ApplyFlyingMask(owner)
+	owner.Physics:SetCollisionGroup(COLLISION.FLYERS)
 	owner.Physics:ClearCollisionMask()
+	owner.Physics:CollidesWith(COLLISION.WORLD)
 	owner.Physics:CollidesWith(COLLISION.GROUND)
-	owner.Physics:CollidesWith(COLLISION.OBSTACLES)
-	owner.Physics:CollidesWith(COLLISION.SMALLOBSTACLES)
 	owner.Physics:CollidesWith(COLLISION.CHARACTERS)
 	owner.Physics:CollidesWith(COLLISION.GIANTS)
+	owner.Physics:CollidesWith(COLLISION.FLYERS)
 	owner.Physics:Teleport(owner.Transform:GetWorldPosition())
 end
 
-local function ApplyLandMask(owner)
+-- 普通玩家物理（和 MakeCharacterPhysics 一致）
+local function ApplyNormalMask(owner)
+	owner.Physics:SetCollisionGroup(COLLISION.CHARACTERS)
 	owner.Physics:ClearCollisionMask()
 	owner.Physics:CollidesWith(COLLISION.WORLD)
 	owner.Physics:CollidesWith(COLLISION.OBSTACLES)
@@ -73,14 +84,38 @@ local function ApplyLandMask(owner)
 	owner.Physics:Teleport(owner.Transform:GetWorldPosition())
 end
 
--- 真正把跨海状态关掉（调用前要确保玩家已经不在海上）
+local function SavePathcaps(inst, owner)
+	local locomotor = owner.components.locomotor
+	if locomotor == nil then
+		return
+	end
+	local saved = {}
+	for k, v in pairs(locomotor.pathcaps or {}) do
+		saved[k] = v
+	end
+	inst._saved_pathcaps = saved
+end
+
+local function RestorePathcaps(inst, owner)
+	local locomotor = owner.components.locomotor
+	if locomotor == nil or inst._saved_pathcaps == nil then
+		return
+	end
+	locomotor.pathcaps = inst._saved_pathcaps
+	inst._saved_pathcaps = nil
+	if locomotor.pathcaps ~= nil and next(locomotor.pathcaps) == nil then
+		locomotor.pathcaps = nil
+	end
+end
+
+-- 真正把飞行状态关掉（调用前要确保玩家已经不在海上）
 local function RestoreNormalWalking(inst, owner)
 	if owner == nil or not owner:IsValid() then
 		return
 	end
 
-	if owner.Physics ~= nil and not TheWorld:HasTag("cave") then
-		ApplyLandMask(owner)
+	if owner.Physics ~= nil then
+		ApplyNormalMask(owner)
 	end
 
 	local drownable = owner.components.drownable
@@ -88,43 +123,45 @@ local function RestoreNormalWalking(inst, owner)
 		drownable.enabled = true
 	end
 
-	local locomotor = owner.components.locomotor
-	if locomotor ~= nil and locomotor.pathcaps ~= nil then
-		locomotor.pathcaps.allowocean = nil
-	end
+	RestorePathcaps(inst, owner)
 end
 
-local function SetOceanWalking(inst, owner, enable)
+local function SetFlying(inst, owner, enable)
 	if owner == nil or not owner:IsValid() then
 		return
 	end
 
 	local locomotor = owner.components.locomotor
 	local drownable = owner.components.drownable
-	local in_cave = TheWorld:HasTag("cave")
 
 	if enable then
 		CancelRestoreTask(inst)
-		inst._ocean_walking = true
+		inst._flying = true
 
 		if drownable ~= nil then
 			drownable.enabled = false
 		end
-		if owner.Physics ~= nil and not in_cave then
-			ApplyOceanMask(owner)
+		if owner.Physics ~= nil then
+			ApplyFlyingMask(owner)
 		end
 		if locomotor ~= nil then
+			if inst._saved_pathcaps == nil then
+				SavePathcaps(inst, owner)
+			end
 			locomotor.pathcaps = locomotor.pathcaps or {}
 			locomotor.pathcaps.allowocean = true
+			-- 寻路也别绕障碍物（点击移动时才能真正穿过去）
+			locomotor.pathcaps.ignorewalls = true
+			locomotor.pathcaps.ignorecreep = true
 		end
 	else
-		if not inst._ocean_walking then
+		if not inst._flying then
 			return
 		end
-		inst._ocean_walking = nil
+		inst._flying = nil
 		CancelRestoreTask(inst)
 
-		if owner.Physics == nil or in_cave or not IsOnOcean(owner) then
+		if owner.Physics == nil or not IsOnOcean(owner) then
 			RestoreNormalWalking(inst, owner)
 			return
 		end
@@ -150,7 +187,7 @@ local function SetOceanWalking(inst, owner, enable)
 			if lx ~= nil then
 				owner.Physics:Teleport(lx, 0, lz)
 			elseif IsOnOcean(owner) and inst2._ocean_restore_time < RESTORE_TIMEOUT then
-				-- 还在海上且超时未到：继续保留跨海状态，等玩家上岸
+				-- 还在海上且超时未到：继续保留飞行状态，等玩家上岸
 				return
 			end
 
@@ -197,7 +234,7 @@ local function OnEquip(inst, owner)
 	owner.AnimState:Show("ARM_carry")
 	owner.AnimState:Hide("ARM_normal")
 
-	SetOceanWalking(inst, owner, true)
+	SetFlying(inst, owner, true)
 	AddTrailFx(inst, owner)
 end
 
@@ -205,7 +242,7 @@ local function OnUnequip(inst, owner)
 	owner.AnimState:Hide("ARM_carry")
 	owner.AnimState:Show("ARM_normal")
 
-	SetOceanWalking(inst, owner, false)
+	SetFlying(inst, owner, false)
 	RemoveTrailFx(inst)
 end
 
