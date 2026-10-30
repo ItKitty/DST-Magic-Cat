@@ -56,19 +56,14 @@ local function FindLandOffset(owner)
 	return nil
 end
 
--- 飞行物理：把自己切成 FLYERS 组。
--- 障碍物（树、岩石、玩家建的墙、石笋）的碰撞掩码里只有 CHARACTERS / GIANTS，
--- 没有 FLYERS，所以换组之后可以直接穿过去（原版飞行单位就是这么做的）。
--- 保留 GROUND（水面上能站住）+ WORLD（地图边界仍然挡），
--- 也保留 CHARACTERS / GIANTS，避免穿过其它角色。
+-- 飞行物理：完全照抄玛德琳变身蝙蝠的写法（components/chiropteran.lua:164-170）
+-- 只和 GROUND + OBSTACLES 碰撞，WORLD 不碰撞 —— 于是海岸线、洞穴边缘、
+-- 地图外沿这些"地形"全都可以直接飞过去（蝙蝠形态就是这么飞的）。
+-- 不换碰撞组、也不碰撞 SMALLOBSTACLES / CHARACTERS / GIANTS。
 local function ApplyFlyingMask(owner)
-	owner.Physics:SetCollisionGroup(COLLISION.FLYERS)
 	owner.Physics:ClearCollisionMask()
-	owner.Physics:CollidesWith(COLLISION.WORLD)
 	owner.Physics:CollidesWith(COLLISION.GROUND)
-	owner.Physics:CollidesWith(COLLISION.CHARACTERS)
-	owner.Physics:CollidesWith(COLLISION.GIANTS)
-	owner.Physics:CollidesWith(COLLISION.FLYERS)
+	owner.Physics:CollidesWith(COLLISION.OBSTACLES)
 	owner.Physics:Teleport(owner.Transform:GetWorldPosition())
 end
 
@@ -123,6 +118,11 @@ local function RestoreNormalWalking(inst, owner)
 		drownable.enabled = true
 	end
 
+	if inst._saved_triggerscreep ~= nil and owner.components.locomotor ~= nil then
+		owner.components.locomotor.triggerscreep = inst._saved_triggerscreep
+		inst._saved_triggerscreep = nil
+	end
+
 	RestorePathcaps(inst, owner)
 end
 
@@ -147,12 +147,15 @@ local function SetFlying(inst, owner, enable)
 		if locomotor ~= nil then
 			if inst._saved_pathcaps == nil then
 				SavePathcaps(inst, owner)
+				-- 蝙蝠形态也会关掉踩网触发（chiropteran.lua:162）
+				inst._saved_triggerscreep = locomotor.triggerscreep
 			end
 			locomotor.pathcaps = locomotor.pathcaps or {}
 			locomotor.pathcaps.allowocean = true
 			-- 寻路也别绕障碍物（点击移动时才能真正穿过去）
 			locomotor.pathcaps.ignorewalls = true
 			locomotor.pathcaps.ignorecreep = true
+			locomotor.triggerscreep = false
 		end
 	else
 		if not inst._flying then
