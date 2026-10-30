@@ -611,7 +611,9 @@ AddMadeleineRecipe(
 	},
 	TECH.NONE,
 	{
-		atlas = "images/inventoryimages.xml",
+		-- 复用原版扫帚的图标：witchbroom.tex 在 images/inventoryimages4.xml 里，
+		-- 不写 atlas，让 Recipe 走 GetInventoryItemAtlas(image) 自己找对应的图集
+		-- （同 M_LIGHTPET 用 moonbutterfly.tex 的写法）
 		image = "witchbroom.tex",
 		builder_tag = "madeleine",
 		description = "m_witchbroom",
