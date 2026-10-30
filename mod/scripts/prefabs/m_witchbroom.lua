@@ -11,8 +11,14 @@
 
 local assets = {
 	Asset("ANIM", "anim/witchbroom.zip"),
+	Asset("ANIM", "anim/witchbroom_living_build.zip"),
 	Asset("INV_IMAGE", "witchbroom"),
+	Asset("INV_IMAGE", "witchbroom_living"),
 }
+
+-- 附魔（活体）外观
+local BROOM_BUILD = "witchbroom_living_build"
+local BROOM_IMAGE = "witchbroom_living"
 
 local prefabs = {
 	"m_witchbroom_fx", -- 飞行拖尾 + 星屑（只有移动时出现）
@@ -41,7 +47,7 @@ local function AddTrailFx(inst, owner)
 end
 
 local function OnEquip(inst, owner)
-	owner.AnimState:OverrideSymbol("swap_object", "witchbroom", "swap_witchbroom")
+	owner.AnimState:OverrideSymbol("swap_object", BROOM_BUILD, "swap_witchbroom")
 	owner.AnimState:Show("ARM_carry")
 	owner.AnimState:Hide("ARM_normal")
 
@@ -56,7 +62,7 @@ local function OnUnequip(inst, owner)
 end
 
 local FLOATER_SCALE = { 1.25, 0.5, 1.25 }
-local FLOATER_SWAP_DATA = { sym_build = "witchbroom", sym_name = "swap_witchbroom" }
+local FLOATER_SWAP_DATA = { sym_build = BROOM_BUILD, sym_name = "swap_witchbroom" }
 
 local function fn()
 	local inst = CreateEntity()
@@ -69,7 +75,7 @@ local function fn()
 	MakeInventoryPhysics(inst)
 
 	inst.AnimState:SetBank("witchbroom")
-	inst.AnimState:SetBuild("witchbroom")
+	inst.AnimState:SetBuild(BROOM_BUILD)
 	inst.AnimState:PlayAnimation("idle")
 
 	-- 武器 + 扫地（原版扫帚也是拿着它扫/敲）
@@ -92,8 +98,8 @@ local function fn()
 	inst:AddComponent("inspectable")
 
 	inst:AddComponent("inventoryitem")
-	-- 复用原版扫帚的背包图标
-	inst.components.inventoryitem.imagename = "witchbroom"
+	-- 附魔扫帚的背包图标
+	inst.components.inventoryitem.imagename = BROOM_IMAGE
 
 	inst:AddComponent("equippable")
 	inst.components.equippable:SetOnEquip(OnEquip)
