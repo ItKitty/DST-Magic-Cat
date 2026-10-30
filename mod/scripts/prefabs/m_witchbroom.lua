@@ -15,7 +15,7 @@
 --      同时保留 GROUND 碰撞：水面上能站住（跨海），WORLD 碰撞保留：不会飞出地图边界。
 --   3) 脱下时如果正站在海上，会先找最近的陆地落脚，找不到就等玩家上岸后再恢复，
 --      避免在深海换装备直接淹死。
---   4) 拖尾：原版扫帚飞行拖尾 + cane_victorian_fx 星屑。
+--   4) 拖尾：原版扫帚飞行拖尾 + 维多利亚星屑（自建版本，站立时也持续发光）。
 
 local assets = {
 	Asset("ANIM", "anim/witchbroom.zip"),
@@ -24,7 +24,7 @@ local assets = {
 
 local prefabs = {
 	"witchbroom_fx",     -- 原版扫帚飞行拖尾
-	"cane_victorian_fx", -- 维多利亚手杖星屑
+	"m_victorian_sparkle_fx", -- 维多利亚星屑（站立时也持续发光）
 }
 
 local SPEED_MULT = 1.3
@@ -225,8 +225,8 @@ local function AddTrailFx(inst, owner)
 		inst._broom_trail.entity:SetParent(owner.entity)
 	end
 
-	-- 维多利亚手杖的星屑粒子（cane_victorian_fx，按移动速度决定粒子密度）
-	inst._victorian_trail = SpawnPrefab("cane_victorian_fx")
+	-- 维多利亚星屑（自建版本：站立时也有 25 粒子/秒，移动时 60 粒子/秒）
+	inst._victorian_trail = SpawnPrefab("m_victorian_sparkle_fx")
 	if inst._victorian_trail ~= nil then
 		inst._victorian_trail.entity:SetParent(owner.entity)
 	end

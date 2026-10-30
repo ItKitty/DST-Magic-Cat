@@ -94,6 +94,7 @@ PrefabFiles = {
 	"fx_musiclight",
 	"fx_soulstaff_corrupt",
 	"fx_catpaw_lunar",
+	"m_victorian_sparkle_fx",
 
 	-- 灵魂法杖召唤的矮星（不点火版本）
 	"m_stafflight",
