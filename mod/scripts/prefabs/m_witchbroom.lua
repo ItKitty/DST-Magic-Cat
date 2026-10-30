@@ -19,6 +19,11 @@ local assets = {
 	Asset("INV_IMAGE", "witchbroom"),
 }
 
+local prefabs = {
+	"witchbroom_fx",     -- 原版扫帚飞行拖尾
+	"cane_victorian_fx", -- 维多利亚手杖星屑
+}
+
 local SPEED_MULT = 1.3
 local LAND_SEARCH_RADII = { 2, 4, 6, 8 }
 local RESTORE_RETRY_TIME = 0.5
@@ -155,12 +160,45 @@ local function SetOceanWalking(inst, owner, enable)
 	end
 end
 
+-- 拖尾特效：原版扫帚的飞行拖尾 + 维多利亚手杖的星屑
+local function RemoveTrailFx(inst)
+	if inst._broom_trail ~= nil then
+		if inst._broom_trail:IsValid() then
+			inst._broom_trail:Remove()
+		end
+		inst._broom_trail = nil
+	end
+	if inst._victorian_trail ~= nil then
+		if inst._victorian_trail:IsValid() then
+			inst._victorian_trail:Remove()
+		end
+		inst._victorian_trail = nil
+	end
+end
+
+local function AddTrailFx(inst, owner)
+	RemoveTrailFx(inst)
+
+	-- 原版女巫扫帚的飞行拖尾（witchbroom_trail 动画，内部按移动距离铺残影）
+	inst._broom_trail = SpawnPrefab("witchbroom_fx")
+	if inst._broom_trail ~= nil then
+		inst._broom_trail.entity:SetParent(owner.entity)
+	end
+
+	-- 维多利亚手杖的星屑粒子（cane_victorian_fx，按移动速度决定粒子密度）
+	inst._victorian_trail = SpawnPrefab("cane_victorian_fx")
+	if inst._victorian_trail ~= nil then
+		inst._victorian_trail.entity:SetParent(owner.entity)
+	end
+end
+
 local function OnEquip(inst, owner)
 	owner.AnimState:OverrideSymbol("swap_object", "witchbroom", "swap_witchbroom")
 	owner.AnimState:Show("ARM_carry")
 	owner.AnimState:Hide("ARM_normal")
 
 	SetOceanWalking(inst, owner, true)
+	AddTrailFx(inst, owner)
 end
 
 local function OnUnequip(inst, owner)
@@ -168,6 +206,7 @@ local function OnUnequip(inst, owner)
 	owner.AnimState:Show("ARM_normal")
 
 	SetOceanWalking(inst, owner, false)
+	RemoveTrailFx(inst)
 end
 
 local FLOATER_SCALE = { 1.25, 0.5, 1.25 }
@@ -222,6 +261,12 @@ local function fn()
 	inst:AddComponent("sweeper")
 	inst.components.sweeper:SetSweepSound("yotr_2023/common/pillow_hit_petals")
 
+	-- 物品被移除时（烧毁、被吞掉等）兜底清掉拖尾
+	inst:ListenForEvent("onremove", function(inst2)
+		RemoveTrailFx(inst2)
+		CancelRestoreTask(inst2)
+	end)
+
 	MakeSmallBurnable(inst, TUNING.SMALL_BURNTIME)
 	MakeSmallPropagator(inst)
 	MakeHauntableLaunch(inst)
@@ -229,4 +274,4 @@ local function fn()
 	return inst
 end
 
-return Prefab("m_witchbroom", fn, assets)
+return Prefab("m_witchbroom", fn, assets, prefabs)
