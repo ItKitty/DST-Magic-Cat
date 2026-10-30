@@ -13,8 +13,7 @@
 --      例如 wagdrone_flying），障碍物（树/石头/墙/石笋）的碰撞掩码里没有 FLYERS，
 --      所以能直接飞过去 —— 地上和地下都有效。
 --      同时保留 GROUND 碰撞：水面上能站住（跨海），WORLD 碰撞保留：不会飞出地图边界。
---   3) 脱下时如果正站在海上，会先找最近的陆地落脚，找不到就等玩家上岸后再恢复，
---      避免在深海换装备直接淹死。
+--   3) 脱下时只恢复普通物理；如果此刻在海上/虚空，游戏自带的落水/掉虚空回岸逻辑会处理。
 --   4) 拖尾：原版扫帚飞行拖尾 + 维多利亚星屑（自建版本，站立时也持续发光）。
 
 local assets = {
@@ -28,33 +27,6 @@ local prefabs = {
 }
 
 local SPEED_MULT = 1.3
-local LAND_SEARCH_RADII = { 2, 4, 6, 8 }
-local RESTORE_RETRY_TIME = 0.5
-local RESTORE_TIMEOUT = 60
-
-local function CancelRestoreTask(inst)
-	if inst._ocean_restore_task ~= nil then
-		inst._ocean_restore_task:Cancel()
-		inst._ocean_restore_task = nil
-	end
-	inst._ocean_restore_time = nil
-end
-
-local function IsOnOcean(owner)
-	local x, y, z = owner.Transform:GetWorldPosition()
-	return TheWorld.Map:IsOceanAtPoint(x, y, z, false)
-end
-
-local function FindLandOffset(owner)
-	local pt = owner:GetPosition()
-	for _, r in ipairs(LAND_SEARCH_RADII) do
-		local offset = FindWalkableOffset(pt, math.random() * TWOPI, r, 8, false, false)
-		if offset ~= nil then
-			return pt.x + offset.x, pt.z + offset.z
-		end
-	end
-	return nil
-end
 
 -- 飞行物理：完全照抄玛德琳变身蝙蝠的写法（components/chiropteran.lua:164-170）
 -- 只和 GROUND + OBSTACLES 碰撞，WORLD 不碰撞 —— 于是海岸线、洞穴边缘、
@@ -135,7 +107,6 @@ local function SetFlying(inst, owner, enable)
 	local drownable = owner.components.drownable
 
 	if enable then
-		CancelRestoreTask(inst)
 		inst._flying = true
 
 		if drownable ~= nil then
@@ -162,41 +133,10 @@ local function SetFlying(inst, owner, enable)
 			return
 		end
 		inst._flying = nil
-		CancelRestoreTask(inst)
 
-		if owner.Physics == nil or not IsOnOcean(owner) then
-			RestoreNormalWalking(inst, owner)
-			return
-		end
-
-		-- 正站在海上：先找最近的陆地；找不到就等玩家自己走回岸上再恢复
-		local x, z = FindLandOffset(owner)
-		if x ~= nil then
-			owner.Physics:Teleport(x, 0, z)
-			RestoreNormalWalking(inst, owner)
-			return
-		end
-
-		inst._ocean_restore_time = 0
-		inst._ocean_restore_task = inst:DoPeriodicTask(RESTORE_RETRY_TIME, function(inst2)
-			if not owner:IsValid() then
-				CancelRestoreTask(inst2)
-				return
-			end
-
-			inst2._ocean_restore_time = (inst2._ocean_restore_time or 0) + RESTORE_RETRY_TIME
-
-			local lx, lz = FindLandOffset(owner)
-			if lx ~= nil then
-				owner.Physics:Teleport(lx, 0, lz)
-			elseif IsOnOcean(owner) and inst2._ocean_restore_time < RESTORE_TIMEOUT then
-				-- 还在海上且超时未到：继续保留飞行状态，等玩家上岸
-				return
-			end
-
-			CancelRestoreTask(inst2)
-			RestoreNormalWalking(inst2, owner)
-		end)
+		-- 直接恢复普通物理即可：如果此刻站在海上/虚空里，
+		-- 游戏自带的落水/掉虚空处理会把玩家送回最近的岸边，不需要我们再找点。
+		RestoreNormalWalking(inst, owner)
 	end
 end
 
@@ -304,7 +244,6 @@ local function fn()
 	-- 物品被移除时（烧毁、被吞掉等）兜底清掉拖尾
 	inst:ListenForEvent("onremove", function(inst2)
 		RemoveTrailFx(inst2)
-		CancelRestoreTask(inst2)
 	end)
 
 	MakeSmallBurnable(inst, TUNING.SMALL_BURNTIME)
