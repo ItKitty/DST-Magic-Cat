@@ -14,7 +14,7 @@
 --      所以能直接飞过去 —— 地上和地下都有效。
 --      同时保留 GROUND 碰撞：水面上能站住（跨海），WORLD 碰撞保留：不会飞出地图边界。
 --   3) 脱下时只恢复普通物理；如果此刻在海上/虚空，游戏自带的落水/掉虚空回岸逻辑会处理。
---   4) 拖尾：原版扫帚飞行拖尾 + 维多利亚星屑（自建版本，站立时也持续发光）。
+--   4) 拖尾：统一由 m_witchbroom_fx 处理（原版拖尾 + 星屑），只在移动时出现。
 
 local assets = {
 	Asset("ANIM", "anim/witchbroom.zip"),
@@ -22,8 +22,7 @@ local assets = {
 }
 
 local prefabs = {
-	"witchbroom_fx",     -- 原版扫帚飞行拖尾
-	"m_victorian_sparkle_fx", -- 维多利亚星屑（站立时也持续发光）
+	"m_witchbroom_fx", -- 飞行拖尾 + 星屑（只有移动时出现）
 }
 
 local SPEED_MULT = 1.3
@@ -142,33 +141,21 @@ end
 
 -- 拖尾特效：原版扫帚的飞行拖尾 + 维多利亚手杖的星屑
 local function RemoveTrailFx(inst)
-	if inst._broom_trail ~= nil then
-		if inst._broom_trail:IsValid() then
-			inst._broom_trail:Remove()
+	if inst._flight_fx ~= nil then
+		if inst._flight_fx:IsValid() then
+			inst._flight_fx:Remove()
 		end
-		inst._broom_trail = nil
-	end
-	if inst._victorian_trail ~= nil then
-		if inst._victorian_trail:IsValid() then
-			inst._victorian_trail:Remove()
-		end
-		inst._victorian_trail = nil
+		inst._flight_fx = nil
 	end
 end
 
 local function AddTrailFx(inst, owner)
 	RemoveTrailFx(inst)
 
-	-- 原版女巫扫帚的飞行拖尾（witchbroom_trail 动画，内部按移动距离铺残影）
-	inst._broom_trail = SpawnPrefab("witchbroom_fx")
-	if inst._broom_trail ~= nil then
-		inst._broom_trail.entity:SetParent(owner.entity)
-	end
-
-	-- 维多利亚星屑（自建版本：站立时也有 25 粒子/秒，移动时 60 粒子/秒）
-	inst._victorian_trail = SpawnPrefab("m_victorian_sparkle_fx")
-	if inst._victorian_trail ~= nil then
-		inst._victorian_trail.entity:SetParent(owner.entity)
+	-- 一个特效实体同时负责拖尾和星屑，内部自己判断持有者是否在移动
+	inst._flight_fx = SpawnPrefab("m_witchbroom_fx")
+	if inst._flight_fx ~= nil then
+		inst._flight_fx.entity:SetParent(owner.entity)
 	end
 end
 
