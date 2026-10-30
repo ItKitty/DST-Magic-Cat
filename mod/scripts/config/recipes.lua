@@ -337,7 +337,7 @@ AddMadeleineRecipe(
 	"m_lightpet",
 	{
 		Ingredient("moonbutterflywings", 1),
-		Ingredient("moonglass", 10),
+		Ingredient(CHARACTER_INGREDIENT.HEALTH, 10),
 	},
 	TECH.CELESTIAL_ONE,
 	{
@@ -357,19 +357,26 @@ AddMadeleineRecipe(
 	{ "MADELEINETAB" }
 )
 
-AddMadeleineRecipe("m_darkpet", { Ingredient("batwing", 1), Ingredient("nightmarefuel", 10) }, TECH.ANCIENT_TWO, {
-	image = "bat.tex",
-	sg_state = "spawn_mutated_creature",
-	actionstr = "TRANSFORM",
-	no_deconstruction = true,
-	dropitem = true,
-	builder_tag = "madeleine",
-	product = "m_mutantproxy_darkpet",
-	description = "m_darkpet",
-	canbuild = function(inst, builder)
-		return (builder.components.petleash and not builder.components.petleash:IsFullForPrefab("m_darkpet")), "HASPET"
-	end,
-}, { "MADELEINETAB" })
+AddMadeleineRecipe(
+	"m_darkpet",
+	{ Ingredient("batwing", 1), Ingredient(CHARACTER_INGREDIENT.HEALTH, 10) },
+	TECH.ANCIENT_TWO,
+	{
+		image = "bat.tex",
+		sg_state = "spawn_mutated_creature",
+		actionstr = "TRANSFORM",
+		no_deconstruction = true,
+		dropitem = true,
+		builder_tag = "madeleine",
+		product = "m_mutantproxy_darkpet",
+		description = "m_darkpet",
+		canbuild = function(inst, builder)
+			return (builder.components.petleash and not builder.components.petleash:IsFullForPrefab("m_darkpet")),
+				"HASPET"
+		end,
+	},
+	{ "MADELEINETAB" }
+)
 
 -- 狗王哨子
 AddMadeleineRecipe(

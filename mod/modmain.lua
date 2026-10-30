@@ -43,4 +43,5 @@ modimport("scripts/systems/m_skill_winona.lua") -- 薇诺娜技能树兼容
 modimport("scripts/systems/maogugu_text_trail_fx.lua") -- 文本轨迹特效
 
 -- 放在最后：所有对原版代码的挂接修改（AddPrefabPostInit / AddComponentPostInit / AddClassPostConstruct）
+modimport("scripts/systems/m_witchbroom_fly.lua") -- 女巫扫帚飞行（照搬工坊 3828144951）
 modimport("scripts/systems/vanilla_hooks.lua")
