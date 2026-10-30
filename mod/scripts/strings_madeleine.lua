@@ -120,6 +120,16 @@ STRINGS.NAMES.BUFF_M_IRON_WILL = "钢铁意志"
 -- 动作
 STRINGS.ACTIONS.CASTAOE.M_CATPAW = "利爪突击"
 
+-- 有些模组会整表替换 STRINGS.ACTIONS.CASTAOE（例如「咒终对决拓展」3825229017
+-- 的 modmain.lua:76 直接 `GLOBAL.STRINGS.ACTIONS.CASTAOE = {...}`），
+-- 把别家模组注册的动作名一并清掉。等所有模组加载完、游戏启动时再补一次，
+-- 保证自己的键还在（否则 CASTAOE 会回落到别人的 GENERIC）。
+AddGamePostInit(function()
+	STRINGS.ACTIONS = STRINGS.ACTIONS or {}
+	STRINGS.ACTIONS.CASTAOE = STRINGS.ACTIONS.CASTAOE or {}
+	STRINGS.ACTIONS.CASTAOE.M_CATPAW = "利爪突击"
+end)
+
 -- 杜比全景音响
 STRINGS.NAMES.FX_MUSICLIGHT = "杜比全景音响"
 STRINGS.CHARACTERS.GENERIC.DESCRIBE.FX_MUSICLIGHT = "你无法在我的BGM中打败我！"
