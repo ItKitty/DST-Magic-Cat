@@ -314,7 +314,17 @@ function Stafftraits:Immobilize(inst, target, pos, caster)
 			end
 
 			if v.sg then
-				v.sg:GoToState("idle")
+				if v:HasTag("bird") then
+					-- 鸟不能只 Stop + idle：
+					-- SGbird 的 idle.ontimeout 有 10% 概率直接 GoToState("flyaway")（SGbird.lua:125-139），
+					-- 一旦进了 flyaway，onenter 里 0.1~0.3 秒就会 SetMotorVel 起飞、
+					-- 2 帧后 FlyAwayToSky -> inst:Remove() 直接从世界移除（SGbird.lua:26-28、367-432）。
+					-- "flyaway" 事件只在 busy 状态标签下才会被忽略（SGbird.lua:56-59），
+					-- 所以把鸟塞进 distress_pre -> distress（busy + flap_loop，不会自己退出）。
+					v.sg:GoToState("distress_pre")
+				else
+					v.sg:GoToState("idle")
+				end
 			end
 
 			-- 创建新特效
@@ -331,6 +341,10 @@ function Stafftraits:Immobilize(inst, target, pos, caster)
 				if v:IsValid() then
 					if v.brain then
 						v.brain:Start()
+					end
+					-- 鸟：从 distress 循环里放出来，回到正常 idle
+					if v:HasTag("bird") and v.sg ~= nil then
+						v.sg:GoToState("idle")
 					end
 					-- 移除特效
 					if v._immobilize_fx and v._immobilize_fx:IsValid() then
