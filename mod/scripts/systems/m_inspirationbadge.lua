@@ -42,6 +42,22 @@ AddClassPostConstruct("widgets/statusdisplays", function(self)
 	end
 end)
 
+-- BGM 与动态音乐互斥：BGM 播放期间关掉原版动态音乐（Boss 战音乐就是它播的），
+-- 否则两首会叠在一起。动态音乐是客户端状态，所以由服务端广播给所有客户端。
+AddClientModRPCHandler("musicmod", "setdynamicmusic", function(enable)
+	if TheWorld ~= nil then
+		TheWorld:PushEvent("enabledynamicmusic", enable)
+	end
+end)
+
+local function SetDynamicMusic(enable)
+	for _, p in ipairs(AllPlayers) do
+		if p:IsValid() then
+			SendModRPCToClient(GetClientModRPC("musicmod", "setdynamicmusic"), p, enable)
+		end
+	end
+end
+
 local function CreateGroundGlow(player, rotrate)
 	local groundglow = SpawnPrefab("hutch_music_light_fx")
 	local scale = (math.random() * 0.2 + 1.2) * (math.random() < 0.5 and 1 or -1)
@@ -95,6 +111,8 @@ local function buff_dirty(player, get)
 	-- end
 
 	if get then
+		-- 开始放 BGM：先停掉原版动态音乐
+		SetDynamicMusic(false)
 		player:AddTag("music_buff")
 		-- 生成音符buff
 		player.musicbuff_task = player:DoPeriodicTask(TUNING.JELLYBEAN_TICK_RATE, OnTick)
@@ -118,6 +136,12 @@ local function buff_dirty(player, get)
 			m_musiclight:ListenForEvent("music_buff_over", function()
 				m_musiclight:Remove()
 			end, player)
+			-- 玩家被重选/删除时不会走 music_buff_over，这里兜底收掉，避免灯继续追失效的 owner
+			m_musiclight:ListenForEvent("onremove", function()
+				if m_musiclight:IsValid() then
+					m_musiclight:Remove()
+				end
+			end, player)
 		end
 		-- 人物发光
 		if not player._m_light then
@@ -138,6 +162,8 @@ local function buff_dirty(player, get)
 
 		-- h:SetMinHealth(1)
 	else
+		-- BGM 结束：恢复原版动态音乐
+		SetDynamicMusic(true)
 		player:RemoveTag("music_buff")
 		-- 移除音符buff
 		local x, y, z = player.Transform:GetWorldPosition()

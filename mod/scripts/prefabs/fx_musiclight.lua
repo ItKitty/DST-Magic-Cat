@@ -163,21 +163,22 @@ local function OnLoad(inst, data) --, ents)
 end
 
 ---------------------------------------------------------------------------------------
--- 缓存皮肤列表
-local function GetCachedSkinList(userid, inst)
-	-- 如果已经有缓存且缓存有效，直接返回
-	if inst._cached_skin_list and inst._cached_userid == userid then
-		return inst._cached_skin_list
-	end
+-- 皮肤轮换
+-- 规则：
+--   · 皮肤列表按 owner 缓存（6 盏灯共享一份），并定期重建，兼顾会话中解锁皮肤
+--   · 只由一个 driver 定时统一换肤，避免 6 个 timer / 同帧 6 次 ReskinEntity
+--   · 每盏灯按 GUID 错开一个偏移，换肤时是“波浪”而不是整片一起闪
+--   · 换完必须回写 pet.skinname，否则下一轮会一直判定成原皮（旧实现就卡在这）
+---------------------------------------------------------------------------------------
 
-	local prefab_name = inst.prefab
-	local prefabskins = PREFAB_SKINS[prefab_name]
+local BASE_SKIN = "$$BASE$$"
+local SKIN_CACHE_TTL = 60 -- 秒，定期重建列表
 
-	-- 构建完整选项：原皮 + 所有可用的皮肤
-	-- 原皮用 "$$BASE$$" 特殊标记，因为 nil 在表中不好处理
-	local all_options = { "$$BASE$$" } -- 代表原皮
+local function BuildSkinList(userid)
+	local all_options = { BASE_SKIN }
 
-	if prefabskins then
+	local prefabskins = PREFAB_SKINS["fx_musiclight"]
+	if prefabskins ~= nil then
 		for _, skin_name in ipairs(prefabskins) do
 			local skip_this = PREFAB_SKINS_SHOULD_NOT_SELECT[skin_name] or false
 
@@ -185,116 +186,102 @@ local function GetCachedSkinList(userid, inst)
 				skip_this = true
 			end
 
-			if not skip_this then
-				if TheInventory:CheckClientOwnership(userid, skin_name) then
-					table.insert(all_options, skin_name)
-				end
+			if not skip_this and TheInventory:CheckClientOwnership(userid, skin_name) then
+				table.insert(all_options, skin_name)
 			end
 		end
 	end
-
-	-- 缓存起来
-	inst._cached_userid = userid
-	inst._cached_skin_list = all_options
-	inst._cached_current_index = 1 -- 当前索引，从原皮开始
 
 	return all_options
 end
 
-local function GetNextSkinName(userid, inst)
-	-- 获取缓存的皮肤列表
-	local skin_list = GetCachedSkinList(userid, inst)
-
-	if not skin_list or #skin_list == 0 then
-		return nil
+local function GetSharedSkinList(leader)
+	local now = GetTime()
+	if
+		leader._musiclight_skin_list ~= nil
+		and leader._musiclight_skin_userid == leader.userid
+		and now - (leader._musiclight_skin_time or 0) < SKIN_CACHE_TTL
+	then
+		return leader._musiclight_skin_list
 	end
 
-	-- 只有一个原皮可选
-	if #skin_list == 1 then
-		return nil
+	local list = BuildSkinList(leader.userid)
+	leader._musiclight_skin_userid = leader.userid
+	leader._musiclight_skin_list = list
+	leader._musiclight_skin_time = now
+	return list
+end
+
+local function StopReskinDriver(leader)
+	if leader._musiclight_reskin_task ~= nil then
+		leader._musiclight_reskin_task:Cancel()
+		leader._musiclight_reskin_task = nil
 	end
+end
 
-	-- 获取当前皮肤，找到当前索引
-	local curr_skin = inst.skinname
-	local current_index = inst._cached_current_index or 1
-
-	-- 验证当前索引是否正确（防止外部修改了皮肤）
-	local expected_skin = skin_list[current_index]
-	if expected_skin == "$$BASE$$" then
-		expected_skin = nil
-	end
-
-	if expected_skin ~= curr_skin then
-		-- 当前皮肤与缓存索引不匹配，重新查找索引
-		current_index = nil
-		for i, skin_name in ipairs(skin_list) do
-			local compare_skin = (skin_name == "$$BASE$$") and nil or skin_name
-			if compare_skin == curr_skin then
-				current_index = i
-				break
+local function GetMusicLights(leader)
+	local lights = {}
+	local leadercomp = leader.components.leader
+	if leadercomp ~= nil then
+		-- 音乐灯是用 leader:AddFollower 挂上的，不在 petleash 里
+		for ent in pairs(leadercomp.followers) do
+			if ent.prefab == "fx_musiclight" and ent:IsValid() then
+				table.insert(lights, ent)
 			end
 		end
-		if not current_index then
-			current_index = 1
+	end
+	return lights
+end
+
+local function ReskinMusicLights(leader)
+	local pets = GetMusicLights(leader)
+	if #pets == 0 then
+		-- buff 已经结束，没人需要换了
+		StopReskinDriver(leader)
+		return
+	end
+
+	local list = GetSharedSkinList(leader)
+	local count = #list
+	if count <= 1 then
+		return
+	end
+
+	leader._musiclight_skin_step = (leader._musiclight_skin_step or 0) + 1
+	local step = leader._musiclight_skin_step
+
+	for _, pet in ipairs(pets) do
+		-- 6 盏灯统一颜色：同一轮用同一个索引
+		local next_skin = list[(step % count) + 1]
+		if next_skin == BASE_SKIN then
+			next_skin = nil
+		end
+
+		if next_skin ~= pet.skinname then
+			TheSim:ReskinEntity(pet.GUID, pet.skinname, next_skin, nil, leader.userid)
+			pet.skinname = next_skin
 		end
 	end
-
-	-- 计算下一个索引（循环）
-	local next_index = current_index % #skin_list + 1
-
-	-- 保存当前索引（实际上是旧索引，下次会用）
-	inst._cached_current_index = current_index
-
-	-- 返回下一个皮肤
-	local next_skin = skin_list[next_index]
-	if next_skin == "$$BASE$$" then
-		return nil -- 原皮
-	end
-	return next_skin
 end
 
 local function StartAutoReskin(inst)
 	local leader = inst.components.follower.leader
-
-	if not leader or not leader.userid then
+	if leader == nil or leader.userid == nil then
 		return
 	end
 
-	local userid = leader.userid
-
-	-- 停止之前的任务
-	if inst._auto_reskin_task then
-		inst._auto_reskin_task:Cancel()
-		inst._auto_reskin_task = nil
-	end
-
-	-- 预加载皮肤列表
-	GetCachedSkinList(userid, inst)
-
-	-- 每2秒换一次皮肤
-	inst._auto_reskin_task = inst:DoPeriodicTask(2, function()
-		if not inst:IsValid() then
-			return
-		end
-
-		local next_skin = GetNextSkinName(userid, inst)
-
-		-- 应用皮肤（next_skin 可能是 nil，表示原皮）
-		TheSim:ReskinEntity(inst.GUID, inst.skinname, next_skin, nil, userid)
-
-		-- 更新缓存索引到新皮肤的位置
-		local skin_list = inst._cached_skin_list
-		if skin_list then
-			for i, skin_name in ipairs(skin_list) do
-				local compare_skin = (skin_name == "$$BASE$$") and nil or skin_name
-				if compare_skin == next_skin then
-					inst._cached_current_index = i
-					break
-				end
+	-- 只有第一盏灯负责建 driver，后面的灯直接复用
+	-- 即使当前只有原皮也开着，这样会话中解锁皮肤后（缓存 60 秒重建）能自动开始轮换
+	if leader._musiclight_reskin_task == nil then
+		leader._musiclight_reskin_task = leader:DoPeriodicTask(2, function()
+			if leader:IsValid() then
+				ReskinMusicLights(leader)
 			end
-		end
-	end)
+		end)
+	end
 end
+
+
 ---------------------------------------------------------------------------------------
 
 local function fn()

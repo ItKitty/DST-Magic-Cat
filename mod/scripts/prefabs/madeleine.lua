@@ -4,6 +4,12 @@ local assets = {
 	Asset("SCRIPT", "scripts/prefabs/player_common.lua"),
 	Asset("ANIM", "anim/madeleine.zip"),
 	Asset("ANIM", "anim/ghost_madeleine_build.zip"),
+	-- 召唤施法动画包：含 wormwood_cast_spawn* 动画和手部星光符号（fx_smallstaranim / fx_glow_fx）
+	Asset("ANIM", "anim/wormwood_skills.zip"),
+	-- 小恶魔待机动画/灵魂球：common_postinit 里 AddOverrideBuild 要用，不声明会报
+	-- "AddOverrideBuild failed to find build player_idles_wortox_naughty"
+	Asset("ANIM", "anim/player_idles_wortox_naughty.zip"),
+	Asset("ANIM", "anim/wortox_soul_ball.zip"),
 	Asset("IMAGE", "images/colour_cubes/beaver_vision_cc.tex"),
 }
 
@@ -197,6 +203,10 @@ local common_postinit = function(inst)
 	inst.AnimState:AddOverrideBuild("player_idles_wortox_naughty")
 	-- 添加灵魂球特效（idle_naughty 的视觉元素）
 	inst.AnimState:AddOverrideBuild("wortox_soul_ball")
+	-- 召唤施法动画：spawn_mutated_creature 状态播的 wormwood_cast_spawn*
+	-- 光效（手部星光/光柱）在 wormwood_skills 包的 fx_smallstaranim / fx_glow_fx 符号里，
+	-- 不挂这个 override build 就只有动作没有光
+	inst.AnimState:AddOverrideBuild("wormwood_skills")
 	-- 小恶魔灵魂球
 	for _, v in ipairs(soulfx_symbols) do
 		inst.AnimState:OverrideSymbol("soulfx_" .. v, "wortox_soul_ball", v)

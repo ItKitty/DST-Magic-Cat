@@ -279,7 +279,7 @@ local states = {
 
 		onupdate = function(inst, dt)
 			local target = inst.owner
-			if target then
+			if target ~= nil and target:IsValid() and target.Transform ~= nil then
 				inst:ForceFacePoint(target.Transform:GetWorldPosition())
 			end
 		end,
@@ -317,7 +317,9 @@ local states = {
 
 		onupdate = function(inst, dt)
 			local target = inst.owner
-			inst:ForceFacePoint(target.Transform:GetWorldPosition())
+			if target ~= nil and target:IsValid() and target.Transform ~= nil then
+				inst:ForceFacePoint(target.Transform:GetWorldPosition())
+			end
 		end,
 
 		timeline = {
