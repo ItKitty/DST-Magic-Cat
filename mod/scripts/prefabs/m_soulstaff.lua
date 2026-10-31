@@ -522,7 +522,7 @@ local function fn()
 	-- inst.itemtile_colour = RGB(143, 41, 41)
 
 	local talker = inst:AddComponent("talker")
-	talker.fontsize = 28                                -- 照镰刀：小一号
+	talker.fontsize = 35                                -- 字大一点（原来的字号）
 	talker.font = TALKINGFONT
 	talker.name_colour = Vector3(143 / 255, 41 / 255, 41 / 255)
 	talker.colour = Vector3(143 / 255, 41 / 255, 41 / 255)
