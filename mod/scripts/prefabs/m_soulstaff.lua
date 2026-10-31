@@ -268,7 +268,7 @@ end
 
 -- 对话管理（照抄虚空布镰刀的节奏：装备后 3 秒第一句，之后每 30 秒一句）
 local TALK_INITIAL_INTERVAL = 3      -- 装备后第一句的延时
-local TALK_INTERVAL = 5              -- 之后每句的间隔
+local TALK_INTERVAL = 10             -- 之后每句的间隔
 local TALK_ATTACK_COOLDOWN = 10      -- 攻击台词的冷却，想要每次攻击都说就改成 0
 local TALK_DURATION = 3              -- 每句飘字的显示时长
 
@@ -304,16 +304,19 @@ end
 
 -- 循环（同原版虚空布镰刀 voidcloth_scythe.lua:143-157 的写法）：
 -- 说一句，重新给自己排下一句；不做"还拿不拿着"的判断，靠 OnUnequip 取消任务。
-local function SayLoop(inst, owner)
+-- talk_type 缺省是 EQUIP_TALK（第一句），之后的循环都用 IDLE_TALK。
+local function SayLoop(inst, owner, talk_type)
 	if owner == nil or not owner:IsValid() then
 		return
 	end
 
-	-- 优先用 IDLE_TALK，没写就退回 EQUIP_TALK
-	StaffTalk(inst, GetTalkList("IDLE_TALK") ~= nil and "IDLE_TALK" or "EQUIP_TALK")
+	if GetTalkList(talk_type) == nil then
+		talk_type = GetTalkList("IDLE_TALK") ~= nil and "IDLE_TALK" or "EQUIP_TALK"
+	end
+	StaffTalk(inst, talk_type)
 
 	CancelTalkTask(inst)
-	inst.talktask = inst:DoTaskInTime(TALK_INTERVAL, SayLoop, owner)
+	inst.talktask = inst:DoTaskInTime(TALK_INTERVAL, SayLoop, owner, "IDLE_TALK")
 end
 
 local function StartTalking(inst, owner)
@@ -321,7 +324,7 @@ local function StartTalking(inst, owner)
 	if owner == nil or not owner:IsValid() then
 		return
 	end
-	inst.talktask = inst:DoTaskInTime(TALK_INITIAL_INTERVAL, SayLoop, owner)
+	inst.talktask = inst:DoTaskInTime(TALK_INITIAL_INTERVAL, SayLoop, owner, "EQUIP_TALK")
 end
 
 local function StopTalking(inst)
