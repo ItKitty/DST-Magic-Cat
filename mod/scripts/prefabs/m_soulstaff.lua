@@ -266,22 +266,72 @@ local function onload(inst, data)
 	end
 end
 
--- 对话管理
+-- 对话管理（照抄虚空布镰刀的节奏：装备后 3 秒第一句，之后每 30 秒一句）
+local TALK_INITIAL_INTERVAL = 3      -- 装备后第一句的延时
+local TALK_INTERVAL = 30             -- 之后每句的间隔
+local TALK_ATTACK_COOLDOWN = 10      -- 攻击台词的冷却，想要每次攻击都说就改成 0
+local TALK_DURATION = 3              -- 每句飘字的显示时长
+
+local function GetTalkList(talk_type)
+	local list = STRINGS.M_SOULSTAFF[talk_type]
+	return (list ~= nil and #list > 0) and list or nil
+end
+
+-- 只随机取一句，通过 talker:Chatter 播报
+-- Chatter 会同时做两件事：本地飘字 + 聊天栏（公屏）里的那一行
 local function StaffTalk(inst, talk_type)
-	local talk_list = STRINGS.M_SOULSTAFF[talk_type]
-	if not talk_list or #talk_list == 0 then
+	local talk_list = GetTalkList(talk_type)
+	if talk_list == nil then
 		return false
 	end
 
-	-- 随机选择一条对话
-	local msg_index = math.random(#talk_list)
 	inst.components.talker:Chatter(
 		"M_SOULSTAFF." .. talk_type,
-		msg_index,
-		3, -- 显示时长
+		math.random(#talk_list),
+		TALK_DURATION,
 		false, -- 非强制对话
 		CHATPRIORITIES.LOW
 	)
+	return true
+end
+
+local function IsStaffHeldBy(inst, owner)
+	local invitem = inst.components.inventoryitem
+	return invitem ~= nil
+		and owner ~= nil
+		and owner:IsValid()
+		and invitem:GetGrandOwner() == owner
+end
+
+local function CancelTalkTask(inst)
+	if inst.talktask ~= nil then
+		inst.talktask:Cancel()
+		inst.talktask = nil
+	end
+end
+
+-- 循环主体：手里还拿着就继续排下一句
+local function SayLoop(inst, owner)
+	inst.talktask = nil
+	if not IsStaffHeldBy(inst, owner) then
+		return
+	end
+
+	-- 优先用 IDLE_TALK，没写就退回 EQUIP_TALK
+	StaffTalk(inst, GetTalkList("IDLE_TALK") ~= nil and "IDLE_TALK" or "EQUIP_TALK")
+	inst.talktask = inst:DoTaskInTime(TALK_INTERVAL, SayLoop, owner)
+end
+
+local function StartTalking(inst, owner, delay)
+	CancelTalkTask(inst)
+	if owner == nil then
+		return
+	end
+	inst.talktask = inst:DoTaskInTime(delay or TALK_INITIAL_INTERVAL, SayLoop, owner)
+end
+
+local function StopTalking(inst)
+	CancelTalkTask(inst)
 end
 
 -- 腐化光效（king_cane 的 corrupt_level3，单独做的 FX prefab，不带武器贴图）
@@ -361,14 +411,8 @@ local function onequip(inst, owner)
 	-- 形态关闭时给照明（queen_torch 的灯）
 	UpdateTorchLight(inst)
 
-	-- 装备时随机对话
-	if inst.talkCooldown.equip then
-		StaffTalk(inst, "EQUIP_TALK")
-		inst.talkCooldown.equip = false
-		inst:DoTaskInTime(5, function()
-			inst.talkCooldown.equip = true
-		end)
-	end
+	-- 手持期间循环说话（第一句 3 秒后，之后每 30 秒一句）
+	StartTalking(inst, owner)
 end
 
 local function onunequip(inst, owner)
@@ -383,6 +427,9 @@ local function onunequip(inst, owner)
 
 	-- 只停特效，开关状态保留；下次手持会接着开（StopEffects 里也会收掉腐化光效）
 	StopEffects(inst)
+
+	-- 停止循环说话
+	StopTalking(inst)
 end
 
 -- 攻击相关
@@ -391,13 +438,15 @@ local function onattack(inst, attacker, target)
 		return
 	end
 
-	-- 攻击时随机对话
-	if inst.talkCooldown.attack then
-		StaffTalk(inst, "ATTACK_TALK")
-		inst.talkCooldown.attack = false
-		inst:DoTaskInTime(15, function()
-			inst.talkCooldown.attack = true
-		end)
+	-- 攻击时随机一句（冷却内不重复），并把循环计时重置成 TALK_INTERVAL
+	if TALK_ATTACK_COOLDOWN <= 0
+		or inst._nextattacktalk == nil
+		or GetTime() >= inst._nextattacktalk
+	then
+		if StaffTalk(inst, "ATTACK_TALK") then
+			inst._nextattacktalk = GetTime() + TALK_ATTACK_COOLDOWN
+		end
+		StartTalking(inst, attacker, TALK_INTERVAL)
 	end
 	-- 检查san值是否低于0.2
 	local canUseSpecialAttack = true
@@ -473,14 +522,34 @@ local function fn()
 	-- inst.itemtile_colour = RGB(143, 41, 41)
 
 	local talker = inst:AddComponent("talker")
-	talker.fontsize = 35
+	talker.fontsize = 28                                -- 照镰刀：小一号
 	talker.font = TALKINGFONT
 	talker.name_colour = Vector3(143 / 255, 41 / 255, 41 / 255)
 	talker.colour = Vector3(143 / 255, 41 / 255, 41 / 255)
-	talker.offset = Vector3(0, -400, 0)
+	talker.offset = Vector3(0, 0, 0)                    -- 照镰刀：贴着 swap_object 符号，不再顶在头上
 	talker.symbol = "swap_object"
 	talker:MakeChatter()
 	talker.chaticon = "npcchatflair_stalker"
+
+	-- 飘字只让"拿着这把杖的人"看到；聊天栏里那一行仍然照常广播（Chatter 内部会走 ChatHistory）
+	local _talker_Say = talker.Say
+	talker.Say = function(self, ...)
+		if ThePlayer == nil then
+			return
+		end
+
+		local comps = self.inst.components
+		local invitem = comps ~= nil and comps.inventoryitem or nil
+		local isowner = (invitem ~= nil and invitem:GetGrandOwner() == ThePlayer)
+			or (self.inst.replica ~= nil
+				and self.inst.replica.inventoryitem ~= nil
+				and self.inst.replica.inventoryitem:IsGrandOwner(ThePlayer))
+
+		if not isowner then
+			return
+		end
+		return _talker_Say(self, ...)
+	end
 
 	-- 形态轮盘：条目由 systems/soulstaff_toggle.lua 通过 AddPrefabPostInit 塞进来
 	inst:AddComponent("spellbook")
@@ -548,11 +617,8 @@ local function fn()
 	inst:ListenForEvent("ondropped", OnInventoryStateChanged)
 	inst:ListenForEvent("onputininventory", OnInventoryStateChanged)
 
-	-- 初始化对话冷却系统
-	inst.talkCooldown = {
-		attack = true, -- 攻击对话冷却状态
-		equip = true, -- 装备对话冷却状态
-	}
+	-- 攻击台词的上次播放时间（配合 TALK_ATTACK_COOLDOWN）
+	inst._nextattacktalk = nil
 
 	if not inst:IsInLimbo() then
 		top_showfx_onground(inst)
