@@ -61,18 +61,17 @@ STRINGS.CHARACTERS.GENERIC.DESCRIBE.MADELEINE = {
 
 -- Stats
 TUNING.MADELEINE_HEALTH = 150
-TUNING.MADELEINE_HUNGER = 150
+TUNING.MADELEINE_HUNGER = 175
 TUNING.MADELEINE_SANITY = 300
 
 STRINGS.CHARACTER_SURVIVABILITY.madeleine = "一旦接受了自己的软弱，\n那么我就是无敌的。"
 
 -- The character select screen lines
 STRINGS.CHARACTER_TITLES.madeleine = "弦歌巫师"
-STRINGS.CHARACTER_ABOUTME.madeleine =
-	"玛德琳是一只神奇的猫咪，\n她来到永恒大陆是为了追求更强大的魔法。"
+STRINGS.CHARACTER_ABOUTME.madeleine = "猫人，旅者。\n每个世界都只是她路过的一站。"
 STRINGS.CHARACTER_NAMES.madeleine = "玛德琳"
 STRINGS.CHARACTER_DESCRIPTIONS.madeleine =
-	"*博学\n*曾经在女巫世界中生活过\n*有自己的演奏风格\n*贪婪\n*仆从大师"
+	"*博学\n*会点小法术\n*有自己的演奏风格\n*贪婪\n*仆从大师"
 STRINGS.CHARACTER_QUOTES.madeleine = '"我是来享受的，不是来坐牢的！"'
 
 STRINGS.CHARACTER_BIOS.madeleine = {
@@ -89,8 +88,8 @@ STRINGS.CHARACTER_BIOS.madeleine = {
 		desc = "前进之路，曲折又漫长",
 	},
 	{
-		title = "厚积薄发",
-		desc = "谁也不知道玛德琳从哪里来，要从哪里去。她身手敏捷，博学多识，为了追求更强大的宝石魔法不远千里来到永恒大陆，她从不畏惧挑战。现在，好戏开场了！",
+		title = "永恒之旅",
+		desc = "相传，在次元与次元的缝隙之间，游荡着一支神秘的猫人族群。他们生来便拥有强大的力量，能够自由穿梭于各个次元。玛德琳便是其中一员——一次意外，她坠入了永恒大陆，带着从其他世界习得的知识，就此展开了一段全新的旅程。在这片陌生而广袤的土地上，她凭借异界的智慧与猫人天生的敏锐，一次次化险为夷，也渐渐揭开了永恒大陆尘封的秘密。",
 	},
 }
 

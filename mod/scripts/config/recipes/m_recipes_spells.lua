@@ -1,4 +1,4 @@
--- recipes2.lua - 配方系统优化版
+-- m_recipes_spells.lua - 魔法书配方（猫の幻想栏）
 
 local Recipe = GLOBAL.Recipe
 local Ingredient = GLOBAL.Ingredient

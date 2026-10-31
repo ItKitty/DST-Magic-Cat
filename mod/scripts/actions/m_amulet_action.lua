@@ -54,8 +54,8 @@ AMULETUNLOCK_ACTION.distance = 3
 AMULETUNLOCK_ACTION.mount_valid = true
 
 -- 添加状态机处理
-AddStategraphActionHandler("wilson", _G.ActionHandler(AMULETUNLOCK_ACTION, "doshortaction"))
-AddStategraphActionHandler("wilson_client", _G.ActionHandler(AMULETUNLOCK_ACTION, "doshortaction"))
+AddStategraphActionHandler("wilson", GLOBAL.ActionHandler(AMULETUNLOCK_ACTION, "doshortaction"))
+AddStategraphActionHandler("wilson_client", GLOBAL.ActionHandler(AMULETUNLOCK_ACTION, "doshortaction"))
 
 -- 简化动作注册：直接为升级材料注册动作
 AddComponentAction("USEITEM", "inventoryitem", function(inst, doer, target, actions, right)

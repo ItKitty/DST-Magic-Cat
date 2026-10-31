@@ -1,10 +1,9 @@
--- recipes2.lua - 配方系统优化版
+-- m_recipes_compat.lua - 兼容别的模组配方（能力勋章 / 棱镜）
 
 local _G = GLOBAL
 local TUNING = _G.TUNING
 local SpawnPrefab = _G.SpawnPrefab
 local TheNet = _G.TheNet
-local IsServer = TheNet:GetIsServer() or TheNet:IsDedicated()
 
 -- 兼容mod
 local moddir = _G.KnownModIndex:GetModsToLoad(true)
@@ -16,7 +15,7 @@ for k, dir in pairs(moddir) do
 	enablemods[dir] = name
 end
 -- MOD是否开启
-function IsModEnable(name)
+local function IsModEnable(name)
 	for k, v in pairs(enablemods) do
 		if v and (k:match(name) or v:match(name)) then
 			return true

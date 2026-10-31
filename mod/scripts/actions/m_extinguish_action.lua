@@ -6,7 +6,7 @@
 --   3. 熄灭 heatstar（热星）需要装备栏有 m_nofreezing
 -- ============================================================
 
-local EXTINGUISH_DWARFSTAR = AddAction("EXTINGUISH_DWARFSTAR", "熄灭", function(act)
+local EXTINGUISH_DWARFSTAR = AddAction("M_EXTINGUISH_DWARFSTAR", "熄灭", function(act)
 	local target = act.target
 	local doer = act.doer
 	if target == nil then
@@ -15,10 +15,8 @@ local EXTINGUISH_DWARFSTAR = AddAction("EXTINGUISH_DWARFSTAR", "熄灭", functio
 	-- 说话
 	if doer ~= nil and doer.components.talker ~= nil then
 		if target:HasTag("heatstar") then
-			-- doer.components.talker:Say("好烫！")
 			doer.components.temperature:SetTemperature(71)
 		elseif target.prefab == "staffcoldlight" then
-			-- doer.components.talker:Say("好冷！")
 			doer.components.temperature:SetTemperature(-1)
 		end
 	end
@@ -39,8 +37,8 @@ EXTINGUISH_DWARFSTAR.rmb = true
 EXTINGUISH_DWARFSTAR.distance = 1
 EXTINGUISH_DWARFSTAR.mount_valid = true
 
-AddStategraphActionHandler("wilson", ActionHandler(EXTINGUISH_DWARFSTAR, "domediumaction"))
-AddStategraphActionHandler("wilson_client", ActionHandler(EXTINGUISH_DWARFSTAR, "domediumaction"))
+AddStategraphActionHandler("wilson", GLOBAL.ActionHandler(EXTINGUISH_DWARFSTAR, "domediumaction"))
+AddStategraphActionHandler("wilson_client", GLOBAL.ActionHandler(EXTINGUISH_DWARFSTAR, "domediumaction"))
 
 AddComponentAction("SCENE", "inspectable", function(inst, doer, actions, right)
 	if not right then

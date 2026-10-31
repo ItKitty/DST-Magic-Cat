@@ -1,4 +1,4 @@
--- vanilla_hooks.lua - 所有对原版代码的挂接修改都放这里
+-- m_vanilla_hooks.lua - 所有对原版代码的挂接修改都放这里
 -- （AddPrefabPostInit / AddComponentPostInit / AddClassPostConstruct 等）
 
 ---stafflight

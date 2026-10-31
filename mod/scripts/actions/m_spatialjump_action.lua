@@ -1,11 +1,3 @@
-local _G = GLOBAL
-
-local TheNet = _G.TheNet
-local Strings = _G.STRINGS
-local IsServer = TheNet:GetIsServer() or TheNet:IsDedicated()
-
--- local m_spatialjump_consume = 50
-
 local function m_playercontroller(self)
 	local e_oldGetMapActions = self.GetMapActions
 	function self:GetMapActions(position, ...)
@@ -33,22 +25,6 @@ local function m_playercontroller(self)
 				-- 判断为本模组的地图动作，开始执行传送
 				is_run_old = false
 				if self.ismastersim then
-					-- print("sanity.current", self.inst.components.sanity.current)
-					-- print("sanity", self.inst.components.sanity.max - m_spatialjump_consume)
-					-- if
-					-- 	self.inst.components.sanity ~= nil
-					-- 	and (
-					-- 		(
-					-- 			self.inst.components.sanity:IsInsanityMode()
-					-- 			and self.inst.components.sanity.current >= m_spatialjump_consume
-					-- 		)
-					-- 		or (
-					-- 			self.inst.components.sanity:IsLunacyMode()
-					-- 			and self.inst.components.sanity.current
-					-- 				<= (self.inst.components.sanity.max - m_spatialjump_consume)
-					-- 		)
-					-- 	)
-					-- then
 					local LMBaction, RMBaction = self:GetMapActions(position)
 					if act.rmb then
 						if RMBaction then
@@ -60,13 +36,6 @@ local function m_playercontroller(self)
 						end
 					end
 
-					-- 	if self.inst.components.sanity:IsInsanityMode() then
-					-- 		self.inst.components.sanity:DoDelta(-m_spatialjump_consume, true, "debug_key")
-					-- 	end
-					-- 	if self.inst.components.sanity:IsLunacyMode() then
-					-- 		self.inst.components.sanity:DoDelta(m_spatialjump_consume, true, "debug_key")
-					-- 	end
-					-- end
 				elseif self.locomotor == nil and not self.inst.m_amulet then
 					self.inst.m_amulet = true
 					if self.inst.item_task_portal == nil then
@@ -157,8 +126,8 @@ ACTIONS.M_SPATIALJUMP.rmb = true
 ACTIONS.M_SPATIALJUMP.closes_map = true
 STRINGS.M_SPATIALJUMP_MODNAME = ACTIONS.M_SPATIALJUMP.mod_name
 
-AddStategraphActionHandler("wilson", ActionHandler(GLOBAL.ACTIONS.M_SPATIALJUMP, nil))
-AddStategraphActionHandler("wilson_client", ActionHandler(GLOBAL.ACTIONS.M_SPATIALJUMP, nil))
+AddStategraphActionHandler("wilson", GLOBAL.ActionHandler(GLOBAL.ACTIONS.M_SPATIALJUMP, nil))
+AddStategraphActionHandler("wilson_client", GLOBAL.ActionHandler(GLOBAL.ACTIONS.M_SPATIALJUMP, nil))
 
 local BLINK_MAP_MUST = { "CLASSIFIED", "globalmapicon", "fogrevealer" }
 ACTIONS_MAP_REMAP[ACTIONS.M_SPATIALJUMP.code] = function(act, targetpos)
