@@ -1,11 +1,12 @@
 -- This information tells other players more about the mod
 name = "[DST]Magic Cat"
 author = "NONTAN (Edited BY WYF)"
-version = "2.244"
+version = "2.25"
 description = "当前[版本󰀝]："
 	.. version
 	.. "\n󰀒【一旦接受了自己的软弱，那么我就是无敌的！】󰀒"
 
+-- 2.25 爱的力量，修改了法杖的说话和禁锢
 -- 2.24 爱的力量，增加了扫把
 -- 2.23 爱的力量，增加了盐狗，鹦鹉
 -- 2.22 爱的力量，增加了箱子猫
