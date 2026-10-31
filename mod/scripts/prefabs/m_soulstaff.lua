@@ -267,7 +267,7 @@ local function onload(inst, data)
 end
 
 -- 对话管理（照抄虚空布镰刀的节奏：装备后 3 秒第一句，之后每 30 秒一句）
-local TALK_INITIAL_INTERVAL = 3      -- 装备后第一句的延时
+local TALK_INITIAL_INTERVAL = 3      -- 保留：第一句现在是立刻说，这个值不再使用
 local TALK_INTERVAL = 30             -- 之后每句的间隔
 local TALK_ATTACK_COOLDOWN = 10      -- 攻击台词的冷却，想要每次攻击都说就改成 0
 local TALK_DURATION = 3              -- 每句飘字的显示时长
@@ -310,28 +310,33 @@ local function CancelTalkTask(inst)
 	end
 end
 
--- 循环主体：手里还拿着就继续排下一句
-local function SayLoop(inst, owner)
-	inst.talktask = nil
-	if not IsStaffHeldBy(inst, owner) then
-		return
-	end
-
-	-- 优先用 IDLE_TALK，没写就退回 EQUIP_TALK
-	StaffTalk(inst, GetTalkList("IDLE_TALK") ~= nil and "IDLE_TALK" or "EQUIP_TALK")
-	inst.talktask = inst:DoTaskInTime(TALK_INTERVAL, SayLoop, owner)
-end
-
-local function StartTalking(inst, owner, delay)
+-- 循环的任务挂在"玩家"身上，而不是物品上：
+-- 物品被装备后会被 RemoveFromScene（不在场景里），它自己的延时任务不一定按时跑；
+-- 玩家实体一直在更新，DoPeriodicTask 更可靠。
+local function StartTalking(inst, owner)
 	CancelTalkTask(inst)
-	if owner == nil then
+	if owner == nil or not owner:IsValid() then
 		return
 	end
-	inst.talktask = inst:DoTaskInTime(delay or TALK_INITIAL_INTERVAL, SayLoop, owner)
+
+	-- 拿起来先立刻说一句
+	StaffTalk(inst, GetTalkList("IDLE_TALK") ~= nil and "IDLE_TALK" or "EQUIP_TALK")
+
+	inst.talktask = owner:DoPeriodicTask(TALK_INTERVAL, function()
+		local talker_owner = inst._talk_owner
+		if talker_owner == nil or not talker_owner:IsValid() or not IsStaffHeldBy(inst, talker_owner) then
+			CancelTalkTask(inst)
+			return
+		end
+
+		-- 优先用 IDLE_TALK，没写就退回 EQUIP_TALK
+		StaffTalk(inst, GetTalkList("IDLE_TALK") ~= nil and "IDLE_TALK" or "EQUIP_TALK")
+	end)
 end
 
 local function StopTalking(inst)
 	CancelTalkTask(inst)
+	inst._talk_owner = nil
 end
 
 -- 腐化光效（king_cane 的 corrupt_level3，单独做的 FX prefab，不带武器贴图）
@@ -411,7 +416,8 @@ local function onequip(inst, owner)
 	-- 形态关闭时给照明（queen_torch 的灯）
 	UpdateTorchLight(inst)
 
-	-- 手持期间循环说话（第一句 3 秒后，之后每 30 秒一句）
+	-- 手持期间循环说话（拿起来立刻一句，之后每 TALK_INTERVAL 秒一句）
+	inst._talk_owner = owner
 	StartTalking(inst, owner)
 end
 
@@ -438,7 +444,7 @@ local function onattack(inst, attacker, target)
 		return
 	end
 
-	-- 攻击时随机一句（冷却内不重复），并把循环计时重置成 TALK_INTERVAL
+	-- 攻击时随机一句（冷却内不重复）
 	if TALK_ATTACK_COOLDOWN <= 0
 		or inst._nextattacktalk == nil
 		or GetTime() >= inst._nextattacktalk
@@ -446,7 +452,6 @@ local function onattack(inst, attacker, target)
 		if StaffTalk(inst, "ATTACK_TALK") then
 			inst._nextattacktalk = GetTime() + TALK_ATTACK_COOLDOWN
 		end
-		StartTalking(inst, attacker, TALK_INTERVAL)
 	end
 	-- 检查san值是否低于0.2
 	local canUseSpecialAttack = true
