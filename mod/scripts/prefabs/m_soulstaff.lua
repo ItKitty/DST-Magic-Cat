@@ -526,7 +526,7 @@ local function fn()
 	talker.font = TALKINGFONT
 	talker.name_colour = Vector3(143 / 255, 41 / 255, 41 / 255)
 	talker.colour = Vector3(143 / 255, 41 / 255, 41 / 255)
-	talker.offset = Vector3(0, 10, 0)                   -- 照镰刀：贴着 swap_object 符号，再往下 10
+	talker.offset = Vector3(0, 100, 0)                  -- 符号偏移，y 正方向往下（10 太小看不出来，先在 100 试）
 	talker.symbol = "swap_object"
 	talker:MakeChatter()
 	talker.chaticon = "npcchatflair_stalker"
